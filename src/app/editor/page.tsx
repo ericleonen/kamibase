@@ -1,19 +1,16 @@
+import KamiSection from "./_components/KamiSection";
+import LeftSection from "./_components/LeftSection";
+import RightSection from "./_components/RightSection";
+import TopBar from "./_components/TopBar";
+
 export default function EditorPage() {
     return (
         <div className="h-screen flex flex-col">
-            <section className="h-16 bg-theme-black">
-
-            </section>
+            <TopBar />
             <section className="flex flex-grow bg-theme-white">
-                <div className="w-20 h-full bg-theme-light-gray">
-
-                </div>
-                <div className="flex-grow">
-                
-                </div>
-                <div className="w-20 h-full bg-theme-light-gray">
-
-                </div>
+                <LeftSection />
+                <KamiSection />
+                <RightSection />
             </section>
         </div>
     )
