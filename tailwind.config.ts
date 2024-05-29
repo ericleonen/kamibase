@@ -16,7 +16,8 @@ const config: Config = {
       colors: {
         "theme-white": "#F5F5F5",
         "theme-black": "#303030",
-        "theme-light-gray": "#E5E5E5"
+        "theme-light-gray": "#E5E5E5",
+        "theme-gray": "#D9D9D9"
       }
     },
   },
