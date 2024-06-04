@@ -14,12 +14,13 @@ const config: Config = {
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
       colors: {
-        "theme-white": "#F5F5F5",
-        "theme-black": "#303030",
-        "theme-light-gray": "#E5E5E5",
-        "theme-gray": "#D9D9D9",
-        "theme-dark-gray": "#A1A1A1",
-        "theme-darker-gray": "#606060"
+        "theme-white": "var(--theme-white)",
+        "theme-black": "var(--theme-black)",
+        "theme-light-gray": "var(--theme-light-gray)",
+        "theme-gray": "var(--theme-gray)",
+        "theme-dark-gray": "var(--theme-dark-gray)",
+        "theme-darker-gray": "var(--theme-darker-gray)",
+        "theme-yellow": "var(--theme-yellow)"
       }
     },
   },

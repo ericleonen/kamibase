@@ -1,0 +1,1 @@
+export type FoldType = "mountain" | "neutral" | "valley";
