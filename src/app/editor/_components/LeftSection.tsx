@@ -4,20 +4,20 @@ export default function LeftSection() {
     return (
         <div className="flex flex-col justify-center px-5 h-full bg-theme-light-gray">
             <ToolButton
-                name="Point to point"
-                iconSrc="pointToPointIcon.svg"
+                name="Mountain tool"
+                iconSrc="mountainToolIcon.svg"
             />
             <ToolButton
-                name="Angle bisector"
-                iconSrc="angleBisectorIcon.svg"
+                name="Valley tool"
+                iconSrc="valleyToolIcon.svg"
             />
             <ToolButton
-                name="Edge to edge"
-                iconSrc="edgeToEdgeIcon.svg"
+                name="Neutral tool"
+                iconSrc="neutralToolIcon.svg"
             />
             <ToolButton
                 name="Eraser"
-                iconSrc="eraserIcon.svg"
+                iconSrc="eraserToolIcon.svg"
             />
         </div>
     )
