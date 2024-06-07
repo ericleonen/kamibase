@@ -118,4 +118,20 @@ export default class Fraction {
     public negate(): Fraction {
         return new Fraction(this.n * -1, this.d);
     }
+
+    /**
+     * Returns the float the Fraction represents.
+     */
+    private toFloat(): number {
+        return this.n / this.d;
+    }
+
+    /**
+     * Returns a positive number if this Fraction is greater than the other, 0 if they are equal,
+     * and a negative number otherwise.
+     * @param other Fraction
+     */
+    public compareTo(other: Fraction): number {
+        return this.toFloat() - other.toFloat();
+    }
 }

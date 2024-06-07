@@ -1,5 +1,5 @@
 /**
- * Represents a pair of two Kami objects (a pair of numbers or a pair of Vertexes)
+ * Represents a pair of two objects (a pair of Fractions or a pair of Vertexes)
  */
 export default class Pair {
 
