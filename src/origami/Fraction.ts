@@ -14,6 +14,10 @@ export default class Fraction {
      */
     constructor(n: number, d: number) {
         if (d == 0) throw new Error("d cannot be 0.");
+        else if (d < 0) { // denominator should never be negative, only numerator (if ever)
+            n *= -1;
+            d *= -1;
+        }
 
         this.n = n;
         this.d = d;
@@ -106,5 +110,12 @@ export default class Fraction {
         quotient.simplify();
 
         return quotient;
+    }
+
+    /**
+     * Returns the new Fraction negative of this Fraction.
+     */
+    public negate(): Fraction {
+        return new Fraction(this.n * -1, this.d);
     }
 }

@@ -21,7 +21,7 @@ test("add() and subtract() correctly evaluates 4/3 + 9/2 - 3/4 = 61/12", () => {
     const result = frac1.add(frac2).subtract(frac3);
 
     expect([result.n, result.d]).toEqual([61, 12]);
-})
+});
 
 test("multiply() and divide() correctly evaluates 7/3 * 4/1 / 8/5 = 35/6", () => {
     const frac1 = new Fraction(7, 3);
@@ -31,4 +31,10 @@ test("multiply() and divide() correctly evaluates 7/3 * 4/1 / 8/5 = 35/6", () =>
     const result = frac1.multiply(frac2).divide(frac3);
 
     expect([result.n, result.d]).toEqual([35, 6]);
+});
+
+test("negate() correctly flips the sign of 3/2", () => {
+    const neg = (new Fraction(3, 2)).negate();
+
+    expect([neg.n, neg.d]).toEqual([3, 2]);
 })
