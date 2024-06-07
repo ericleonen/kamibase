@@ -8,11 +8,13 @@ export default class Fraction {
     d: number;
 
     /**
-     * Initializes the fraction n/d.
+     * Initializes the fraction n/d. If d is 0, throws an Error.
      * @param n Numerator integer
-     * @param d Denominator integer
+     * @param d Non-zero denominator integer
      */
     constructor(n: number, d: number) {
+        if (d == 0) throw new Error("d cannot be 0.");
+
         this.n = n;
         this.d = d;
     }
@@ -45,5 +47,64 @@ export default class Fraction {
 
         this.n /= g;
         this.d /= g;
+    }
+
+    /**
+     * Returns the new Fraction sum of this and the other Fraction in simplest form.
+     * @param other Fraction
+     */
+    public add(other: Fraction): Fraction {
+        const sum = new Fraction(
+            this.n * other.d + other.n * this.d,
+            this.d * other.d
+        );
+        sum.simplify();
+
+        return sum;
+    }
+
+    /**
+     * Returns the new Fraction difference of this and the other Fraction in simplest form.
+     * @param other Fraction
+     */
+    public subtract(other: Fraction): Fraction {
+        const diff = new Fraction(
+            this.n * other.d - other.n * this.d,
+            this.d * other.d
+        );
+        diff.simplify();
+
+        return diff;
+    }
+
+    /**
+     * Returns the new Fraction product of this and the other Fraction in simplest form.
+     * @param other Fraction
+     */
+    public multiply(other: Fraction): Fraction {
+        const product = new Fraction(
+            this.n * other.n,
+            this.d * other.d
+        );
+        product.simplify();
+
+        return product;
+    }
+
+    /**
+     * Returns the new Fraction quotient of this and the other Fraction in simplest form. If the
+     * other Fraction is 0, throws an Error.
+     * @param other Fraction
+     */
+    public divide(other: Fraction): Fraction {
+        if (other.n === 0) throw new Error("Cannot divide by 0.");
+
+        const quotient = new Fraction(
+            this.n * other.d,
+            this.d * other.n
+        );
+        quotient.simplify();
+
+        return quotient;
     }
 }
