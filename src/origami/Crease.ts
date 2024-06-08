@@ -30,7 +30,7 @@ export default class Crease {
     }
 
     /**
-     * Returns the string representation of this Crease: "[vertex1, vertex2]".
+     * Returns the string representation of this Crease: "<type>[vertex1, vertex2]".
      */
     public toString(): string {
         return `${this.type}[${this.vertex1.toString()}, ${this.vertex2.toString()}]`;
