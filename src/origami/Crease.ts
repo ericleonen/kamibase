@@ -23,4 +23,11 @@ export default class Crease {
             this.vertex2 = vertex2;
         }
     }
+
+    /**
+     * Returns the string representation of this Crease: "[vertex1, vertex2]".
+     */
+    public toString(): string {
+        return `[${this.vertex1.toString()}, ${this.vertex2.toString()}]`;
+    }
 }
