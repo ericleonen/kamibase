@@ -36,4 +36,11 @@ export default class Vertex {
     public equals(other: Vertex): boolean {
         return this.compareTo(other) === 0;
     }
+
+    /**
+     * Returns the string representation of this Vertex: "<x, y>".
+     */
+    public toString(): string {
+        return `<${this.x.toString()}, ${this.y.toString()}>`;
+    }
 }
