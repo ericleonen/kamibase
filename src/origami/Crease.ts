@@ -11,10 +11,11 @@ export default class Crease {
     type: CreaseType;
 
     /**
-     * Initializes a Crease object between two distinct Vertexes. If the given Vertexes are equal,
-     * throws an Error.
-     * @param vertex1 
-     * @param vertex2 
+     * Initializes a Crease object between two distinct Vertexes with the given type. If the given
+     * Vertexes are equal, throws an Error.
+     * @param vertex1 Vertex
+     * @param vertex2 Vertex
+     * @param type CreaseType
      */
     constructor(vertex1: Vertex, vertex2: Vertex, type: CreaseType) {
         if (vertex1.equals(vertex2)) throw new Error("Creases need two distinct Vertexes.");
