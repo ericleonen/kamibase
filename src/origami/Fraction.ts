@@ -122,7 +122,7 @@ export default class Fraction {
     /**
      * Returns the float the Fraction represents.
      */
-    private toFloat(): number {
+    public toFloat(): number {
         return this.n / this.d;
     }
 
@@ -133,5 +133,13 @@ export default class Fraction {
      */
     public compareTo(other: Fraction): number {
         return this.toFloat() - other.toFloat();
+    }
+
+    /**
+     * Returns true if this and the other Fraction are equal, false otherwise.
+     * @param other Fraction
+     */
+    public equals(other: Fraction): boolean {
+        return this.compareTo(other) === 0;
     }
 }
