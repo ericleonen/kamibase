@@ -142,4 +142,11 @@ export default class Fraction {
     public equals(other: Fraction): boolean {
         return this.compareTo(other) === 0;
     }
+
+    /**
+     * Returns the string representation of this Fraction: "n/d".
+     */
+    public toString(): string {
+        return `${this.n}/${this.d}`;
+    }
 }
