@@ -16,4 +16,16 @@ export default class Vertex {
         this.x = x;
         this.y = y;
     }
+
+    /**
+     * Returns a positive number if this Vertex is greater than the other Vertex, 0 if they are
+     * equal, and a negative number otherwise. Vertexes are compared by x values first followed by
+     * the y values.
+     * @param other Vertex
+     */
+    public compareTo(other: Vertex): number {
+        const xComparison = this.x.compareTo(other.x);
+        
+        return xComparison === 0 ? this.y.compareTo(other.y) : xComparison;
+    }
 }
