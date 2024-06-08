@@ -1,4 +1,4 @@
-import Vertex from "./Vertex";
+import Vertex from "../Vertex";
 
 export type CreaseType = "M" | "V" | "N";
 
@@ -37,15 +37,43 @@ export default class Crease {
         return `${this.type}[${this.vertex1.toString()}, ${this.vertex2.toString()}]`;
     }
 
-     /**
+    /**
      * Returns a positive number if this Crease is greater than the other Crease, 0 if they are
      * equal, and a negative number otherwise. Creases are compared by vertex1 first followed by
      * the vertex2.
      * @param other Crease
      */
-     public compareTo(other: Crease): number {
+    public compareTo(other: Crease): number {
         const comparison1 = this.vertex1.compareTo(other.vertex1);
         
         return comparison1 === 0 ? this.vertex2.compareTo(other.vertex2) : comparison1;
+    }
+
+    /**
+     * Reads a string and returns the Crease object of that string. If string is not in the
+     * appropriate format, throws an Error.
+     * @param str String in the form "<type>[vertex1, vertex2]"
+     */
+    public static fromString(str: string): Crease {
+        str = str.trim();
+        const type = str.charAt(0);
+
+        if (
+            ["M", "V", "N"].includes(type) 
+                && str.charAt(1) === "[" 
+                && str.charAt(str.length - 1) === "]"
+        ) {
+            const [vertex1, vertex2] = str
+                .substring(2, str.length - 1)
+                .split(",")
+                .map(vertexStr => Vertex.fromString(vertexStr));
+
+            return new Crease(vertex1, vertex2, type as CreaseType);
+        } else {
+            throw new Error(
+                "Format is not <type>[vertex1, vertex2] where <type> is the CreaseType and vertex1 and" +
+                " vertex2 are Vertexes"
+            );
+        }
     }
 }
