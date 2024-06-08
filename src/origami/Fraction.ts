@@ -12,7 +12,7 @@ export default class Fraction {
      * @param n Numerator integer
      * @param d Non-zero denominator integer
      */
-    constructor(n: number, d: number) {
+    constructor(n: number, d: number = 1) {
         if (d == 0) throw new Error("d cannot be 0.");
         else if (d < 0) { // denominator should never be negative, only numerator (if ever)
             n *= -1;
@@ -147,6 +147,6 @@ export default class Fraction {
      * Returns the string representation of this Fraction: "n/d".
      */
     public toString(): string {
-        return `${this.n}/${this.d}`;
+        return `${this.n}${this.d === 1 ? "" : "/" + this.d}`;
     }
 }

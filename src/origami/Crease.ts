@@ -36,4 +36,16 @@ export default class Crease {
     public toString(): string {
         return `${this.type}[${this.vertex1.toString()}, ${this.vertex2.toString()}]`;
     }
+
+     /**
+     * Returns a positive number if this Crease is greater than the other Crease, 0 if they are
+     * equal, and a negative number otherwise. Creases are compared by vertex1 first followed by
+     * the vertex2.
+     * @param other Crease
+     */
+     public compareTo(other: Crease): number {
+        const comparison1 = this.vertex1.compareTo(other.vertex1);
+        
+        return comparison1 === 0 ? this.vertex2.compareTo(other.vertex2) : comparison1;
+    }
 }

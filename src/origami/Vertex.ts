@@ -41,6 +41,6 @@ export default class Vertex {
      * Returns the string representation of this Vertex: "<x, y>".
      */
     public toString(): string {
-        return `<${this.x.toString()}, ${this.y.toString()}>`;
+        return `(${this.x.toString()}, ${this.y.toString()})`;
     }
 }
