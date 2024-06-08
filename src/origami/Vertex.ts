@@ -28,4 +28,12 @@ export default class Vertex {
         
         return xComparison === 0 ? this.y.compareTo(other.y) : xComparison;
     }
+
+    /**
+     * Returns True if this and the other Vertex are equal, false otherwise.
+     * @parem other Vertex
+     */
+    public equals(other: Vertex): boolean {
+        return this.compareTo(other) === 0;
+    }
 }
