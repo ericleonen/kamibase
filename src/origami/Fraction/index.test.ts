@@ -1,6 +1,6 @@
-import Fraction from "./Fraction";
+import Fraction from ".";
 
-test('Fraction.fromString("5/63") correctly reads the fraction string', () => {
+test('Fraction.fromString() correctly reads "5/63"', () => {
     const frac = Fraction.fromString("5/63");
 
     expect([frac.n, frac.d]).toEqual([5, 63]);

@@ -31,7 +31,8 @@ export default class Fraction {
     public static fromString(str: string): Fraction {
         const numStrs = str.split("/");
 
-        if (numStrs.length !== 2) throw new Error("There is not exactly one /.");
+        if (numStrs.length > 2) throw new Error("There are multiple /'s.");
+        else if (numStrs.length === 1) return new Fraction(Number(str));
 
         const [n, d] = numStrs.map(numStr => {
             const num = Number(numStr);

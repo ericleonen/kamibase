@@ -1,4 +1,4 @@
-import Fraction from "./Fraction";
+import Fraction from "../Fraction";
 
 /**
  * Represents a physical point on the Kami.
@@ -42,5 +42,25 @@ export default class Vertex {
      */
     public toString(): string {
         return `(${this.x.toString()}, ${this.y.toString()})`;
+    }
+
+    /**
+     * Reads a string and returns the Vertex object of that string. If th string is in an improper
+     * format, throws an Error.
+     * @param str String in the form "(fracX, fracY)"
+     */
+    public static fromString(str: string): Vertex {
+        str = str.trim();
+
+        if (str.charAt(0) === "(" && str.charAt(str.length - 1) === ")") {
+            const [fracX, fracY]: Fraction[] = str
+                .substring(1, str.length - 1)
+                .split(",")
+                .map(fracStr => Fraction.fromString(fracStr));
+
+            return new Vertex(fracX, fracY);
+        }
+
+        throw new Error("Format is not (fracX, fracY) where fracX and fracY are Fractions");
     }
 }

@@ -26,4 +26,12 @@ export default class Kami {
 
         return this.creases.map(crease => crease.toString()).join(", ");
     }
+
+    /**
+     * Reads a KamiString in standard format and returns the corresponding Kami object.
+     * @param str KamiString in the format of "<crease>,<crease>,..."
+     */
+    // public static fromString(str: string): Kami {
+
+    // }
 }
