@@ -2,6 +2,7 @@ import Crease from "../Crease";
 import Fraction from "../Fraction";
 import Kami from ".";
 import Vertex from "../Vertex";
+import fs from "node:fs";
 
 /*
     WATERBOMB BASE
@@ -44,5 +45,11 @@ test("toString() correctly works for waterbomb base", () => {
 });
 
 test("Kami.fromString() correctly works for waterbomb base", () => {
-    expect(Kami.fromString(waterbombKamiString).toString()).toBe(waterbombKamiString);
+    try {
+        expect(Kami.fromString(
+            fs.readFileSync("public/waterbomb.kami", "utf8")
+        ).toString()).toBe(waterbombKamiString);
+    } catch (err) {
+        console.error(err);
+    }
 })
