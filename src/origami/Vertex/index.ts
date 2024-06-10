@@ -31,7 +31,7 @@ export default class Vertex {
 
     /**
      * Returns True if this and the other Vertex are equal, false otherwise.
-     * @parem other Vertex
+     * @param other Vertex
      */
     public equals(other: Vertex): boolean {
         return this.compareTo(other) === 0;

@@ -50,6 +50,14 @@ export default class Crease {
     }
 
     /**
+     * Returns True if this and the other Crease are equal, false otherwise.
+     * @param other Crease
+     */
+    public equals(other: Crease): boolean {
+        return this.compareTo(other) === 0;
+    }
+
+    /**
      * Reads a string and returns the Crease object of that string. If string is not in the
      * appropriate format, throws an Error.
      * @param str String in the form "<type>[vertex1, vertex2]"
@@ -63,17 +71,35 @@ export default class Crease {
                 && str.charAt(1) === "[" 
                 && str.charAt(str.length - 1) === "]"
         ) {
-            const [vertex1, vertex2] = str
-                .substring(2, str.length - 1)
-                .split(",")
-                .map(vertexStr => Vertex.fromString(vertexStr));
+            let inParentheses = false;
 
-            return new Crease(vertex1, vertex2, type as CreaseType);
-        } else {
-            throw new Error(
-                "Format is not <type>[vertex1, vertex2] where <type> is the CreaseType and vertex1 and" +
-                " vertex2 are Vertexes"
-            );
+            for (let i = 2; i < str.length - 1; i++) {
+                switch (str.charAt(i)) {
+                    case "(":
+                        inParentheses = true;
+                        break;
+                    case ")":
+                        inParentheses = false;
+                        break;
+                    case ",":
+                        if (!inParentheses) {
+                            const vertex1 = Vertex.fromString(
+                                str.substring(2, i)
+                            );
+                            const vertex2 = Vertex.fromString(
+                                str.substring(i + 1, str.length - 1)
+                            );
+
+                            return new Crease(vertex1, vertex2, type as CreaseType);
+                        }
+                        break;
+                }
+            }
         }
+
+        throw new Error(
+            "Format is not <type>[vertex1, vertex2] where <type> is the CreaseType and vertex1 and" +
+            " vertex2 are Vertexes"
+        );
     }
 }
