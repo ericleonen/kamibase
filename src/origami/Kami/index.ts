@@ -92,7 +92,7 @@ export default class Kami {
         );
 
         // Add crease to Kami
-        kami.creases.add(new Crease(vertex1, vertex2, type as CreaseType));
+        kami.crease(vertex1, vertex2, type as CreaseType, false);
 
         if (endBracketIndex === str.length - 1) return kami;
         if (str.charAt(endBracketIndex + 1) !== ",") {
@@ -100,5 +100,14 @@ export default class Kami {
         }
 
         return Kami.fromStringHelper(str.substring(endBracketIndex + 2), kami);
+    }
+
+    public crease(vertex1: Vertex, vertex2: Vertex, type: CreaseType, allowOverlap: boolean = true) {
+        const newCrease = new Crease(vertex1, vertex2, type);
+
+        // Check and handle overlaps and intersections
+        for (let oldCrease of this.creases.toList()) {
+            if (newCrease)
+        }
     }
 }

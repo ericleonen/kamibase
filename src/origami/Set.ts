@@ -1,9 +1,16 @@
 import Crease from "./Crease";
 import Vertex from "./Vertex";
 
+/**
+ * Represents a Set that holds Vertexes or Creases.
+ */
 export default class Set<T extends Vertex | Crease> {
     private map: {[key: string]: T};
 
+    /**
+     * Initializes a Set object with optional array of Vertexes or Creases.
+     * @param arr Array of Vertexes or Creases.
+     */
     constructor(arr: T[] = []) {
         this.map = {};
 

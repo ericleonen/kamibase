@@ -1,4 +1,5 @@
 import Fraction from "../Fraction";
+import Vector from "../Vector";
 
 /**
  * Represents a physical point on the Kami.
@@ -62,5 +63,9 @@ export default class Vertex {
         }
 
         throw new Error("Format is not (fracX, fracY) where fracX and fracY are Fractions");
+    }
+
+    public toVector(): Vector {
+        return new Vector(this.x, this.y);
     }
 }

@@ -1,3 +1,4 @@
+import Vector from "../Vector";
 import Vertex from "../Vertex";
 
 export type CreaseType = "M" | "V" | "N";
@@ -9,6 +10,7 @@ export default class Crease {
     vertex1: Vertex;
     vertex2: Vertex;
     type: CreaseType;
+    vector: Vector;
 
     /**
      * Initializes a Crease object between two distinct Vertexes with the given type. If the given
@@ -28,6 +30,7 @@ export default class Crease {
         }
 
         this.type = type;
+        this.vector = Vector.fromVertexes(this.vertex1, this.vertex2);
     }
 
     /**
