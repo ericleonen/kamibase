@@ -1,19 +1,18 @@
-import Fraction from "./Fraction";
-import Vertex from "./Vertex";
+import Vertex from "../Vertex";
 
 /**
  * Represents a Vector object with vector algrebraic operations.
  */
 export default class Vector {
-    x: Fraction;
-    y: Fraction;
+    x: number;
+    y: number;
 
     /**
      * Initializes a Vector object <x, y>
-     * @param x Horizontal Fraction component
-     * @param y Vertical Fraction component
+     * @param x Horizontal number component
+     * @param y Vertical number component
      */
-    constructor(x: Fraction, y: Fraction) {
+    constructor(x: number, y: number) {
         this.x = x;
         this.y = y;
     }
@@ -32,7 +31,7 @@ export default class Vector {
      * @param other Vector
      */
     public add(other: Vector) {
-        return new Vector(this.x.add(other.x), this.y.add(other.y));
+        return new Vector(this.x + other.x, this.y + other.y);
     }
 
     /**
@@ -40,6 +39,6 @@ export default class Vector {
      * @param other Vector
      */
     public subtract(other: Vector) {
-        return new Vector(this.x.subtract(other.x), this.y.subtract(other.y));
+        return new Vector(this.x - other.x, this.y - other.y);
     }
 }
