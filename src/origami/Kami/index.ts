@@ -19,6 +19,12 @@ export default class Kami {
         this.creases = new GeometrySet<Crease>(creases);
     }
 
+    /**
+     * Returns the Kami object from reading the valid KamiString. If the KamiString is in an
+     * invalid format, throws an Error.
+     * @param str Valid KamiString. Each line represents a crease with format:
+     *            "<type> <x1> <y1> <x2> <y2"
+     */
     public static fromString(str: string): Kami {
         const kami = new Kami();
 
@@ -37,6 +43,14 @@ export default class Kami {
         return kami;
     }
 
+    /**
+     * Creases the Kami as specified. If the crease is invalid, throws an Error.
+     * @param type CreaseType
+     * @param x1 X-coordinate of the first vertex
+     * @param y1 Y-coordinate of the first vertex
+     * @param x2 X-coordinate of the second vertex
+     * @param y2 Y-coordinate of the second vertex
+     */
     public crease(type: string, x1: number, y1: number, x2: number, y2: number) {
         if (!["M", "V", "N"].includes(type)) {
             throw new Error(`Invalid crease type: ${type}`);
@@ -56,6 +70,12 @@ export default class Kami {
         this.creaseHelper(newCrease, this.creases.toList());
     }
 
+    /**
+     * Recursively alters the Kami object to reflect the current state of the Kami after making the
+     * new Crease.
+     * @param newCrease Crease
+     * @param oldCreases Array of the Creases already in the Kami
+     */
     private creaseHelper(newCrease: Crease, oldCreases: Crease[]) {
         const oldCrease = oldCreases.shift();
 
