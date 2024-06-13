@@ -1,12 +1,18 @@
+import { PRECISION } from "@/settings";
+
 /**
- * Returns the GCD of the integers a and b. If a or b is not an integer throws an Error.
- * @param a An integer
- * @param b An integer
+ * Returns the canonically rounded version of x.
+ * @param x A number
  */
-export function gcd(a: number, b: number): number {
-    if (Number.isInteger(a) && Number.isInteger(b)) {
-        return b == 0 ? a : gcd(b, a % b);
-    } else {
-        throw new Error("a and b must be integers.");
-    }
+export function round(x: number): number {
+    return Number(x.toFixed(PRECISION));
+}
+
+/**
+ * Returns true if numbers a and b are approximately equal, false otherwise.
+ * @param a A number
+ * @param b A number
+ */
+export function approxEqual(a: number, b: number): boolean {
+    return round(a - b) === 0;
 }

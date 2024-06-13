@@ -1,5 +1,7 @@
+import { approxEqual, round } from "@/utils/math";
 import Vector from "../Vector";
 import Vertex from "../Vertex";
+import { listKey } from "@/utils/string";
 
 export type CreaseType = "M" | "V" | "N";
 
@@ -11,6 +13,8 @@ export default class Crease {
     vertex2: Vertex;
     type: CreaseType;
     vector: Vector;
+    key: string;
+    private length: number;
 
     /**
      * Initializes a Crease object between two distinct Vertexes with the given type. If the given
@@ -19,7 +23,7 @@ export default class Crease {
      * @param vertex2 Vertex
      * @param type CreaseType
      */
-    constructor(vertex1: Vertex, vertex2: Vertex, type: CreaseType) {
+    constructor(type: CreaseType, vertex1: Vertex, vertex2: Vertex) {
         if (vertex1.equals(vertex2)) throw new Error("Creases need two distinct Vertexes.");
         else if (vertex1.compareTo(vertex2) > 0) {
             this.vertex2 = vertex1;
@@ -31,6 +35,8 @@ export default class Crease {
 
         this.type = type;
         this.vector = Vector.fromVertexes(this.vertex1, this.vertex2);
+        this.key = listKey(vertex1.key, vertex2.key);
+        this.length = this.vertex1.distance(this.vertex2);
     }
 
     /**
@@ -44,10 +50,79 @@ export default class Crease {
     }
 
     /**
-     * Returns True if this and the other Crease are equal, false otherwise.
+     * Returns true if this and the other Crease are equal, false otherwise.
      * @param other Crease
      */
     public equals(other: Crease): boolean {
         return this.compareTo(other) === 0;
+    }
+
+    /**
+     * Returns true if this Crease contains the given Vertex or Crease.
+     * @param other Vertex or Crease
+     */
+    public contains(other: Vertex | Crease): boolean {
+        if (other instanceof Vertex) {
+            const dist1 = this.vertex1.distance(other);
+            const dist2 = this.vertex2.distance(other);
+
+            return approxEqual(dist1 + dist2, this.length);
+        } else {
+            return this.contains(other.vertex1) && this.contains(other.vertex2);
+        }
+    }
+
+    /**
+     * Returns true if this Crease overlaps the other Crease.
+     * @param other Crease
+     */
+    public overlaps(other: Crease): boolean {
+        return (other.contains(this.vertex1) || other.contains(this.vertex2)) 
+            && this.isParallelTo(other);
+    }
+
+    /**
+     * Returns true if this and the other Crease are parallel, false otherwise.
+     * @param other Crease
+     */
+    public isParallelTo(other: Crease): boolean {
+        return this.vector.isParallelTo(other.vector);
+    }
+
+    /**
+     * Returns the Vertex intersection of this and the other Crease. If there is not intersection,
+     * returns undefined. Creases must actually intersect (no "touching") for there to be an actual
+     * intersection.
+     * @param other Crease
+     */
+    public getIntersectionWith(other: Crease): Vertex | undefined {
+        if (this.isParallelTo(other)) return;
+
+        const dx = other.vertex1.x - this.vertex1.x;
+        const dy = other.vertex1.y - this.vertex1.y;
+        const det = this.vector.x * other.vector.y - this.vector.y * other.vector.x;
+
+        const t = (this.vector.y * dx - this.vector.x * dy) / det;
+        const s = (other.vector.x * dy - other.vector.y * dx) / det;
+
+        if (round(Math.min(t, s)) > 0 && round(Math.max(t, s)) < 1) {
+            return this.vertex1.translate(this.vector.scale(t));
+        }
+    }
+
+    /**
+     * Splits this Crease on the given Vertex and returns the resulting Creases. If the Vertex is
+     * not on the Crease, throws an Error.
+     * @param vertex Vertex on the Crease
+     */
+    public split(vertex: Vertex): [Crease, Crease] {
+        if (!this.contains(vertex)) {
+            throw new Error("Given vertex is not on Crease");
+        }
+
+        return [
+            new Crease(this.type, this.vertex1, vertex),
+            new Crease(this.type, vertex, this.vertex2)
+        ];
     }
 }

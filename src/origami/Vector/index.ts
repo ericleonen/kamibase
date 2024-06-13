@@ -1,3 +1,4 @@
+import { approxEqual } from "@/utils/math";
 import Vertex from "../Vertex";
 
 /**
@@ -40,5 +41,24 @@ export default class Vector {
      */
     public subtract(other: Vector) {
         return new Vector(this.x - other.x, this.y - other.y);
+    }
+
+    /**
+     * Returns this Vector scaled by the given constant.
+     * @param c A number
+     */
+    public scale(c: number) {
+        return new Vector(this.x * c, this.y * c);
+    }
+
+    /**
+     * Returns true if this and the other Vector are parallel, false otherwise.
+     * @param other Vector
+     */
+    public isParallelTo(other: Vector) {
+        return approxEqual(
+            this.x * other.y,
+            other.x * this.y
+        );
     }
 }

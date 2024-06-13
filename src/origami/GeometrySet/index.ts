@@ -1,0 +1,94 @@
+import Crease from "../Crease";
+import Vertex from "../Vertex";
+
+/**
+ * Represents a set of Geometry objects: Creases or Vertexes.
+ */
+export default class GeometrySet<T extends Crease | Vertex> {
+    private map: { [key: string]: T };
+
+    /**
+     * Initializes a GeometrySet object with an optional list of items.
+     * @param items Optional list of Creases or Vertexes
+     */
+    constructor(items: T[] = []) {
+        this.map = {};
+
+        for (let item of items) {
+            this.map[item.key] = item;
+        }
+    }
+
+    /**
+     * Returns true if this GeometrySet has the item, false otherwise.
+     * @param item
+     */
+    contains(item: T): boolean {
+        return item.key in this.map;
+    }
+
+    /**
+     * Adds all of the given items to the GeometrySet.
+     * @param items Array of items to add.
+     */
+    add(...items: T[]) {
+        items.forEach(item => {
+            if (!this.contains(item)) {
+                this.map[item.key] = item; 
+            }
+        });
+    }
+
+    /**
+     * Removes item from the GeometrySet. If the item is not in the GeometrySet, does nothing.
+     * @param item 
+     */
+    remove(item: T) {
+        if (this.contains(item)) {
+            delete this.map[item.key];
+        }
+    }
+
+    /**
+     * Retrieves the equivalent item from the GeometrySet. If the item is not in the GeometrySet,
+     * adds the item and returns it.
+     * @param item 
+     */
+    get(item: T) {
+        if (this.contains(item)) {
+            return this.map[item.key];
+        } else {
+            this.add(item);
+            return item;
+        }
+    }
+
+    /**
+     * Returns an optionally sorted loopable array of this GeometrySet's items.
+     * @param sorted Optional boolean that determines if the returned list is sorted
+     */
+    toList(sorted: boolean = false): T[] {
+        const list = Object.values(this.map);
+
+        if (sorted) {
+            return list.toSorted((left: T, right: T) => {
+                if (left instanceof Vertex && right instanceof Vertex) {
+                    return left.compareTo(right);
+                } else if (left instanceof Crease && right instanceof Crease) {
+                    return left.compareTo(right);
+                } else {
+                    throw new Error("Cannot have both Vertexes and Creases in GeometrySet");
+                }
+            });
+        } else {
+            return list;
+        }
+    }
+
+    /**
+     * Returns a shallow copy of this GeometrySet.
+     */
+    copy(): GeometrySet<T> {
+        return new GeometrySet<T>(this.toList());
+    }
+}

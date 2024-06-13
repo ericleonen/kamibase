@@ -1,11 +1,12 @@
+import { listKey } from "@/utils/string";
+import Point from "../Point";
 import Vector from "../Vector";
 
 /**
  * Represents a physical point on the Kami.
  */
-export default class Vertex {
-    x: number;
-    y: number;
+export default class Vertex extends Point {
+    key: string;
 
     /**
      * Initializes a Vertex a distance x from the top and y from the left.
@@ -13,29 +14,15 @@ export default class Vertex {
      * @param y number
      */
     constructor(x: number, y: number) {
-        this.x = x;
-        this.y = y;
+        super(x, y);
+        this.key = listKey(x, y);
     }
 
     /**
-     * Returns a positive number if this Vertex is greater than the other Vertex, 0 if they are
-     * equal, and a negative number otherwise. Vertexes are compared by x values first followed by
-     * the y values.
-     * @param other Vertex
+     * Copies this Vertex and translates it by the given vector. Returns the new Vertex.
+     * @param vector Vector
      */
-    public compareTo(other: Vertex): number {
-        return this.x - other.x || this.y - other.y;
-    }
-
-    /**
-     * Returns True if this and the other Vertex are equal, false otherwise.
-     * @param other Vertex
-     */
-    public equals(other: Vertex): boolean {
-        return this.compareTo(other) === 0;
-    }
-
-    public toVector(): Vector {
-        return new Vector(this.x, this.y);
+    public translate(vector: Vector): Vertex {
+        return new Vertex(this.x + vector.x, this.y + vector.y);
     }
 }
