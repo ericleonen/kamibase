@@ -4,15 +4,19 @@ import Vertex from '../Vertex';
 import Crease from '../Crease';
 
 test("Kami.fromString() reads waterbomb.kami", () => {
-    try {
-        const kamiString = fs.readFileSync("public/waterbomb.kami", "utf8");
-        const kami = Kami.fromString(kamiString);
+    let kamiString = "";
 
-        expect(kami.vertexes.length()).toBe(7);
-        expect(kami.creases.length()).toBe(6);
+    try {
+        kamiString = fs.readFileSync("public/waterbomb.kami", "utf8");
     } catch (err) {
         console.error(err);
+        fail();
     }
+
+    const kami = Kami.fromString(kamiString);
+
+    expect(kami.vertexes.length()).toBe(7);
+    expect(kami.creases.length()).toBe(6);
 });
 
 test("crease() handles intersecting creases", () => {
@@ -55,4 +59,38 @@ test("crease() handles new crease containing an old crease", () => {
 
     expect(kami.creases.length()).toBe(2);
     expect(kami.creases.contains(expectedCrease1, expectedCrease2)).toBe(true);
-})
+});
+
+test("crease() handles new crease overlapping old crease", () => {
+    const kami = new Kami();
+    kami.crease("M", 0, 0, 0.5, 0.5);
+    kami.crease("V", 0.25, 0.25, 0.75, 0.75);
+
+    const vertex1 = new Vertex(0, 0);
+    const vertex2 = new Vertex(0.25, 0.25);
+    const vertex3 = new Vertex(0.5, 0.5);
+    const vertex4 = new Vertex(0.75, 0.75);
+
+    const expectedCrease1 = new Crease("M", vertex1, vertex2);
+    const expectedCrease2 = new Crease("V", vertex2, vertex3);
+    const expectedCrease3 = new Crease("V", vertex3, vertex4);
+
+    expect(kami.creases.length()).toBe(3);
+    expect(kami.creases.contains(
+        expectedCrease1,
+        expectedCrease2,
+        expectedCrease3
+    )).toBe(true);
+
+    kami.crease("M", 0.5, 0.5, 1, 1);
+
+    const vertex5 = new Vertex(1, 1);
+
+    expectedCrease3.type = "M";
+    const expectedCrease4 = new Crease("M", vertex4, vertex5);
+
+    expect(kami.creases.contains(
+        expectedCrease3,
+        expectedCrease4
+    )).toBe(true);
+});

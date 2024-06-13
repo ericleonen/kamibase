@@ -31,7 +31,6 @@ export default class Kami {
 
             const type = creaseElems.shift() as string;
             const [x1, y1, x2, y2]: number[] = creaseElems.map(numStr => Number(numStr));
-
             kami.crease(type, x1, y1, x2, y2);
         }
 
@@ -57,14 +56,6 @@ export default class Kami {
         this.creaseHelper(newCrease, this.creases.toList());
     }
 
-    private pinch(type: CreaseType, vertex1: Vertex, vertex2: Vertex) {
-        if (!vertex1.equals(vertex2)) {
-            this.creases.add(
-                new Crease(type, vertex1, vertex2)
-            );
-        }
-    }
-
     private creaseHelper(newCrease: Crease, oldCreases: Crease[]) {
         const oldCrease = oldCreases.shift();
 
@@ -86,9 +77,15 @@ export default class Kami {
         } else if (oldCrease.contains(newCrease)) {
             this.creases.remove(oldCrease);
 
-            this.pinch(oldCrease.type, oldCrease.vertex1, newCrease.vertex2);
+            if (!oldCrease.vertex1.equals(newCrease.vertex1)) {
+                this.creases.add(new Crease(oldCrease.type, oldCrease.vertex1, newCrease.vertex1));
+            }
+
             this.creases.add(newCrease);
-            this.pinch(oldCrease.type, newCrease.vertex2, oldCrease.vertex2);
+
+            if (!newCrease.vertex2.equals(oldCrease.vertex2)) {
+                this.creases.add(new Crease(oldCrease.type, newCrease.vertex2, oldCrease.vertex2));
+            }
         } else if (newCrease.contains(oldCrease)) {
             oldCrease.type = newCrease.type;
 
@@ -106,7 +103,30 @@ export default class Kami {
                 );
             }
         } else if (newCrease.overlaps(oldCrease)) {
-
+            if (newCrease.contains(oldCrease.vertex1)) {
+                this.creases.remove(oldCrease);
+                const [newCrease1, newCrease2] = newCrease.split(oldCrease.vertex1);
+                
+                this.creaseHelper(newCrease1, oldCreases);
+    
+                this.creases.add(
+                    newCrease2,
+                    new Crease(oldCrease.type, newCrease.vertex2, oldCrease.vertex2)
+                );
+    
+            } else if (newCrease.contains(oldCrease.vertex2)) {
+                this.creases.remove(oldCrease);
+                const [newCrease1, newCrease2] = newCrease.split(oldCrease.vertex2);
+    
+                this.creases.add(
+                    new Crease(oldCrease.type, oldCrease.vertex1, newCrease.vertex1),
+                    newCrease1
+                );
+    
+                this.creaseHelper(newCrease2, oldCreases);
+            }
+        } else {
+            this.creaseHelper(newCrease, oldCreases);
         }
 
         oldCreases.unshift(oldCrease);

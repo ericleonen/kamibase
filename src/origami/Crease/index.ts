@@ -77,8 +77,10 @@ export default class Crease {
      * @param other Crease
      */
     public overlaps(other: Crease): boolean {
-        return (other.contains(this.vertex1) || other.contains(this.vertex2)) 
-            && this.isParallelTo(other);
+        return (
+                (other.contains(this.vertex1) && !other.vertex2.equals(this.vertex1)) 
+                || (other.contains(this.vertex2) && !other.vertex1.equals(this.vertex2))
+            ) && this.isParallelTo(other);
     }
 
     /**

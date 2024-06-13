@@ -17,8 +17,10 @@ export default class GeometrySet<T extends Crease | Vertex> {
         this.size = 0;
 
         for (let item of items) {
-            this.map[item.key] = item;
-            this.size += 1;
+            if (!(item.key in this.map)) {
+                this.map[item.key] = item;
+                this.size += 1;
+            }
         }
     }
 
@@ -27,7 +29,13 @@ export default class GeometrySet<T extends Crease | Vertex> {
      * @param items Array of items
      */
     contains(...items: T[]): boolean {
-        return items.every(item => item.key in this.map);
+        return items.every(item => {
+            if (item instanceof Crease) {
+                return item.key in this.map && (this.map[item.key] as Crease).type == item.type;
+            } else {
+                return item.key in this.map;
+            }
+        });
     }
 
     /**
