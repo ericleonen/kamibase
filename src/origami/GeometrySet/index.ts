@@ -6,6 +6,7 @@ import Vertex from "../Vertex";
  */
 export default class GeometrySet<T extends Crease | Vertex> {
     private map: { [key: string]: T };
+    private size: number;
 
     /**
      * Initializes a GeometrySet object with an optional list of items.
@@ -13,9 +14,11 @@ export default class GeometrySet<T extends Crease | Vertex> {
      */
     constructor(items: T[] = []) {
         this.map = {};
+        this.size = 0;
 
         for (let item of items) {
             this.map[item.key] = item;
+            this.size += 1;
         }
     }
 
@@ -35,6 +38,7 @@ export default class GeometrySet<T extends Crease | Vertex> {
         items.forEach(item => {
             if (!this.contains(item)) {
                 this.map[item.key] = item; 
+                this.size += 1;
             }
         });
     }
@@ -46,6 +50,7 @@ export default class GeometrySet<T extends Crease | Vertex> {
     remove(item: T) {
         if (this.contains(item)) {
             delete this.map[item.key];
+            this.size -= 1;
         }
     }
 
@@ -90,5 +95,12 @@ export default class GeometrySet<T extends Crease | Vertex> {
      */
     copy(): GeometrySet<T> {
         return new GeometrySet<T>(this.toList());
+    }
+
+    /**
+     * Returns the number of elements stored in this GeometrySet.
+     */
+    length(): number {
+        return this.size;
     }
 }

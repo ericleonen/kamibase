@@ -1,6 +1,5 @@
 import Crease, { CreaseType } from "../Crease";
 import Vertex from "../Vertex";
-import { round } from "@/utils/math";
 import GeometrySet from "../GeometrySet";
 
 /**
