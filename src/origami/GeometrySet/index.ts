@@ -23,16 +23,16 @@ export default class GeometrySet<T extends Crease | Vertex> {
     }
 
     /**
-     * Returns true if this GeometrySet has the item, false otherwise.
-     * @param item
+     * Returns true if this GeometrySet has all items, false otherwise.
+     * @param items Array of items
      */
-    contains(item: T): boolean {
-        return item.key in this.map;
+    contains(...items: T[]): boolean {
+        return items.every(item => item.key in this.map);
     }
 
     /**
      * Adds all of the given items to the GeometrySet.
-     * @param items Array of items to add.
+     * @param items Array of items
      */
     add(...items: T[]) {
         items.forEach(item => {

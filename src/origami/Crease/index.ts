@@ -102,11 +102,17 @@ export default class Crease {
         const dy = other.vertex1.y - this.vertex1.y;
         const det = this.vector.x * other.vector.y - this.vector.y * other.vector.x;
 
+        const s = (other.vector.y * dx - other.vector.x * dy) / det;
         const t = (this.vector.y * dx - this.vector.x * dy) / det;
-        const s = (other.vector.x * dy - other.vector.y * dx) / det;
 
-        if (round(Math.min(t, s)) > 0 && round(Math.max(t, s)) < 1) {
-            return this.vertex1.translate(this.vector.scale(t));
+        if (
+            (approxEqual(t, 0) || approxEqual(t, 1))
+            && (approxEqual(s, 0) || approxEqual(s, 1))
+        ) {
+            // Ignore vertex to vertex intersections
+            return;
+        } else if (round(Math.min(t, s)) >= 0 && round(1 - Math.max(t, s)) >= 0) {
+            return this.vertex1.translate(this.vector.scale(s));
         }
     }
 
@@ -115,14 +121,17 @@ export default class Crease {
      * not on the Crease, throws an Error.
      * @param vertex Vertex on the Crease
      */
-    public split(vertex: Vertex): [Crease, Crease] {
+    public split(vertex: Vertex): Crease[] {
         if (!this.contains(vertex)) {
             throw new Error("Given vertex is not on Crease");
         }
-
-        return [
-            new Crease(this.type, this.vertex1, vertex),
-            new Crease(this.type, vertex, this.vertex2)
-        ];
+        if (vertex.equals(this.vertex1) || vertex.equals(this.vertex2)) {
+            return [this];
+        } else {
+            return [
+                new Crease(this.type, this.vertex1, vertex),
+                new Crease(this.type, vertex, this.vertex2)
+            ];
+        }
     }
 }

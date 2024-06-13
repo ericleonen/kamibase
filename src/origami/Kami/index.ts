@@ -81,15 +81,10 @@ export default class Kami {
             this.creases.remove(oldCrease);
             this.creases.add(...oldCrease.split(intersection));
 
-            const [newCrease1, newCrease2] = newCrease.split(intersection);
-            this.creaseHelper(newCrease1, oldCreases);
-            this.creaseHelper(newCrease2, oldCreases);
+            newCrease.split(intersection)
+                .forEach(splitCrease => this.creaseHelper(splitCrease, oldCreases));
         } else if (oldCrease.contains(newCrease)) {
             this.creases.remove(oldCrease);
-
-            if (!oldCrease.vertex1.equals(newCrease.vertex1)) {
-                this.creases.add(new Crease(oldCrease.type, oldCrease.vertex1, newCrease.vertex1));
-            }
 
             this.pinch(oldCrease.type, oldCrease.vertex1, newCrease.vertex2);
             this.creases.add(newCrease);
@@ -97,19 +92,23 @@ export default class Kami {
         } else if (newCrease.contains(oldCrease)) {
             oldCrease.type = newCrease.type;
 
-            this.creaseHelper(
-                new Crease(newCrease.type, newCrease.vertex1, oldCrease.vertex1),
-                oldCreases
-            );
-            this.creaseHelper(
-                new Crease(newCrease.type, oldCrease.vertex2, newCrease.vertex2),
-                oldCreases
-            );
+            if (!newCrease.vertex1.equals(oldCrease.vertex1)) {
+                this.creaseHelper(
+                    new Crease(newCrease.type, newCrease.vertex1, oldCrease.vertex1),
+                    oldCreases
+                );
+            }
+
+            if (!oldCrease.vertex2.equals(newCrease.vertex2)) {
+                this.creaseHelper(
+                    new Crease(newCrease.type, oldCrease.vertex2, newCrease.vertex2),
+                    oldCreases
+                );
+            }
         } else if (newCrease.overlaps(oldCrease)) {
 
         }
 
-        this.creaseHelper(newCrease, oldCreases);
         oldCreases.unshift(oldCrease);
     }
 }
