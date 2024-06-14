@@ -61,4 +61,21 @@ export default class Vector {
             other.x * this.y
         );
     }
+
+    /**
+     * Returns a positive number if this Vector is greater than the other Vector, a negative number
+     * otherwise.
+     * @param other Vector
+     */
+    public compareTo(other: Vector): number {
+        return this.x - other.x || this.y - other.y;
+    }
+
+    /**
+     * Returns true if this and the other Vector are equal, false otherwise.
+     * @param other Vector
+     */
+    public equals(other: Vector): boolean {
+        return approxEqual(this.compareTo(other), 0);
+    }
 }

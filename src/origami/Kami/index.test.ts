@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import Kami from '.';
 import Vertex from '../Vertex';
 import Crease from '../Crease';
+import { VERTEXES } from '../common';
 
 test("Kami.fromString() reads waterbomb.kami", () => {
     let kamiString = "";
@@ -24,9 +25,7 @@ test("crease() handles intersecting creases", () => {
     kami.crease("M", 0, 0, 1, 1);
     kami.crease("V", 1, 0, 0, 1);
 
-    const expectedIntersection = new Vertex(0.5, 0.5);
-
-    expect(kami.vertexes.contains(expectedIntersection)).toBe(true);
+    expect(kami.vertexes.contains(VERTEXES["center"])).toBeTruthy();
 });
 
 test("crease() handles vertex and line intersection", () => {
@@ -42,11 +41,11 @@ test("crease() handles old crease containing new crease", () => {
     kami.crease("V", 0, 0, 1, 0);
     kami.crease("M", 0, 0, 0.5, 0);
 
-    const expectedCrease1 = new Crease("M", new Vertex(0, 0), new Vertex(0.5, 0));
-    const expectedCrease2 = new Crease("V", new Vertex(0.5, 0), new Vertex(1, 0));
+    const expectedCrease1 = new Crease("M", VERTEXES["top left"], new Vertex(0.5, 0));
+    const expectedCrease2 = new Crease("V", new Vertex(0.5, 0), VERTEXES["top right"]);
 
     expect(kami.creases.length()).toBe(2);
-    expect(kami.creases.contains(expectedCrease1, expectedCrease2)).toBe(true);
+    expect(kami.creases.contains(expectedCrease1, expectedCrease2)).toBeTruthy();
 });
 
 test("crease() handles new crease containing an old crease", () => {
@@ -54,11 +53,11 @@ test("crease() handles new crease containing an old crease", () => {
     kami.crease("M", 0, 0, 0.5, 0);
     kami.crease("V", 0, 0, 1, 0);
 
-    const expectedCrease1 = new Crease("V", new Vertex(0, 0), new Vertex(0.5, 0));
-    const expectedCrease2 = new Crease("V", new Vertex(0.5, 0), new Vertex(1, 0));
+    const expectedCrease1 = new Crease("V", VERTEXES["top left"], new Vertex(0.5, 0));
+    const expectedCrease2 = new Crease("V", new Vertex(0.5, 0), VERTEXES["top right"]);
 
     expect(kami.creases.length()).toBe(2);
-    expect(kami.creases.contains(expectedCrease1, expectedCrease2)).toBe(true);
+    expect(kami.creases.contains(expectedCrease1, expectedCrease2)).toBeTruthy();
 });
 
 test("crease() handles new crease overlapping old crease", () => {
@@ -66,9 +65,9 @@ test("crease() handles new crease overlapping old crease", () => {
     kami.crease("M", 0, 0, 0.5, 0.5);
     kami.crease("V", 0.25, 0.25, 0.75, 0.75);
 
-    const vertex1 = new Vertex(0, 0);
+    const vertex1 = VERTEXES["top left"]
     const vertex2 = new Vertex(0.25, 0.25);
-    const vertex3 = new Vertex(0.5, 0.5);
+    const vertex3 = VERTEXES["center"]
     const vertex4 = new Vertex(0.75, 0.75);
 
     const expectedCrease1 = new Crease("M", vertex1, vertex2);
@@ -80,11 +79,11 @@ test("crease() handles new crease overlapping old crease", () => {
         expectedCrease1,
         expectedCrease2,
         expectedCrease3
-    )).toBe(true);
+    )).toBeTruthy();
 
     kami.crease("M", 0.5, 0.5, 1, 1);
 
-    const vertex5 = new Vertex(1, 1);
+    const vertex5 = VERTEXES["bottom right"];
 
     expectedCrease3 = new Crease("M", vertex3, vertex4);
     const expectedCrease4 = new Crease("M", vertex4, vertex5);
@@ -92,5 +91,5 @@ test("crease() handles new crease overlapping old crease", () => {
     expect(kami.creases.contains(
         expectedCrease3,
         expectedCrease4
-    )).toBe(true);
+    )).toBeTruthy();
 });

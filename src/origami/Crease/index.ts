@@ -45,7 +45,8 @@ export default class Crease implements Geometry {
      * @param other Crease
      */
     public compareTo(other: Crease): number {
-        return this.vertex1.compareTo(other.vertex1) || this.vertex2.compareTo(other.vertex2);
+        return round(this.vertex1.compareTo(other.vertex1))
+            || round(this.vertex2.compareTo(other.vertex2));
     }
 
     /**
