@@ -23,12 +23,15 @@ export default class Kami {
      * Returns the Kami object from reading the valid KamiString. If the KamiString is in an
      * invalid format, throws an Error.
      * @param str Valid KamiString. Each line represents a crease with format:
-     *            "<type> <x1> <y1> <x2> <y2"
+     *            "type x1 y1 x2 y2"
      */
     public static fromString(str: string): Kami {
         const kami = new Kami();
 
         for (let creaseStr of str.split("\n")) {
+            creaseStr = creaseStr.trim();
+            if (creaseStr.length === 0) continue;
+
             const creaseElems = creaseStr.split(" ");
 
             if (creaseElems.length !== 5) {
@@ -41,6 +44,15 @@ export default class Kami {
         }
 
         return kami;
+    }
+
+    /**
+     * Returns the String version of this Kami as a KamiString.
+     */
+    public toString(): string {
+        return this.creases.toList(true)
+            .map(crease => crease.toString())
+            .join("\n");
     }
 
     /**

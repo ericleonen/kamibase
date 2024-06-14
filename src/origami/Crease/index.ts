@@ -143,4 +143,11 @@ export default class Crease implements Geometry {
     public key(): string {
         return listKey(this.vertex1.key(), this.vertex2.key());
     }
+
+    /**
+     * Returns the String version of this Crease.
+     */
+    public toString(): string {
+        return listKey(this.type, this.key());
+    }
 }

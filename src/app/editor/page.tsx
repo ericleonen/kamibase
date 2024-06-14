@@ -1,6 +1,6 @@
 "use client"
 
-import KamiSection from "./_components/KamiSection";
+import KamiSection from "./KamiSection";
 import LeftSection from "./_components/LeftSection";
 import RightSection from "./_components/RightSection";
 import TopBar from "./_components/TopBar";
