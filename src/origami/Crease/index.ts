@@ -10,11 +10,11 @@ export type CreaseType = "M" | "V" | "N";
  * Represents a Crease between to Vertexes.
  */
 export default class Crease implements Geometry {
-    vertex1: Vertex;
-    vertex2: Vertex;
-    type: CreaseType;
-    vector: Vector;
-    private length: number;
+    readonly vertex1: Vertex;
+    readonly vertex2: Vertex;
+    readonly type: CreaseType;
+    readonly vector: Vector;
+    readonly length: number;
 
     /**
      * Initializes a Crease object between two distinct Vertexes with the given type. If the given

@@ -5,8 +5,8 @@ import Vector from "../Vector";
  * Represents a physical point in space.
  */
 export default class Point {
-    x: number;
-    y: number;
+    readonly x: number;
+    readonly y: number;
 
     /**
      * Initializes a Vertex a distance x from the top and y from the left.

@@ -73,7 +73,7 @@ test("crease() handles new crease overlapping old crease", () => {
 
     const expectedCrease1 = new Crease("M", vertex1, vertex2);
     const expectedCrease2 = new Crease("V", vertex2, vertex3);
-    const expectedCrease3 = new Crease("V", vertex3, vertex4);
+    let expectedCrease3 = new Crease("V", vertex3, vertex4);
 
     expect(kami.creases.length()).toBe(3);
     expect(kami.creases.contains(
@@ -86,7 +86,7 @@ test("crease() handles new crease overlapping old crease", () => {
 
     const vertex5 = new Vertex(1, 1);
 
-    expectedCrease3.type = "M";
+    expectedCrease3 = new Crease("M", vertex3, vertex4);
     const expectedCrease4 = new Crease("M", vertex4, vertex5);
 
     expect(kami.creases.contains(

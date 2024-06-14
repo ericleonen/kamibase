@@ -6,8 +6,8 @@ import GeometrySet from "../GeometrySet";
  * Represents a Kami (origami paper) with all of its Vertexes and Creases.
  */
 export default class Kami {
-    vertexes: GeometrySet<Vertex>;
-    creases: GeometrySet<Crease>
+    readonly vertexes: GeometrySet<Vertex>;
+    readonly creases: GeometrySet<Crease>
 
     /**
      * Initializes a Kami object with (optionally) preset Vertexes and Creases.
@@ -63,7 +63,7 @@ export default class Kami {
         );
 
         this.vertexes.add(
-            newCrease.vertex1, 
+            newCrease.vertex1,
             newCrease.vertex2
         );
 
@@ -107,7 +107,9 @@ export default class Kami {
                 this.creases.add(new Crease(oldCrease.type, newCrease.vertex2, oldCrease.vertex2));
             }
         } else if (newCrease.contains(oldCrease)) {
-            oldCrease.type = newCrease.type;
+            this.creases.remove(oldCrease);
+
+            this.creases.add(new Crease(newCrease.type, oldCrease.vertex1, oldCrease.vertex2));
 
             if (!newCrease.vertex1.equals(oldCrease.vertex1)) {
                 this.creaseHelper(
@@ -123,6 +125,7 @@ export default class Kami {
                 );
             }
         } else if (newCrease.overlaps(oldCrease)) {
+
             if (newCrease.contains(oldCrease.vertex1)) {
                 this.creases.remove(oldCrease);
                 const [newCrease1, newCrease2] = newCrease.split(oldCrease.vertex1);

@@ -5,8 +5,8 @@ import Vertex from "../Vertex";
  * Represents a Vector object with vector algrebraic operations.
  */
 export default class Vector {
-    x: number;
-    y: number;
+    readonly x: number;
+    readonly y: number;
 
     /**
      * Initializes a Vector object <x, y>
