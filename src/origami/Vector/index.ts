@@ -1,4 +1,4 @@
-import { approxEqual } from "@/utils/math";
+import { approxEqual, round } from "@/utils/math";
 import Vertex from "../Vertex";
 
 /**
@@ -68,7 +68,7 @@ export default class Vector {
      * @param other Vector
      */
     public compareTo(other: Vector): number {
-        return this.x - other.x || this.y - other.y;
+        return round(this.x - other.x) || round(this.y - other.y);
     }
 
     /**
@@ -76,6 +76,6 @@ export default class Vector {
      * @param other Vector
      */
     public equals(other: Vector): boolean {
-        return approxEqual(this.compareTo(other), 0);
+        return this.compareTo(other) === 0;
     }
 }
