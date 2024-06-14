@@ -2,18 +2,18 @@ import { approxEqual, round } from "@/utils/math";
 import Vector from "../Vector";
 import Vertex from "../Vertex";
 import { listKey } from "@/utils/string";
+import Geometry from "../Geometry";
 
 export type CreaseType = "M" | "V" | "N";
 
 /**
  * Represents a Crease between to Vertexes.
  */
-export default class Crease {
+export default class Crease implements Geometry {
     vertex1: Vertex;
     vertex2: Vertex;
     type: CreaseType;
     vector: Vector;
-    key: string;
     private length: number;
 
     /**
@@ -35,7 +35,6 @@ export default class Crease {
 
         this.type = type;
         this.vector = Vector.fromVertexes(this.vertex1, this.vertex2);
-        this.key = listKey(vertex1.key, vertex2.key);
         this.length = this.vertex1.distance(this.vertex2);
     }
 
@@ -135,5 +134,12 @@ export default class Crease {
                 new Crease(this.type, vertex, this.vertex2)
             ];
         }
+    }
+
+    /**
+     * Returns the GeometryKey of this Crease.
+     */
+    public key(): string {
+        return listKey(this.vertex1.key(), this.vertex2.key());
     }
 }

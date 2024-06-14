@@ -1,10 +1,11 @@
 import Crease from "../Crease";
+import Geometry from "../Geometry";
 import Vertex from "../Vertex";
 
 /**
  * Represents a set of Geometry objects: Creases or Vertexes.
  */
-export default class GeometrySet<T extends Crease | Vertex> {
+export default class GeometrySet<T extends Geometry> {
     private map: { [key: string]: T };
     private size: number;
 
@@ -17,8 +18,8 @@ export default class GeometrySet<T extends Crease | Vertex> {
         this.size = 0;
 
         for (let item of items) {
-            if (!(item.key in this.map)) {
-                this.map[item.key] = item;
+            if (!(item.key() in this.map)) {
+                this.map[item.key()] = item;
                 this.size += 1;
             }
         }
@@ -31,9 +32,10 @@ export default class GeometrySet<T extends Crease | Vertex> {
     contains(...items: T[]): boolean {
         return items.every(item => {
             if (item instanceof Crease) {
-                return item.key in this.map && (this.map[item.key] as Crease).type == item.type;
+                return item.key() in this.map
+                    && (this.map[item.key()] as unknown as Crease).type == item.type;
             } else {
-                return item.key in this.map;
+                return item.key() in this.map;
             }
         });
     }
@@ -45,7 +47,7 @@ export default class GeometrySet<T extends Crease | Vertex> {
     add(...items: T[]) {
         items.forEach(item => {
             if (!this.contains(item)) {
-                this.map[item.key] = item; 
+                this.map[item.key()] = item; 
                 this.size += 1;
             }
         });
@@ -57,7 +59,7 @@ export default class GeometrySet<T extends Crease | Vertex> {
      */
     remove(item: T) {
         if (this.contains(item)) {
-            delete this.map[item.key];
+            delete this.map[item.key()];
             this.size -= 1;
         }
     }
@@ -69,7 +71,7 @@ export default class GeometrySet<T extends Crease | Vertex> {
      */
     get(item: T) {
         if (this.contains(item)) {
-            return this.map[item.key];
+            return this.map[item.key()];
         } else {
             this.add(item);
             return item;
