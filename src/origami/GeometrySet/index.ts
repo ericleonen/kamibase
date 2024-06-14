@@ -44,7 +44,7 @@ export default class GeometrySet<T extends Geometry> {
      * Adds all of the given items to the GeometrySet.
      * @param items Array of items
      */
-    add(...items: T[]) {
+    public add(...items: T[]) {
         items.forEach(item => {
             if (!this.contains(item)) {
                 this.map[item.key()] = item; 
@@ -98,13 +98,6 @@ export default class GeometrySet<T extends Geometry> {
         } else {
             return list;
         }
-    }
-
-    /**
-     * Returns a shallow copy of this GeometrySet.
-     */
-    copy(): GeometrySet<T> {
-        return new GeometrySet<T>(this.toList());
     }
 
     /**
