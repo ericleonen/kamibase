@@ -1,5 +1,6 @@
 import Kami from "@/origami/Kami";
 import { useRender } from "./render";
+import { KAMI_PIXELS } from "@/settings";
 
 export default function KamiSection() {
     const kami = Kami.fromString(`
@@ -17,8 +18,8 @@ export default function KamiSection() {
         <div className="flex-grow flex justify-center items-center">
             <canvas
                 ref={kamiRef}
-                height={1000}
-                width={1000}
+                height={KAMI_PIXELS}
+                width={KAMI_PIXELS}
                 className="h-[500px] w-[500px] border-[3px] border-theme-black"
             />
         </div>

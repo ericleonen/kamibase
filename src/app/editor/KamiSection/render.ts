@@ -1,4 +1,5 @@
 import Kami from "@/origami/Kami";
+import { KAMI_PIXELS } from "@/settings";
 import { RefObject, useRef, useEffect } from "react";
 
 type RenderData = {
@@ -46,8 +47,8 @@ export function render(data: RenderData, canvas: HTMLCanvasElement, context: Can
             crease.type === "V" ? "blue" :
             "gray";
 
-        context.moveTo(vertex1.x * 1000, vertex1.y * 1000);
-        context.lineTo(vertex2.x * 1000, vertex2.y * 1000);
+        context.moveTo(vertex1.x * KAMI_PIXELS, vertex1.y * KAMI_PIXELS);
+        context.lineTo(vertex2.x * KAMI_PIXELS, vertex2.y * KAMI_PIXELS);
         context.stroke();
         context.closePath();
     });
