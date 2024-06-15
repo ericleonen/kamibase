@@ -50,8 +50,10 @@ export function render(data: RenderData, canvas: HTMLCanvasElement, context: Can
     });
 
     if (hoveredVertex) drawPoint(hoveredVertex, HOVER_RADIUS * 0.75, context);
+    else if (mousePoint) drawPoint(mousePoint, HOVER_RADIUS * 0.5, context);
+
     if (selectedVertex) drawPoint(selectedVertex, HOVER_RADIUS * 0.5, context);
-    
+
     const draggedPoint = hoveredVertex || mousePoint;
     if (tool !== "E" && selectedVertex && draggedPoint) {
         drawLine(tool as CreaseType, selectedVertex, draggedPoint, context);
