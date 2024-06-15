@@ -1,9 +1,15 @@
 import Kami from "@/origami/Kami";
-import { KAMI_PIXELS } from "@/settings";
+import { HOVER_RADIUS, KAMI_PIXELS } from "@/settings";
 import { RefObject, useRef, useEffect } from "react";
+import { Tool } from "../ToolSection";
+import Vertex from "@/origami/Vertex";
+import { CreaseType } from "@/origami/Crease";
+import Point from "@/origami/Point";
 
 type RenderData = {
     kami: Kami,
+    tool: Tool,
+    hoveredVertex?: Vertex
 }
 
 /**
@@ -12,7 +18,7 @@ type RenderData = {
  * @param data RenderData
  */
 export function useRender(data: RenderData): RefObject<HTMLCanvasElement> {
-    const { kami } = data;
+    const { kami, tool, hoveredVertex } = data;
 
     const kamiRef = useRef<HTMLCanvasElement>(null);
 
@@ -21,7 +27,7 @@ export function useRender(data: RenderData): RefObject<HTMLCanvasElement> {
         const context = canvas && canvas.getContext("2d");
 
         if (context) render(data, canvas, context);
-    }, [kami.toString()]);
+    }, [kami.toString(), tool, hoveredVertex?.key]);
 
     return kamiRef;
 }
@@ -33,23 +39,45 @@ export function useRender(data: RenderData): RefObject<HTMLCanvasElement> {
  * @param context CanvasRenderingContext2D
  */
 export function render(data: RenderData, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
-    const { kami } = data;
+    const { kami, tool, hoveredVertex } = data;
 
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     kami.creases.toList().forEach(crease => {
-        const vertex1 = crease.vertex1;
-        const vertex2 = crease.vertex2;
-
-        context.lineWidth = 2;
-        context.strokeStyle = 
-            crease.type === "M" ? "red" :
-            crease.type === "V" ? "blue" :
-            "gray";
-
-        context.moveTo(vertex1.x * KAMI_PIXELS, vertex1.y * KAMI_PIXELS);
-        context.lineTo(vertex2.x * KAMI_PIXELS, vertex2.y * KAMI_PIXELS);
-        context.stroke();
-        context.closePath();
+        drawLine(crease.type, crease.vertex1, crease.vertex2, context);
     });
+
+    if (hoveredVertex) {
+        context.beginPath();
+        context.arc(
+            hoveredVertex.x * KAMI_PIXELS, 
+            hoveredVertex.y * KAMI_PIXELS, 
+            HOVER_RADIUS * 0.75, 
+            0, 
+            2 * Math.PI
+        );
+        context.fill();
+        context.closePath();
+    }
+
+    context.closePath();
+}
+
+function drawLine(
+    type: CreaseType, 
+    point1: Point, 
+    point2: Point, 
+    context: CanvasRenderingContext2D
+) {
+    context.lineWidth = 2;
+    context.strokeStyle = 
+        type === "M" ? "red" :
+        type === "V" ? "blue" :
+        "gray";
+
+    context.beginPath();
+    context.moveTo(point1.x * KAMI_PIXELS, point1.y * KAMI_PIXELS);
+    context.lineTo(point2.x * KAMI_PIXELS, point2.y * KAMI_PIXELS);
+    context.stroke();
+    context.closePath();
 }

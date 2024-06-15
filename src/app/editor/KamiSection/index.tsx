@@ -1,23 +1,68 @@
 import Kami from "@/origami/Kami";
 import { useRender } from "./render";
-import { KAMI_PIXELS } from "@/settings";
+import { HOVER_RADIUS, KAMI_PIXELS } from "@/settings";
+import { useAtomValue } from "jotai";
+import { toolAtom } from "../page";
+import { useState } from "react";
+import Vertex from "@/origami/Vertex";
+import Point from "@/origami/Point";
+
+const kami = Kami.fromString(`
+    N 0.25 0 0.25 1
+    N 0.5 0 0.5 1
+    N 0.75 0 0.75 1
+    N 0 0.25 1 0.25
+    N 0 0.5 1 0.5
+    N 0 0.75 1 0.75
+`);
 
 export default function KamiSection() {
-    const kami = Kami.fromString(`
-        N 0.25 0 0.25 1
-        N 0.5 0 0.5 1
-        N 0.75 0 0.75 1
-        N 0 0.25 1 0.25
-        N 0 0.5 1 0.5
-        N 0 0.75 1 0.75
-    `);
+    const [selectedVertex, setSelectedVertex] = useState<Vertex>();
+    const [hoveredVertex, setHoveredVertex] = useState<Vertex>();
 
-    const kamiRef = useRender({ kami });
+    const tool = useAtomValue(toolAtom);
+    const canvasRef = useRender({ kami, tool, hoveredVertex });
+
+    const handleClick = () => {
+
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        const canvas = canvasRef.current;
+
+        if (!canvas) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        const mousePoint = new Point(
+            (e.clientX - rect.left) * scaleX / KAMI_PIXELS,
+            (e.clientY - rect.top) * scaleY / KAMI_PIXELS
+        );
+
+        let hoveredVertexFound = false;
+
+        for (let vertex of kami.vertexes.toList(true)) {
+            if (mousePoint.distance(vertex) * KAMI_PIXELS < HOVER_RADIUS) {
+                hoveredVertexFound = true;
+                setHoveredVertex(vertex);
+
+                break;
+            }
+        }
+
+        if (!hoveredVertexFound) {
+            setHoveredVertex(undefined);
+        }
+    };
 
     return (
         <div className="flex-grow flex justify-center items-center">
             <canvas
-                ref={kamiRef}
+                onClick={handleClick}
+                onMouseMove={handleMouseMove}
+                ref={canvasRef}
                 height={KAMI_PIXELS}
                 width={KAMI_PIXELS}
                 className="h-[500px] w-[500px] border-[3px] border-theme-black"

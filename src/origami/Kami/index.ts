@@ -26,6 +26,8 @@ export default class Kami {
      *            "type x1 y1 x2 y2"
      */
     public static fromString(str: string): Kami {
+        console.log("fromString() called!");
+
         const kami = new Kami();
 
         for (let creaseStr of str.split("\n")) {
