@@ -6,6 +6,7 @@ import { toolAtom } from "../page";
 import { useState } from "react";
 import Vertex from "@/origami/Vertex";
 import Point from "@/origami/Point";
+import { CreaseType } from "@/origami/Crease";
 
 const kami = Kami.fromString(`
     N 0.25 0 0.25 1
@@ -17,14 +18,43 @@ const kami = Kami.fromString(`
 `);
 
 export default function KamiSection() {
-    const [selectedVertex, setSelectedVertex] = useState<Vertex>();
     const [hoveredVertex, setHoveredVertex] = useState<Vertex>();
+    const [selectedVertex, setSelectedVertex] = useState<Vertex>();
+    const [mousePoint, setMousePoint] = useState<Point>();
 
     const tool = useAtomValue(toolAtom);
-    const canvasRef = useRender({ kami, tool, hoveredVertex });
+    const canvasRef = useRender({ 
+        kami, 
+        tool, 
+        hoveredVertex, 
+        selectedVertex,
+        mousePoint 
+    });
 
     const handleClick = () => {
+        if (tool === "E") {
+            
+        } else if (hoveredVertex) {
+            if (selectedVertex) {
+                if (hoveredVertex.equals(selectedVertex)) {
+                    // Unselect selected Vertex by clicking on it twice
+                    return;
+                } else {
+                    // Crease Kami by clicking two different Vertexes
+                    kami.crease(
+                        tool as CreaseType, 
+                        hoveredVertex.x, hoveredVertex.y, 
+                        selectedVertex.x, selectedVertex.y
+                    );
+                }
 
+                setSelectedVertex(undefined);
+            } else {
+                // Select the first Vertex for a Crease
+                setSelectedVertex(hoveredVertex);
+                setHoveredVertex(undefined);
+            }
+        }
     };
 
     const handleMouseMove = (e: React.MouseEvent) => {
@@ -40,6 +70,9 @@ export default function KamiSection() {
             (e.clientX - rect.left) * scaleX / KAMI_PIXELS,
             (e.clientY - rect.top) * scaleY / KAMI_PIXELS
         );
+
+        if (selectedVertex) setMousePoint(mousePoint);
+        else setMousePoint(undefined);
 
         let hoveredVertexFound = false;
 
