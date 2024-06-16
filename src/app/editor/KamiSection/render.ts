@@ -3,7 +3,7 @@ import { HOVER_RADIUS, KAMI_PIXELS } from "@/settings";
 import { RefObject, useRef, useEffect } from "react";
 import { Tool } from "../ToolSection";
 import Vertex from "@/origami/Vertex";
-import { CreaseType } from "@/origami/Crease";
+import Crease, { CreaseType } from "@/origami/Crease";
 import Point from "@/origami/Point";
 
 type RenderData = {
@@ -11,7 +11,8 @@ type RenderData = {
     tool: Tool,
     hoveredVertex?: Vertex,
     selectedVertex?: Vertex,
-    mousePoint?: Point
+    mousePoint?: Point,
+    hoveredCrease?: Crease
 }
 
 /**
@@ -20,7 +21,7 @@ type RenderData = {
  * @param data RenderData
  */
 export function useRender(data: RenderData): RefObject<HTMLCanvasElement> {
-    const { kami, tool, hoveredVertex, selectedVertex, mousePoint } = data;
+    const { kami, tool, hoveredVertex, selectedVertex, mousePoint, hoveredCrease } = data;
 
     const kamiRef = useRef<HTMLCanvasElement>(null);
 
@@ -29,7 +30,7 @@ export function useRender(data: RenderData): RefObject<HTMLCanvasElement> {
         const context = canvas && canvas.getContext("2d");
 
         if (context) render(data, canvas, context);
-    }, [kami.toString(), tool, hoveredVertex, selectedVertex, mousePoint]);
+    }, [kami.toString(), tool, hoveredVertex, selectedVertex, mousePoint, hoveredCrease]);
 
     return kamiRef;
 }
@@ -41,12 +42,13 @@ export function useRender(data: RenderData): RefObject<HTMLCanvasElement> {
  * @param context CanvasRenderingContext2D
  */
 export function render(data: RenderData, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
-    const { kami, tool, hoveredVertex, selectedVertex, mousePoint } = data;
+    const { kami, tool, hoveredVertex, selectedVertex, mousePoint, hoveredCrease } = data;
 
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     kami.creases.toList().forEach(crease => {
-        drawLine(crease.type, crease.vertex1, crease.vertex2, context);
+        const lineWidth = hoveredCrease && crease.equals(hoveredCrease) ? 4 : 2;
+        drawLine(crease.type, crease.vertex1, crease.vertex2, context, lineWidth);
     });
 
     if (hoveredVertex) drawPoint(hoveredVertex, HOVER_RADIUS * 0.75, context);
@@ -66,14 +68,16 @@ export function render(data: RenderData, canvas: HTMLCanvasElement, context: Can
  * @param point1 
  * @param point2 
  * @param context 
+ * @param lineWidth Optional number
  */
 function drawLine(
     type: CreaseType, 
     point1: Point, 
     point2: Point, 
-    context: CanvasRenderingContext2D
+    context: CanvasRenderingContext2D,
+    lineWidth: number = 2
 ) {
-    context.lineWidth = 2;
+    context.lineWidth = lineWidth;
     context.strokeStyle = 
         type === "M" ? "red" :
         type === "V" ? "blue" :

@@ -3,10 +3,10 @@ import { useRender } from "./render";
 import { HOVER_RADIUS, KAMI_PIXELS } from "@/settings";
 import { useAtomValue } from "jotai";
 import { toolAtom } from "../page";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Vertex from "@/origami/Vertex";
 import Point from "@/origami/Point";
-import { CreaseType } from "@/origami/Crease";
+import Crease, { CreaseType } from "@/origami/Crease";
 
 const kami = Kami.fromString(`
     N 0 0 1 0
@@ -25,6 +25,7 @@ export default function KamiSection() {
     const [hoveredVertex, setHoveredVertex] = useState<Vertex>();
     const [selectedVertex, setSelectedVertex] = useState<Vertex>();
     const [mousePoint, setMousePoint] = useState<Point>();
+    const [hoveredCrease, setHoveredCrease] = useState<Crease>();
 
     const tool = useAtomValue(toolAtom);
     const canvasRef = useRender({ 
@@ -32,12 +33,21 @@ export default function KamiSection() {
         tool, 
         hoveredVertex, 
         selectedVertex,
-        mousePoint 
+        mousePoint,
+        hoveredCrease
     });
 
+    useEffect(() => {
+        setHoveredCrease(undefined);
+        setSelectedVertex(undefined);
+        setMousePoint(undefined);
+        setHoveredCrease(undefined);
+    }, [tool]);
+
     const handleClick = () => {
-        if (tool === "E") {
-            
+        if (tool === "E" && hoveredCrease) {
+            kami.eraseCrease(hoveredCrease);
+            setHoveredCrease(undefined);
         } else if (hoveredVertex) {
             if (selectedVertex) {
                 if (hoveredVertex.equals(selectedVertex)) {
@@ -75,22 +85,35 @@ export default function KamiSection() {
             (e.clientY - rect.top) * scaleY / KAMI_PIXELS
         );
 
-        if (selectedVertex) setMousePoint(mousePoint);
-        else setMousePoint(undefined);
+        if (tool === "E") {
+            let hoveredCreaseFound = false;
 
-        let hoveredVertexFound = false;
+            for (let crease of kami.creases.toList(true)) {
+                if (mousePoint.distance(crease) * KAMI_PIXELS < HOVER_RADIUS) {
+                    hoveredCreaseFound = true;
+                    setHoveredCrease(crease);
 
-        for (let vertex of kami.vertexes.toList(true)) {
-            if (mousePoint.distance(vertex) * KAMI_PIXELS < HOVER_RADIUS) {
-                hoveredVertexFound = true;
-                setHoveredVertex(vertex);
-
-                break;
+                    break;
+                }
             }
-        }
 
-        if (!hoveredVertexFound) {
-            setHoveredVertex(undefined);
+            if (!hoveredCreaseFound) setHoveredCrease(undefined);
+        } else {
+            if (selectedVertex) setMousePoint(mousePoint);
+            else setMousePoint(undefined);
+
+            let hoveredVertexFound = false;
+
+            for (let vertex of kami.vertexes.toList(true)) {
+                if (mousePoint.distance(vertex) * KAMI_PIXELS < HOVER_RADIUS) {
+                    hoveredVertexFound = true;
+                    setHoveredVertex(vertex);
+
+                    break;
+                }
+            }
+
+            if (!hoveredVertexFound) setHoveredVertex(undefined);
         }
     };
 

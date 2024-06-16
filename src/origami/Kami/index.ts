@@ -168,4 +168,26 @@ export default class Kami {
 
         oldCreases.unshift(oldCrease);
     }
+
+    /**
+     * Erases a Crease from the Kami and garbage collects any unused Vertexes.
+     * @param crease 
+     */
+    public eraseCrease(crease: Crease) {
+        this.creases.remove(crease);
+        this.eraseVertex(crease.vertex1);
+        this.eraseVertex(crease.vertex2);
+    }
+
+    /**
+     * Erases a Vertex from the Kami only if the Vertex is not used by any Crease.
+     * @param vertex Vertex
+     */
+    private eraseVertex(vertex: Vertex) {
+        for (let crease of this.creases.toList()) {
+            if (crease.vertex1.equals(vertex) || crease.vertex2.equals(vertex)) return;
+        }
+
+        this.vertexes.remove(vertex);
+    }
 }

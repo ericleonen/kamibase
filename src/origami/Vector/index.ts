@@ -7,6 +7,7 @@ import Vertex from "../Vertex";
 export default class Vector {
     readonly x: number;
     readonly y: number;
+    readonly magnitude: number;
 
     /**
      * Initializes a Vector object <x, y>
@@ -16,6 +17,7 @@ export default class Vector {
     constructor(x: number, y: number) {
         this.x = x;
         this.y = y;
+        this.magnitude = Math.sqrt(x * x + y * y);
     }
 
     /**
@@ -77,5 +79,13 @@ export default class Vector {
      */
     public equals(other: Vector): boolean {
         return this.compareTo(other) === 0;
+    }
+
+    /**
+     * Returns the dot of this and the other Vector.
+     * @param other Vector
+     */
+    public dot(other: Vector): number {
+        return this.x * other.x + this.y * other.y;
     }
 }
