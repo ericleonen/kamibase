@@ -1,6 +1,7 @@
 import Crease, { CreaseType } from "../Crease";
 import Vertex from "../Vertex";
 import GeometrySet from "../GeometrySet";
+import { VERTEXES } from "../common";
 
 /**
  * Represents a Kami (origami paper) with all of its Vertexes and Creases.
@@ -15,8 +16,20 @@ export default class Kami {
      * @param creases Optional crease array
      */
     constructor(vertexes: Vertex[] = [], creases: Crease[] = []) {
-        this.vertexes = new GeometrySet<Vertex>(vertexes);
-        this.creases = new GeometrySet<Crease>(creases);
+        this.vertexes = new GeometrySet<Vertex>([
+            VERTEXES["top left"],
+            VERTEXES["top right"],
+            VERTEXES["bottom left"],
+            VERTEXES["bottom right"],
+            ...vertexes
+        ]);
+        this.creases = new GeometrySet<Crease>([
+            new Crease("B", VERTEXES["top left"], VERTEXES["top right"]),
+            new Crease("B", VERTEXES["top right"], VERTEXES["bottom right"]),
+            new Crease("B", VERTEXES["bottom right"], VERTEXES["bottom left"]),
+            new Crease("B", VERTEXES["bottom left"], VERTEXES["top left"]),
+            ...creases
+        ]);
     }
 
     /**
@@ -170,13 +183,16 @@ export default class Kami {
     }
 
     /**
-     * Erases a Crease from the Kami and garbage collects any unused Vertexes.
+     * Erases a Crease from the Kami and garbage collects any unused Vertexes. Does nothing if the
+     * Crease is a [B]order type.
      * @param crease 
      */
     public eraseCrease(crease: Crease) {
-        this.creases.remove(crease);
-        this.eraseVertex(crease.vertex1);
-        this.eraseVertex(crease.vertex2);
+        if (crease.type !== "B") {
+            this.creases.remove(crease);
+            this.eraseVertex(crease.vertex1);
+            this.eraseVertex(crease.vertex2);
+        }
     }
 
     /**

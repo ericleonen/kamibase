@@ -1,5 +1,5 @@
 import Kami from "@/origami/Kami";
-import { HOVER_RADIUS, KAMI_PIXELS, PADDING } from "@/settings";
+import { CREASE_WIDTH, HOVERED_VERTEX_RADIUS, HOVER_CREASE_WIDTH, HOVER_RADIUS, KAMI_BORDER_WIDTH, KAMI_PIXELS, PADDING, SELECTED_VERTEX_RADIUS } from "@/settings";
 import { RefObject, useRef, useEffect } from "react";
 import { Tool } from "../ToolSection";
 import Vertex from "@/origami/Vertex";
@@ -47,14 +47,23 @@ export function render(data: RenderData, canvas: HTMLCanvasElement, context: Can
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     kami.creases.toList().forEach(crease => {
-        const lineWidth = hoveredCrease && crease.equals(hoveredCrease) ? 4 : 2;
-        drawLine(crease.type, crease.vertex1, crease.vertex2, context, lineWidth);
+        const lineWidth = 
+            crease.type === "B" ? KAMI_BORDER_WIDTH :
+            hoveredCrease && crease.equals(hoveredCrease) ? HOVER_CREASE_WIDTH : 
+            CREASE_WIDTH;
+        drawLine(
+            crease.type, 
+            crease.vertex1, 
+            crease.vertex2, 
+            context, 
+            lineWidth
+        );
     });
 
-    if (hoveredVertex) drawPoint(hoveredVertex, HOVER_RADIUS * 0.75, context);
-    else if (mousePoint) drawPoint(mousePoint, HOVER_RADIUS * 0.5, context);
+    if (hoveredVertex) drawPoint(hoveredVertex, HOVERED_VERTEX_RADIUS, context);
+    else if (mousePoint) drawPoint(mousePoint, HOVERED_VERTEX_RADIUS, context);
 
-    if (selectedVertex) drawPoint(selectedVertex, HOVER_RADIUS * 0.5, context);
+    if (selectedVertex) drawPoint(selectedVertex, SELECTED_VERTEX_RADIUS, context);
 
     const draggedPoint = hoveredVertex || mousePoint;
     if (tool !== "E" && selectedVertex && draggedPoint) {
@@ -81,7 +90,8 @@ function drawLine(
     context.strokeStyle = 
         type === "M" ? "red" :
         type === "V" ? "blue" :
-        "gray";
+        type === "N" ? "gray" :
+        "black";
 
     context.beginPath();
     context.moveTo(point1.x * KAMI_PIXELS + PADDING, point1.y * KAMI_PIXELS + PADDING);

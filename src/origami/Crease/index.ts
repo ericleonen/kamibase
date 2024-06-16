@@ -4,7 +4,7 @@ import Vertex from "../Vertex";
 import { listKey } from "@/utils/string";
 import Geometry from "../Geometry";
 
-export type CreaseType = "M" | "V" | "N";
+export type CreaseType = "M" | "V" | "N" | "B";
 
 /**
  * Represents a Crease between to Vertexes.
