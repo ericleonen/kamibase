@@ -1,6 +1,6 @@
 import Kami from "@/origami/Kami";
 import { useRender } from "./render";
-import { HOVER_RADIUS, KAMI_PIXELS } from "@/settings";
+import { HOVER_RADIUS, KAMI_PIXELS, PADDING } from "@/settings";
 import { useAtomValue } from "jotai";
 import { toolAtom } from "../page";
 import { useEffect, useState } from "react";
@@ -52,7 +52,6 @@ export default function KamiSection() {
             if (selectedVertex) {
                 if (hoveredVertex.equals(selectedVertex)) {
                     // Unselect selected Vertex by clicking on it twice
-                    return;
                 } else {
                     // Crease Kami by clicking two different Vertexes
                     kami.crease(
@@ -81,15 +80,15 @@ export default function KamiSection() {
         const scaleY = canvas.height / rect.height;
 
         const mousePoint = new Point(
-            (e.clientX - rect.left) * scaleX / KAMI_PIXELS,
-            (e.clientY - rect.top) * scaleY / KAMI_PIXELS
+            ((e.clientX - rect.left) * scaleX - PADDING) / KAMI_PIXELS,
+            ((e.clientY - rect.top) * scaleY - PADDING) / KAMI_PIXELS
         );
 
         if (tool === "E") {
             let hoveredCreaseFound = false;
 
             for (let crease of kami.creases.toList(true)) {
-                if (mousePoint.distance(crease) * KAMI_PIXELS < HOVER_RADIUS) {
+                if (mousePoint.distance(crease) * canvas.height < HOVER_RADIUS) {
                     hoveredCreaseFound = true;
                     setHoveredCrease(crease);
 
@@ -105,7 +104,7 @@ export default function KamiSection() {
             let hoveredVertexFound = false;
 
             for (let vertex of kami.vertexes.toList(true)) {
-                if (mousePoint.distance(vertex) * KAMI_PIXELS < HOVER_RADIUS) {
+                if (mousePoint.distance(vertex) * canvas.height < HOVER_RADIUS) {
                     hoveredVertexFound = true;
                     setHoveredVertex(vertex);
 
@@ -123,9 +122,9 @@ export default function KamiSection() {
                 onClick={handleClick}
                 onMouseMove={handleMouseMove}
                 ref={canvasRef}
-                height={KAMI_PIXELS}
-                width={KAMI_PIXELS}
-                className="h-[500px] w-[500px] border-[3px] border-theme-black"
+                height={KAMI_PIXELS + 2 * PADDING}
+                width={KAMI_PIXELS + 2 * PADDING}
+                className="h-[500px] w-[500px]"
             />
         </div>
     )

@@ -1,5 +1,5 @@
 import Kami from "@/origami/Kami";
-import { HOVER_RADIUS, KAMI_PIXELS } from "@/settings";
+import { HOVER_RADIUS, KAMI_PIXELS, PADDING } from "@/settings";
 import { RefObject, useRef, useEffect } from "react";
 import { Tool } from "../ToolSection";
 import Vertex from "@/origami/Vertex";
@@ -84,8 +84,8 @@ function drawLine(
         "gray";
 
     context.beginPath();
-    context.moveTo(point1.x * KAMI_PIXELS, point1.y * KAMI_PIXELS);
-    context.lineTo(point2.x * KAMI_PIXELS, point2.y * KAMI_PIXELS);
+    context.moveTo(point1.x * KAMI_PIXELS + PADDING, point1.y * KAMI_PIXELS + PADDING);
+    context.lineTo(point2.x * KAMI_PIXELS + PADDING, point2.y * KAMI_PIXELS + PADDING);
     context.stroke();
     context.closePath();
 }
@@ -103,8 +103,8 @@ function drawPoint(
 ) {
     context.beginPath();
     context.arc(
-        point.x * KAMI_PIXELS, 
-        point.y * KAMI_PIXELS, 
+        point.x * KAMI_PIXELS + PADDING, 
+        point.y * KAMI_PIXELS + PADDING, 
         radius, 
         0, 
         2 * Math.PI
