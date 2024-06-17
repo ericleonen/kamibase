@@ -2,11 +2,14 @@ import { listKey } from "@/utils/string";
 import Point from "../Point";
 import Vector from "../Vector";
 import Geometry from "../Geometry";
+import GeometrySet from "../GeometrySet";
+import Crease from "../Crease";
 
 /**
  * Represents a physical point on the Kami.
  */
 export default class Vertex extends Point implements Geometry {
+    readonly creases: GeometrySet<Crease>;
 
     /**
      * Initializes a Vertex a distance x from the top and y from the left.
@@ -15,6 +18,8 @@ export default class Vertex extends Point implements Geometry {
      */
     constructor(x: number, y: number) {
         super(x, y);
+
+        this.creases = new GeometrySet<Crease>();
     }
 
     /**

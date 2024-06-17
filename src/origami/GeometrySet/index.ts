@@ -106,4 +106,11 @@ export default class GeometrySet<T extends Geometry> {
     length(): number {
         return this.size;
     }
+
+    /**
+     * Returns whether or not this GeometrySet is empty.
+     */
+    isEmpty(): boolean {
+        return this.size === 0;
+    }
 }

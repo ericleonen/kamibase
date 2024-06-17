@@ -5,6 +5,7 @@ import { Tool } from "../ToolSection";
 import Vertex from "@/origami/Vertex";
 import Crease, { CreaseType } from "@/origami/Crease";
 import Point from "@/origami/Point";
+import { VERTEXES } from "@/origami/common";
 
 type RenderData = {
     kami: Kami,
