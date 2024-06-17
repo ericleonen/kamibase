@@ -63,5 +63,26 @@ test("length() returns the number of elements in a GeometrySet", () => {
     expect(set.length()).toBe(0);
 
     set.add(VERTEXES["top left"]);
+
     expect(set.length()).toBe(1);
+});
+
+test("isEmpty() confirms if a GeometrySet is empty", () => {
+    const set = new GeometrySet<Vertex>();
+
+    expect(set.isEmpty()).toBeTruthy();
+
+    set.add(VERTEXES["top left"]);
+    
+    expect(set.isEmpty()).toBeFalsy();
+});
+
+test("copy() returns a copy of a GeometrySet", () => {
+    const vertexes = Object.values(VERTEXES)
+
+    const orig = new GeometrySet<Vertex>(vertexes);
+    const copy = orig.copy();
+
+    expect(copy.length()).toBe(vertexes.length);
+    expect(orig === copy).toBeFalsy();
 });

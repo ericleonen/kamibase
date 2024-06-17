@@ -29,7 +29,7 @@ export default class GeometrySet<T extends Geometry> {
      * Returns true if this GeometrySet has all items, false otherwise.
      * @param items Array of items
      */
-    contains(...items: T[]): boolean {
+    public contains(...items: T[]): boolean {
         return items.every(item => {
             if (item instanceof Crease) {
                 return item.key() in this.map
@@ -57,7 +57,7 @@ export default class GeometrySet<T extends Geometry> {
      * Removes item from the GeometrySet. If the item is not in the GeometrySet, does nothing.
      * @param item 
      */
-    remove(item: T) {
+    public remove(item: T) {
         if (this.contains(item)) {
             delete this.map[item.key()];
             this.size -= 1;
@@ -69,7 +69,7 @@ export default class GeometrySet<T extends Geometry> {
      * adds the item and returns it.
      * @param item 
      */
-    get(item: T) {
+    public get(item: T) {
         if (this.contains(item)) {
             return this.map[item.key()];
         } else {
@@ -82,7 +82,7 @@ export default class GeometrySet<T extends Geometry> {
      * Returns an optionally sorted loopable array of this GeometrySet's items.
      * @param sorted Optional boolean that determines if the returned list is sorted
      */
-    toList(sorted: boolean = false): T[] {
+    public toList(sorted: boolean = false): T[] {
         const list = Object.values(this.map);
 
         if (sorted) {
@@ -103,14 +103,21 @@ export default class GeometrySet<T extends Geometry> {
     /**
      * Returns the number of elements stored in this GeometrySet.
      */
-    length(): number {
+    public length(): number {
         return this.size;
     }
 
     /**
      * Returns whether or not this GeometrySet is empty.
      */
-    isEmpty(): boolean {
+    public isEmpty(): boolean {
         return this.size === 0;
+    }
+
+    /**
+     * Returns a copy of this GeometrySet.
+     */
+    public copy(): GeometrySet<T> {
+        return new GeometrySet<T>(this.toList());
     }
 }

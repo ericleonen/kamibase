@@ -1,6 +1,7 @@
+import Crease from "../Crease";
 import Vector from "../Vector";
 import Vertex from "../Vertex";
-import { VERTEXES } from "../common";
+import { CREASES, VERTEXES } from "../common";
 
 test("compareTo() compares Points", () => {
     const smaller = VERTEXES["top left"];
@@ -29,3 +30,10 @@ test("distance() calculates the distance of two Points", () => {
 
     expect(point1.distance(point2)).toBeCloseTo(Math.SQRT2 / 2);
 });
+
+test("distance() calculates the distance of a Point and a Crease", () => {
+    expect(VERTEXES["top right"].distance(CREASES["major mountain"])).toBeCloseTo(Math.SQRT2 / 2);
+    expect(VERTEXES["bottom right"].distance(
+        new Crease("M", new Vertex(0.25, 0.25), VERTEXES["center"])
+    )).toBe(Infinity);
+})

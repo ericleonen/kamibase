@@ -16,18 +16,27 @@ export default class Kami {
      * @param creases Optional crease array
      */
     constructor(vertexes: Vertex[] = [], creases: Crease[] = []) {
+        const topLeft = VERTEXES["top left"].copy();
+        const topRight = VERTEXES["top right"].copy();
+        const bottomLeft = VERTEXES["bottom left"].copy();
+        const bottomRight = VERTEXES["bottom right"].copy();
+
+        const top = new Crease("B", topLeft, topRight);
+        const right = new Crease("B", topRight, bottomRight);
+        const bottom = new Crease("B", bottomRight, bottomLeft);
+        const left = new Crease("B", bottomLeft, topLeft);
+
+        topLeft.creases.add(top, left);
+        topRight.creases.add(top, right);
+        bottomLeft.creases.add(bottom, left);
+        bottomRight.creases.add(bottom, right);
+
         this.vertexes = new GeometrySet<Vertex>([
-            VERTEXES["top left"],
-            VERTEXES["top right"],
-            VERTEXES["bottom left"],
-            VERTEXES["bottom right"],
+            topLeft, topRight, bottomLeft, bottomRight,
             ...vertexes
         ]);
         this.creases = new GeometrySet<Crease>([
-            new Crease("B", VERTEXES["top left"], VERTEXES["top right"]),
-            new Crease("B", VERTEXES["top right"], VERTEXES["bottom right"]),
-            new Crease("B", VERTEXES["bottom right"], VERTEXES["bottom left"]),
-            new Crease("B", VERTEXES["bottom left"], VERTEXES["top left"]),
+            top, right, bottom, left,
             ...creases
         ]);
     }
@@ -111,10 +120,10 @@ export default class Kami {
 
         const oldCrease = oldCreases.shift()!;
 
-        const intersection = newCrease.getIntersectionWith(oldCrease);
+        let intersection = newCrease.getIntersectionWith(oldCrease);
 
         if (intersection) {
-            this.vertexes.add(intersection);
+            intersection = this.vertexes.get(intersection);
 
             this.eraseCrease(oldCrease, false);
             oldCrease.split(intersection).forEach(crease => this.creaseHelper(crease));

@@ -1,4 +1,3 @@
-import { approxEqual } from "@/utils/math";
 import Vector from "../Vector";
 import { VERTEXES, CREASES } from "../common";
 import Crease from ".";
@@ -82,4 +81,8 @@ test("split() splits a Crease by the Vertex", () => {
 
 test("key() returns a Crease's key", () => {
     expect(CREASES["minor mountain"].key()).toBe("0 1 1 0");
+});
+
+test("toString() returns a String representing this Crease", () => {
+    expect(CREASES["major mountain"].toString()).toBe("M 0 0 1 1");
 });

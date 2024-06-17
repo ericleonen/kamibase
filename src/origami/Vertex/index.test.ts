@@ -11,3 +11,11 @@ test("translate() translates a Vertex by a Vector", () => {
 test("key() returns a Vertex's key", () => {
     expect(VERTEXES["bottom right"].key()).toBe("1 1");
 });
+
+test("copy() returns a copy of a Vertex", () => {
+    const orig = VERTEXES["center"];
+    const copy = orig.copy();
+
+    expect(orig === copy).toBeFalsy();
+    expect(orig.equals(copy)).toBeTruthy();
+});

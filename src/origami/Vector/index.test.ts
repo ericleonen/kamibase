@@ -52,3 +52,10 @@ test("equals() confirms two Vectors are equal", () => {
 
     expect(equal1.equals(equal2)).toBeTruthy();
 });
+
+test("dot() takes the dot product of two Vectors", () => {
+    const vector1 = new Vector(-1, 1);
+    const vector2 = new Vector(0.5, 2);
+
+    expect(vector1.dot(vector2)).toBe(1.5);
+});

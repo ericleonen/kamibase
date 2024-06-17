@@ -16,10 +16,9 @@ export default class Vertex extends Point implements Geometry {
      * @param x number
      * @param y number
      */
-    constructor(x: number, y: number) {
+    constructor(x: number, y: number, creases: GeometrySet<Crease> = new GeometrySet<Crease>()) {
         super(x, y);
-
-        this.creases = new GeometrySet<Crease>();
+        this.creases = creases;
     }
 
     /**
@@ -35,5 +34,12 @@ export default class Vertex extends Point implements Geometry {
      */
     public key(): string {
         return listKey(this.x, this.y);
+    }
+
+    /**
+     * Returns a copy of this Vertex.
+     */
+    public copy(): Vertex {
+        return new Vertex(this.x, this.y, this.creases.copy());
     }
 }
