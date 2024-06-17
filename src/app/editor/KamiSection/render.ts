@@ -87,6 +87,7 @@ function drawLine(
     lineWidth: number = 2
 ) {
     context.lineWidth = lineWidth;
+    context.lineCap = "round";
     context.strokeStyle = 
         type === "M" ? "red" :
         type === "V" ? "blue" :
