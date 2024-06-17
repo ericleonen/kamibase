@@ -205,7 +205,7 @@ export default class Kami {
         } else if (vertex.creases.length() === 2) {
             const [crease1, crease2] = vertex.creases.toList(true);
             
-            if (crease1.type === crease2.type) {
+            if (crease1.type === crease2.type && crease1.isParallelTo(crease2)) {
                 const type = crease1.type;
                 const [{vertex1}, {vertex2}] = [crease1, crease2];
 
