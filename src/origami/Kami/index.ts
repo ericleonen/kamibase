@@ -69,10 +69,56 @@ export default class Kami {
     }
 
     /**
-     * Returns the compressed String version of this Kami as a KamiString.
+     * Returns the optionally compressed String version of this Kami as a KamiString.
+     * @param compressed Optional flag to compress the KamiString. Default is false
      */
-    public toString(): string {
-        return "";
+    public toString(compressed: boolean = false): string {
+        let creases: Crease[] = this.creases.toList().filter(crease => crease.type !== "B");
+        
+        while (compressed && true) {
+            let needsUpdate = false;
+
+            let index1 = 0;
+            let index2 = 0;
+            for (let crease1 of creases) {
+                index2 = 0;
+                for (let crease2 of creases) {
+                    const notEqual = !crease1.equals(crease2);
+                    const parallel = crease1.isParallelTo(crease2);
+                    const connecting = crease1.vertex2.equals(crease2.vertex1) ||
+                        crease1.vertex1.equals(crease2.vertex2);
+                    const sameType = crease1.type === crease2.type;
+
+                    if (notEqual && parallel && connecting && sameType) {
+                        needsUpdate = true;
+                        break
+                    }
+
+                    index2++;
+                }
+
+                if (needsUpdate) break;
+
+                index1++;
+            }
+
+            if (needsUpdate) {
+                const crease1 = creases.splice(Math.max(index1, index2), 1)[0];
+                const crease2 = creases.splice(Math.min(index1, index2), 1)[0];
+
+                if (crease1.compareTo(crease2) < 0) {
+                    creases.push(new Crease(crease1.type, crease1.vertex1, crease2.vertex2));
+                } else {
+                    creases.push(new Crease(crease1.type, crease2.vertex1, crease1.vertex2));
+                }
+            } else {
+                break;
+            }
+        }
+
+        return creases.toSorted((a, b) => a.compareTo(b))
+            .map(crease => crease.toString())
+            .join("\n");
     }
 
     /**
@@ -120,7 +166,7 @@ export default class Kami {
 
         let intersection = newCrease.getIntersectionWith(oldCrease);
 
-        if (intersection) {
+        if (intersection && oldCrease.type !== "B") {
             intersection = this.vertexes.get(intersection);
 
             this.eraseCrease(oldCrease, false);
