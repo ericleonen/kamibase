@@ -120,6 +120,9 @@ export default function KamiSection() {
     return (
         <div className="flex-grow flex justify-center items-center">
             <canvas
+                style={{
+                    cursor: tool === "E" ? "url(eraserToolCursor.png) 2 8, auto" : "auto"
+                }}
                 onClick={handleClick}
                 onMouseMove={handleMouseMove}
                 ref={canvasRef}

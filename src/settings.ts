@@ -34,7 +34,7 @@ export const CREASE_WIDTH = 2;
 /**
  * A Crease grows to line width HOVER_CREASE_WIDTH if hovered (with eraser tool).
  */
-export const HOVER_CREASE_WIDTH = 6;
+export const HOVER_CREASE_WIDTH = 10;
 
 /**
  * A border Crease has line width KAMI_BORDER_WIDTH.

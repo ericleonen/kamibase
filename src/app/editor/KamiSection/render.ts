@@ -1,12 +1,18 @@
 import Kami from "@/origami/Kami";
-import { CREASE_WIDTH, HOVERED_VERTEX_RADIUS, HOVER_CREASE_WIDTH, HOVER_RADIUS, KAMI_BORDER_WIDTH, KAMI_PIXELS, PADDING, SELECTED_VERTEX_RADIUS } from "@/settings";
+import { CREASE_WIDTH, HOVERED_VERTEX_RADIUS, HOVER_CREASE_WIDTH, KAMI_BORDER_WIDTH, KAMI_PIXELS, PADDING, SELECTED_VERTEX_RADIUS } from "@/settings";
 import { RefObject, useRef, useEffect } from "react";
 import { Tool } from "../ToolSection";
 import Vertex from "@/origami/Vertex";
 import Crease, { CreaseType } from "@/origami/Crease";
 import Point from "@/origami/Point";
 
-const rootStyle = getComputedStyle(document.body);
+let rootStyle: CSSStyleDeclaration;
+
+try {
+    rootStyle = window.getComputedStyle(document.body);
+} catch (err) {
+    
+}
 
 type RenderData = {
     kami: Kami,
@@ -48,7 +54,7 @@ export function render(data: RenderData, canvas: HTMLCanvasElement, context: Can
 
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    kami.creases.toList().forEach(crease => {
+    kami.creases.toList().sort((a, b) => a.type === "B" ? 1 : -1).forEach(crease => {
         const lineWidth = 
             crease.type === "B" ? KAMI_BORDER_WIDTH :
             hoveredCrease && crease.equals(hoveredCrease) ? HOVER_CREASE_WIDTH : 
@@ -90,11 +96,15 @@ function drawLine(
 ) {
     context.lineWidth = lineWidth;
     context.lineCap = "round";
+
+    const strokeColor = 
+        type === "M" ? "red" :
+        type === "V" ? "blue" :
+        type === "N" ? "gray" :
+        "black";
+
     context.strokeStyle = 
-        type === "M" ? rootStyle.getPropertyValue("--theme-red") :
-        type === "V" ? rootStyle.getPropertyValue("--theme-blue") :
-        type === "N" ? rootStyle.getPropertyValue("--theme-gray") :
-        rootStyle.getPropertyValue("--theme-black");
+        rootStyle ? rootStyle.getPropertyValue(`--theme-${strokeColor}`) : strokeColor;
 
     context.beginPath();
     context.moveTo(point1.x * KAMI_PIXELS + PADDING, point1.y * KAMI_PIXELS + PADDING);
@@ -114,6 +124,9 @@ function drawPoint(
     radius: number,
     context: CanvasRenderingContext2D
 ) {
+    context.fillStyle =
+        rootStyle ? rootStyle.getPropertyValue("--theme-black") : "black";
+
     context.beginPath();
     context.arc(
         point.x * KAMI_PIXELS + PADDING, 
