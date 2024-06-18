@@ -5,7 +5,8 @@ import { Tool } from "../ToolSection";
 import Vertex from "@/origami/Vertex";
 import Crease, { CreaseType } from "@/origami/Crease";
 import Point from "@/origami/Point";
-import { VERTEXES } from "@/origami/common";
+
+const rootStyle = getComputedStyle(document.body);
 
 type RenderData = {
     kami: Kami,
@@ -90,10 +91,10 @@ function drawLine(
     context.lineWidth = lineWidth;
     context.lineCap = "round";
     context.strokeStyle = 
-        type === "M" ? "red" :
-        type === "V" ? "blue" :
-        type === "N" ? "gray" :
-        "black";
+        type === "M" ? rootStyle.getPropertyValue("--theme-red") :
+        type === "V" ? rootStyle.getPropertyValue("--theme-blue") :
+        type === "N" ? rootStyle.getPropertyValue("--theme-gray") :
+        rootStyle.getPropertyValue("--theme-black");
 
     context.beginPath();
     context.moveTo(point1.x * KAMI_PIXELS + PADDING, point1.y * KAMI_PIXELS + PADDING);
