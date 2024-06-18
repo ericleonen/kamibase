@@ -42,4 +42,13 @@ export default class Vertex extends Point implements Geometry {
     public copy(): Vertex {
         return new Vertex(this.x, this.y, this.creases.copy());
     }
+
+    /**
+     * Returns true if this Vertex lies on the border and the other Vertex also lies on that same
+     * border.
+     */
+    public onSameBorder(other: Vertex): boolean {
+        return [0, 1].includes(this.x) && this.x === other.x
+            || [0, 1].includes(this.y) && this.y === other.y;
+    }
 }

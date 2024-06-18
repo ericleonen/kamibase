@@ -102,7 +102,10 @@ export default function KamiSection() {
             let hoveredVertexFound = false;
 
             for (let vertex of kami.vertexes.toList(true)) {
-                if (mousePoint.distance(vertex) * canvas.height < HOVER_RADIUS) {
+                if (
+                    mousePoint.distance(vertex) * canvas.height < HOVER_RADIUS
+                    && !selectedVertex?.onSameBorder(vertex)
+                ) {
                     hoveredVertexFound = true;
                     setHoveredVertex(vertex);
 

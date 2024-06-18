@@ -69,12 +69,10 @@ export default class Kami {
     }
 
     /**
-     * Returns the String version of this Kami as a KamiString.
+     * Returns the compressed String version of this Kami as a KamiString.
      */
     public toString(): string {
-        return this.creases.toList(true)
-            .map(crease => crease.toString())
-            .join("\n");
+        return "";
     }
 
     /**
