@@ -4,7 +4,9 @@
 
 :root {
     --theme-white: #F5F5F5;
+    --theme-light-black: #3b3b3b;
     --theme-black: #303030;
+    --theme-dark-black: #222222;
     --theme-light-gray: #E5E5E5;
     --theme-gray: #D9D9D9;
     --theme-dark-gray: #A1A1A1;

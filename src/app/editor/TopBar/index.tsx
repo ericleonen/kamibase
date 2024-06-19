@@ -1,39 +1,69 @@
-import { useState } from "react"
+import Option, { Action } from "./Option";
+import OptionShadow from "./OptionShadow";
+import TitleField from "./TitleField";
 
 export default function TopBar() {
     return (
-        <section className="flex relative h-16 bg-theme-black">
-            <Option name="File" />
-            <Option name="Edit" />
-            <Option name="View" />
-            <TitleField />
-        </section>
-    )
-}
-
-function TitleField() {
-    const [title, setTitle] = useState("Unititled kami");
-
-    return (
-        <input
-            className="text-theme-white font-medium border-none bg-transparent focus:outline-none text-center absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%]"
-            type="text"
-            value={title}
-            onChange={({ target }) => setTitle(target.value)}
-        />
-    )
-}
-
-type OptionProps = {
-    name: string
-}
-
-function Option({ name }: OptionProps) {
-    return (
-        <button
-            className="flex items-center px-6 text-theme-white"
-        >
-            {name}
-        </button>
+        <>
+            <section className="flex relative h-16 bg-theme-black">
+                <Option name="File">
+                    <Action 
+                        onClick={() => {}}
+                        shortcut="Ctrl+N"
+                    >
+                        New Kami file
+                    </Action>
+                    <Action 
+                        onClick={() => {}}
+                        shortcut="Ctrl+O"
+                    >
+                        Open Kami file
+                    </Action>
+                    <Action
+                        onClick={() => {}}
+                        shortcut="Ctrl+S"
+                    >
+                        Save
+                    </Action>
+                    <Action onClick={() => {}}>Delete</Action>
+                </Option>
+                <Option name="Edit">
+                    <Action
+                        onClick={() => {}}
+                        shortcut="Ctrl+Z"
+                    >
+                        Undo
+                    </Action>
+                    <Action
+                        onClick={() => {}}
+                        shortcut="Ctrl+Shift+Z"
+                    >
+                        Redo
+                    </Action>
+                </Option>
+                <Option name="View">
+                    <Action onClick={() => {}}>
+                        Zoom in
+                    </Action>
+                    <Action onClick={() => {}}>
+                        Zoom out
+                    </Action>
+                    <Action 
+                        onClick={() => {}}
+                        shortcut="Ctrl+R"
+                    >
+                        Rotate 90° right
+                    </Action>
+                    <Action 
+                        onClick={() => {}}
+                        shortcut="Ctrl+L"
+                    >
+                        Rotate 90° left
+                    </Action>
+                </Option>
+                <TitleField />
+            </section>
+            <OptionShadow />
+        </>
     )
 }

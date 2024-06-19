@@ -6,7 +6,7 @@ export type Tool = "M" | "V" | "N" | "E";
 
 export default function ToolSection() {
     return (
-        <div className="flex flex-col justify-center px-5 h-full bg-theme-light-gray">
+        <div className="fixed flex flex-col justify-center px-5 h-full bg-theme-light-gray">
             <ToolButton
                 name="Mountain"
                 iconSrc="mountainToolIcon.svg"
@@ -45,9 +45,9 @@ function ToolButton({ name, iconSrc }: ToolButtonProps) {
     return (
         <button 
             onClick={handleClick}
-            className="h-16 w-16 rounded-md mb-5 last:mb-0 relative flex justify-center items-center"
+            className="transition-colors bg-theme-gray hover:bg-theme-dark-gray h-16 w-16 rounded-md mb-5 last:mb-0 relative flex justify-center items-center"
             style={{
-                background: isSelected ? "var(--theme-yellow)" : "var(--theme-gray)"
+                background: isSelected ? "var(--theme-yellow)" : undefined
             }}
         >
             <Image 

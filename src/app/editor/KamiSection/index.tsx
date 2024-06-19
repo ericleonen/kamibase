@@ -118,18 +118,18 @@ export default function KamiSection() {
     };
 
     return (
-        <div className="flex-grow flex justify-center items-center">
-            <canvas
-                style={{
-                    cursor: tool === "E" ? "url(eraserToolCursor.png) 2 8, auto" : "auto"
-                }}
-                onClick={handleClick}
-                onMouseMove={handleMouseMove}
-                ref={canvasRef}
-                height={KAMI_PIXELS + 2 * PADDING}
-                width={KAMI_PIXELS + 2 * PADDING}
-                className="h-[500px] w-[500px]"
-            />
-        </div>
+        <canvas
+            className="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%]"
+            style={{
+                cursor: tool === "E" ? "url(eraserToolCursor.png) 2 8, auto" : "auto",
+                height: "500px",
+                width: "500px"
+            }}
+            onClick={handleClick}
+            onMouseMove={handleMouseMove}
+            ref={canvasRef}
+            height={KAMI_PIXELS + 2 * PADDING}
+            width={KAMI_PIXELS + 2 * PADDING}
+        />
     )
 }

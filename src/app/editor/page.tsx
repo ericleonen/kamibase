@@ -11,7 +11,9 @@ export default function EditorPage() {
     return (
         <div className="h-screen flex flex-col">
             <TopBar />
-            <section className="flex flex-grow bg-theme-white">
+            <section 
+                className="flex-grow bg-theme-white relative overflow-scroll"
+            >
                 <ToolSection />
                 <KamiSection />
             </section>

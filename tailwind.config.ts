@@ -15,7 +15,9 @@ const config: Config = {
       },
       colors: {
         "theme-white": "var(--theme-white)",
+        "theme-light-black": "var(--theme-light-black)",
         "theme-black": "var(--theme-black)",
+        "theme-dark-black": "var(--theme-dark-black)",
         "theme-light-gray": "var(--theme-light-gray)",
         "theme-gray": "var(--theme-gray)",
         "theme-dark-gray": "var(--theme-dark-gray)",
