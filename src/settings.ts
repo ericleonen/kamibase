@@ -45,3 +45,8 @@ export const KAMI_BORDER_WIDTH = 3;
  * It takes KAMI_ROTATION_DURATION seconds to rotate the Kami 90° right or left.
  */
 export const KAMI_ROTATION_DURATION = 0.3;
+
+/**
+ * The zoom in and out buttons change the size of the Kami by intervals of KAMI_ZOOM_DELTA pixels.
+ */
+export const KAMI_ZOOM_DELTA = 100;

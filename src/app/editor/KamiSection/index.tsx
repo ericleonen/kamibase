@@ -2,7 +2,7 @@ import Kami from "@/origami/Kami";
 import { useRender } from "./render";
 import { HOVER_RADIUS, KAMI_PIXELS, KAMI_ROTATION_DURATION, PADDING } from "@/settings";
 import { useAtom, useAtomValue } from "jotai";
-import { rotateAtom, toolAtom } from "../page";
+import { rotateAtom, sizeAtom, toolAtom, zoomAtom } from "../page";
 import { useEffect, useState } from "react";
 import Vertex from "@/origami/Vertex";
 import Point from "@/origami/Point";
@@ -24,6 +24,8 @@ export default function KamiSection() {
     const [mousePoint, setMousePoint] = useState<Point>();
     const [hoveredCrease, setHoveredCrease] = useState<Crease>();
     
+    const [size, setSize] = useAtom(sizeAtom);
+    const [zoom, setZoom] = useAtom(zoomAtom);
     const [rotate, setRotate] = useAtom(rotateAtom);
 
     const tool = useAtomValue(toolAtom);
@@ -44,7 +46,7 @@ export default function KamiSection() {
     }, [tool]);
 
     const handleClick = () => {
-        if (rotate) return;
+        if (zoom || rotate) return;
 
         if (tool === "E" && hoveredCrease) {
             kami.eraseCrease(hoveredCrease);
@@ -74,7 +76,7 @@ export default function KamiSection() {
     const handleMouseMove = (e: React.MouseEvent) => {
         const canvas = canvasRef.current;
 
-        if (!canvas || rotate) return;
+        if (!canvas || zoom || rotate) return;
 
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
@@ -129,16 +131,36 @@ export default function KamiSection() {
         }
     }
 
+    const stopZoom = () => {
+        setZoom(undefined);
+    }
+
     return (
         <motion.canvas
-            animate={rotate ? { rotate: rotate === "R" ? 90 : -90 } : { rotate: 0 }}
-            transition={{ duration: rotate ? KAMI_ROTATION_DURATION : 0 }}
-            onAnimationComplete={rotateKami}
-            className="absolute left-[calc(50%-250px)] top-[calc(50%-250px)]"
+            animate={{
+                rotate: 
+                    rotate === "R" ? 90 :
+                    rotate === "L" ? 90 :
+                    0,
+                height: size,
+                width: size,
+                left: `calc(50% - ${size / 2}px)`,
+                top: `calc(50% - ${size / 2}px)`
+            }}
+            transition={{
+                duration: 
+                    rotate ? KAMI_ROTATION_DURATION :
+                    zoom ? 0.25 :
+                    0
+            }}
+            onAnimationComplete={
+                rotate ? rotateKami :
+                zoom ? stopZoom :
+                undefined
+            }
+            className="absolute"
             style={{
                 cursor: tool === "E" ? "url(eraserToolCursor.png) 2 8, auto" : "auto",
-                height: "500px",
-                width: "500px"
             }}
             onClick={handleClick}
             onMouseMove={handleMouseMove}

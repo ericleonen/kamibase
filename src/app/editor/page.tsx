@@ -6,7 +6,11 @@ import ToolSection, { Tool } from "./ToolSection";
 import TopBar from "./TopBar";
 
 export const toolAtom = atom<Tool>("M");
+
+export const zoomAtom = atom<"+" | "-" | undefined>(undefined);
 export const rotateAtom = atom<"L" | "R" | undefined>(undefined);
+
+export const sizeAtom = atom<number>(500);
 
 export default function EditorPage() {
     return (

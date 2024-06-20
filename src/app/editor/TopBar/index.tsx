@@ -2,10 +2,23 @@ import { useSetAtom } from "jotai";
 import Option, { Action } from "./Option";
 import OptionShadow from "./OptionShadow";
 import TitleField from "./TitleField";
-import { rotateAtom } from "../page";
+import { rotateAtom, sizeAtom, zoomAtom } from "../page";
+import { KAMI_ZOOM_DELTA } from "@/settings";
 
 export default function TopBar() {
     const setRotate = useSetAtom(rotateAtom);
+    const setSize = useSetAtom(sizeAtom);
+    const setZoom = useSetAtom(zoomAtom);
+
+    const handleZoom = (z: "+" | "-") => {
+        setZoom(z);
+
+        if (z === "+") {
+            setSize(origSize => origSize + KAMI_ZOOM_DELTA);
+        } else {
+            setSize(origSize => origSize - KAMI_ZOOM_DELTA);
+        }
+    };
 
     return (
         <>
@@ -46,10 +59,10 @@ export default function TopBar() {
                     </Action>
                 </Option>
                 <Option name="View">
-                    <Action onClick={() => {}}>
+                    <Action onClick={() => handleZoom("+")}>
                         Zoom in
                     </Action>
-                    <Action onClick={() => {}}>
+                    <Action onClick={() => handleZoom("-")}>
                         Zoom out
                     </Action>
                     <Action 
