@@ -1,8 +1,12 @@
+import { useSetAtom } from "jotai";
 import Option, { Action } from "./Option";
 import OptionShadow from "./OptionShadow";
 import TitleField from "./TitleField";
+import { rotateAtom } from "../page";
 
 export default function TopBar() {
+    const setRotate = useSetAtom(rotateAtom);
+
     return (
         <>
             <section className="flex relative h-16 bg-theme-black">
@@ -49,13 +53,13 @@ export default function TopBar() {
                         Zoom out
                     </Action>
                     <Action 
-                        onClick={() => {}}
+                        onClick={() => setRotate("R")}
                         shortcut="Ctrl+R"
                     >
                         Rotate 90° right
                     </Action>
                     <Action 
-                        onClick={() => {}}
+                        onClick={() => setRotate("L")}
                         shortcut="Ctrl+L"
                     >
                         Rotate 90° left

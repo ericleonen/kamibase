@@ -120,4 +120,9 @@ export default class GeometrySet<T extends Geometry> {
     public copy(): GeometrySet<T> {
         return new GeometrySet<T>(this.toList());
     }
+
+    public clear() {
+        this.map = {};
+        this.size = 0;
+    }
 }

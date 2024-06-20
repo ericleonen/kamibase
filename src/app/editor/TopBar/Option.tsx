@@ -1,4 +1,4 @@
-import { atom, useAtom } from "jotai";
+import { atom, useAtom, useSetAtom } from "jotai";
 import React, { useState } from "react"
 
 export const optionAtom = atom<string | undefined>(undefined);
@@ -54,10 +54,17 @@ type ActionProps = {
 }
 
 export function Action({ onClick, shortcut, children }: ActionProps) {
+    const setOption = useSetAtom(optionAtom);
+
+    const handleClick = () => {
+        onClick();
+        setOption(undefined);
+    };
+
     return (
         <button
-            onClick={onClick}
-            className="flex px-3 py-1 justify-between first:mt-1 mb-1 hover:bg-theme-light-black"
+            onClick={handleClick}
+            className="flex px-3 py-2 justify-between first:mt-1 mb-1 hover:bg-theme-light-black"
         >
             <p className="text-theme-gray">{children}</p>
             <p className="ml-12 text-theme-dark-gray">{shortcut}</p>

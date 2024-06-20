@@ -2,6 +2,7 @@ import Crease, { CreaseType } from "../Crease";
 import Vertex from "../Vertex";
 import GeometrySet from "../GeometrySet";
 import { VERTEXES } from "../common";
+import Vector from "../Vector";
 
 /**
  * Represents a Kami (origami paper) with all of its Vertexes and Creases.
@@ -130,7 +131,7 @@ export default class Kami {
      * @param y2 Y-coordinate of the second vertex
      */
     public crease(type: string, x1: number, y1: number, x2: number, y2: number) {
-        if (!["M", "V", "N"].includes(type)) {
+        if (!["M", "V", "N", "B"].includes(type)) {
             throw new Error(`Invalid crease type: ${type}`);
         }
 
@@ -266,6 +267,38 @@ export default class Kami {
                 this.eraseCrease(crease1);
                 this.eraseCrease(crease2);
             }
+        }
+    }
+
+    public clear() {
+        this.creases.clear();
+        this.vertexes.clear();
+
+        this.crease("B", 0, 0, 1, 0);
+        this.crease("B", 1, 0, 1, 1);
+        this.crease("B", 1, 1, 0, 1);
+        this.crease("B", 0, 1, 0, 0);
+    }
+
+    public rotate(direction: "R" | "L") {
+        const creases = this.creases.toList().filter(crease => crease.type !== "B");
+
+        this.clear();
+
+        for (let crease of creases) {
+            const delta = new Vector(-0.5, -0.5);
+            const mx = direction === "L" ? new Vector(0, 1) : new Vector(0, -1);
+            const my = direction === "L" ? new Vector(-1, 0) : new Vector(1, 0);
+
+            const v1 = crease.vertex1.translate(delta).toVector();
+            const v2 = crease.vertex2.translate(delta).toVector();
+
+            const x1 = v1.dot(mx);
+            const y1 = v1.dot(my);
+            const x2 = v2.dot(mx);
+            const y2 = v2.dot(my);
+
+            this.crease(crease.type, x1 + 0.5, y1 + 0.5, x2 + 0.5, y2 + 0.5);
         }
     }
 }

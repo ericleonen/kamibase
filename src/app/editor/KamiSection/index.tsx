@@ -1,8 +1,8 @@
 import Kami from "@/origami/Kami";
 import { useRender } from "./render";
 import { HOVER_RADIUS, KAMI_PIXELS, PADDING } from "@/settings";
-import { useAtomValue } from "jotai";
-import { toolAtom } from "../page";
+import { useAtom, useAtomValue } from "jotai";
+import { rotateAtom, toolAtom } from "../page";
 import { useEffect, useState } from "react";
 import Vertex from "@/origami/Vertex";
 import Point from "@/origami/Point";
@@ -22,6 +22,8 @@ export default function KamiSection() {
     const [selectedVertex, setSelectedVertex] = useState<Vertex>();
     const [mousePoint, setMousePoint] = useState<Point>();
     const [hoveredCrease, setHoveredCrease] = useState<Crease>();
+    
+    const [rotate, setRotate] = useAtom(rotateAtom);
 
     const tool = useAtomValue(toolAtom);
     const canvasRef = useRender({ 
@@ -39,6 +41,13 @@ export default function KamiSection() {
         setMousePoint(undefined);
         setHoveredCrease(undefined);
     }, [tool]);
+
+    useEffect(() => {
+        if (rotate) {
+            kami.rotate(rotate);
+            setRotate(undefined);
+        }
+    }, [rotate]);
 
     const handleClick = () => {
         if (tool === "E" && hoveredCrease) {
