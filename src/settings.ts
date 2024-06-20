@@ -40,3 +40,8 @@ export const HOVER_CREASE_WIDTH = 10;
  * A border Crease has line width KAMI_BORDER_WIDTH.
  */
 export const KAMI_BORDER_WIDTH = 3;
+
+/**
+ * It takes KAMI_ROTATION_DURATION seconds to rotate the Kami 90° right or left.
+ */
+export const KAMI_ROTATION_DURATION = 0.3;

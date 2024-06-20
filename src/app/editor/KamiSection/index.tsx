@@ -1,12 +1,13 @@
 import Kami from "@/origami/Kami";
 import { useRender } from "./render";
-import { HOVER_RADIUS, KAMI_PIXELS, PADDING } from "@/settings";
+import { HOVER_RADIUS, KAMI_PIXELS, KAMI_ROTATION_DURATION, PADDING } from "@/settings";
 import { useAtom, useAtomValue } from "jotai";
 import { rotateAtom, toolAtom } from "../page";
 import { useEffect, useState } from "react";
 import Vertex from "@/origami/Vertex";
 import Point from "@/origami/Point";
 import Crease, { CreaseType } from "@/origami/Crease";
+import { motion } from "framer-motion";
 
 const kami = Kami.fromString(`
     N 0.25 0 0.25 1
@@ -42,14 +43,9 @@ export default function KamiSection() {
         setHoveredCrease(undefined);
     }, [tool]);
 
-    useEffect(() => {
-        if (rotate) {
-            kami.rotate(rotate);
-            setRotate(undefined);
-        }
-    }, [rotate]);
-
     const handleClick = () => {
+        if (rotate) return;
+
         if (tool === "E" && hoveredCrease) {
             kami.eraseCrease(hoveredCrease);
             setHoveredCrease(undefined);
@@ -78,7 +74,7 @@ export default function KamiSection() {
     const handleMouseMove = (e: React.MouseEvent) => {
         const canvas = canvasRef.current;
 
-        if (!canvas) return;
+        if (!canvas || rotate) return;
 
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
@@ -126,9 +122,19 @@ export default function KamiSection() {
         }
     };
 
+    const rotateKami = () => {
+        if (rotate) {
+            kami.rotate(rotate);
+            setRotate(undefined);
+        }
+    }
+
     return (
-        <canvas
-            className="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%]"
+        <motion.canvas
+            animate={rotate ? { rotate: rotate === "R" ? 90 : -90 } : { rotate: 0 }}
+            transition={{ duration: rotate ? KAMI_ROTATION_DURATION : 0 }}
+            onAnimationComplete={rotateKami}
+            className="absolute left-[calc(50%-250px)] top-[calc(50%-250px)]"
             style={{
                 cursor: tool === "E" ? "url(eraserToolCursor.png) 2 8, auto" : "auto",
                 height: "500px",
