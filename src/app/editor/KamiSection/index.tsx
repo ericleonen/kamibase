@@ -140,7 +140,7 @@ export default function KamiSection() {
             animate={{
                 rotate: 
                     rotate === "R" ? 90 :
-                    rotate === "L" ? 90 :
+                    rotate === "L" ? -90 :
                     0,
                 height: size,
                 width: size,
