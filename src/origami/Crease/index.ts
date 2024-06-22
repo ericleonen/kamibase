@@ -3,7 +3,7 @@ import Vector from "../Vector";
 import Vertex from "../Vertex";
 import { listKey } from "@/utils/string";
 import Geometry from "../Geometry";
-import { Action, CreaseAction, EraseAction } from "../ProcessManager";
+import { CreaseAction } from "../ProcessManager";
 import Point from "../Point";
 
 export type CreaseType = "M" | "V" | "N" | "B";
@@ -142,23 +142,11 @@ export default class Crease implements Geometry {
         return listKey(this.type, this.key());
     }
 
-    public toCreaseAction(): CreaseAction {
+    public toAction(name: "crease" | "erase"): CreaseAction {
         return {
-            name: "crease",
+            name,
             params: {
                 type: this.type,
-                x1: this.vertex1.x,
-                y1: this.vertex1.y,
-                x2: this.vertex2.x,
-                y2: this.vertex2.y
-            }
-        };
-    }
-
-    public toEraseAction(): EraseAction {
-        return {
-            name: "erase",
-            params: {
                 x1: this.vertex1.x,
                 y1: this.vertex1.y,
                 x2: this.vertex2.x,

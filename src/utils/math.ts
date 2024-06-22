@@ -16,3 +16,7 @@ export function round(x: number): number {
 export function approxEqual(a: number, b: number): boolean {
     return round(a - b) === 0;
 }
+
+export function inBetween(x: number, min: number, max: number): boolean {
+    return min <= x && min <= max;
+}

@@ -3,8 +3,7 @@ import Vertex from "../Vertex";
 import GeometrySet from "../GeometrySet";
 import { VERTEXES } from "../common";
 import Vector from "../Vector";
-import { EraseAction, Process, RotateAction } from "../ProcessManager";
-import { listKey } from "@/utils/string";
+import { CreaseAction, Process, DisplayAction } from "../ProcessManager";
 
 /**
  * Represents a Kami (origami paper) with all of its Vertexes and Creases.
@@ -163,7 +162,7 @@ export default class Kami {
             newCrease.vertex1.creases.add(newCrease);
             newCrease.vertex2.creases.add(newCrease);
 
-            return [newCrease.toCreaseAction()];
+            return [newCrease.toAction("crease")];
         }
 
         const oldCrease = oldCreases.shift()!;
@@ -245,7 +244,7 @@ export default class Kami {
         return process;
     }
 
-    public erase(x1: number, y1: number, x2: number, y2: number): EraseAction {
+    public erase(x1: number, y1: number, x2: number, y2: number): CreaseAction {
         const crease = this.creases.getGeometrically(x1, y1, x2, y2);
 
         if (crease) {
@@ -260,7 +259,7 @@ export default class Kami {
      * @param crease 
      * @param eraseVertexes Optional boolean, default true
      */
-    private eraseHelper(crease: Crease, eraseVertexes: boolean = true): EraseAction {
+    private eraseHelper(crease: Crease, eraseVertexes: boolean = true): CreaseAction {
         this.creases.remove(crease);
 
         crease.vertex1.creases.remove(crease);
@@ -271,7 +270,7 @@ export default class Kami {
             this.eraseVertex(crease.vertex2);
         }
 
-        return crease.toEraseAction();
+        return crease.toAction("erase");
     }
 
     /**
@@ -305,15 +304,15 @@ export default class Kami {
         this.crease("B", 0, 1, 0, 0);
     }
 
-    public rotate(direction: "right" | "left"): RotateAction {
+    public rotate(direction: 1 | -1): DisplayAction {
         const creases = this.creases.toList().filter(crease => crease.type !== "B");
 
         this.clear();
 
         for (let crease of creases) {
             const delta = new Vector(-0.5, -0.5);
-            const mx = direction === "left" ? new Vector(0, 1) : new Vector(0, -1);
-            const my = direction === "left" ? new Vector(-1, 0) : new Vector(1, 0);
+            const mx = new Vector(0, -1 * direction);
+            const my = new Vector(direction, 0);
 
             const v1 = crease.vertex1.translate(delta).toVector();
             const v2 = crease.vertex2.translate(delta).toVector();

@@ -44,7 +44,7 @@ export default function KamiDisplay({ kami, process }: KamiDisplayProps) {
 
     const handleClick = () => {
         if (tool === "E" && hoveredCrease) {
-            process(hoveredCrease.toEraseAction());
+            process(hoveredCrease.toAction("erase"));
             setHoveredCrease(undefined);
         } else if (hoveredVertex) {
             if (selectedVertex) {

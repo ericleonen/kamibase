@@ -1,21 +1,30 @@
 import OptionMenu, { Option } from "./OptionMenu";
 import OptionShadow from "./OptionShadow";
 import TitleField from "./TitleField";
-import { Action } from "@/origami/ProcessManager";
+import ProcessManager, { Action } from "@/origami/ProcessManager";
 
 type TopBarProps = {
-    process: (action: Action) => void
+    process: (action: Action) => void,
+    processManager: ProcessManager
 }
 
-export default function TopBar({ process }: TopBarProps) {
-    const handleRotate = (direction: "left" | "right") => {
+export default function TopBar({ process, processManager }: TopBarProps) {
+    const handleUndo = () => {
+        processManager.undo()?.forEach(process);
+    }
+
+    const handleRedo = () => {
+        processManager.redo()?.forEach(process);
+    }
+    
+    const handleRotate = (direction: 1 | -1) => {
         process({
             name: "rotate",
             params: { direction }
         });
     }
 
-    const handleZoom = (direction: "in" | "out") => {
+    const handleZoom = (direction: 1 | -1) => {
         process({
             name: "zoom",
             params: { direction }
@@ -48,33 +57,33 @@ export default function TopBar({ process }: TopBarProps) {
                 </OptionMenu>
                 <OptionMenu name="Edit">
                     <Option
-                        onClick={() => {}}
+                        onClick={handleUndo}
                         shortcut="Ctrl+Z"
                     >
                         Undo
                     </Option>
                     <Option
-                        onClick={() => {}}
+                        onClick={handleRedo}
                         shortcut="Ctrl+Shift+Z"
                     >
                         Redo
                     </Option>
                 </OptionMenu>
                 <OptionMenu name="View">
-                    <Option onClick={() => handleZoom("in")}>
+                    <Option onClick={() => handleZoom(1)}>
                         Zoom in
                     </Option>
-                    <Option onClick={() => handleZoom("out")}>
+                    <Option onClick={() => handleZoom(-1)}>
                         Zoom out
                     </Option>
                     <Option 
-                        onClick={() => handleRotate("right")}
+                        onClick={() => handleRotate(1)}
                         shortcut="Ctrl+R"
                     >
                         Rotate 90° right
                     </Option>
                     <Option 
-                        onClick={() => handleRotate("left")}
+                        onClick={() => handleRotate(-1)}
                         shortcut="Ctrl+L"
                     >
                         Rotate 90° left
