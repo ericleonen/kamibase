@@ -50,3 +50,13 @@ export const KAMI_ROTATION_DURATION = 0.3;
  * The zoom in and out buttons change the size of the Kami by intervals of KAMI_ZOOM_DELTA pixels.
  */
 export const KAMI_ZOOM_DELTA = 100;
+
+/**
+ * It takes KAMI_ZOOM_DURATION seconds to zoom in and out when using the zoom buttons.
+ */
+export const KAMI_ZOOM_DURATION = 0.25;
+
+/**
+ * The dimensions of a Kami will be in the range of KAMI_DIMS_RANGE.
+ */
+export const KAMI_DIMS_RANGE = [300, 700];

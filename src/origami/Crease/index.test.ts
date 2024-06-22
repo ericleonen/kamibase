@@ -37,18 +37,6 @@ test("contains() confirms a Crease is in another Crease", () => {
     expect(CREASES["major mountain"].contains(innerCrease)).toBeTruthy();
 });
 
-test("overlaps() confirms overlap between Creases", () => {
-    const noOverlap1 = new Crease("M", VERTEXES["top left"], VERTEXES["center"]);
-    const noOverlap2 = new Crease("V", VERTEXES["center"], VERTEXES["bottom right"]);
-
-    expect(noOverlap1.overlaps(noOverlap2)).toBeFalsy();
-
-    const overlap1 = new Crease("M", VERTEXES["top left"], new Vertex(0.75, 0.75));
-    const overlap2 = new Crease("V", new Vertex(0.25, 0.25), VERTEXES["bottom right"]);
-
-    expect(overlap1.overlaps(overlap2)).toBeTruthy();
-});
-
 test("isParallelTo() confirms Creases are parallel", () => {
     const notParallel1 = CREASES["major mountain"];
     const notParallel2 = CREASES["minor valley"];

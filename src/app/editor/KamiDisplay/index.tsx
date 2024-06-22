@@ -1,36 +1,33 @@
 import Kami from "@/origami/Kami";
 import { useRender } from "./render";
-import { HOVER_RADIUS, KAMI_PIXELS, KAMI_ROTATION_DURATION, PADDING } from "@/settings";
-import { useAtom, useAtomValue } from "jotai";
-import { rotateAtom, sizeAtom, toolAtom, zoomAtom } from "../page";
+import { HOVER_RADIUS, KAMI_PIXELS, PADDING } from "@/settings";
+import { useAtomValue } from "jotai";
+import { kamiDimsAtom, kamiStringAtom, toolAtom } from "../page";
 import { useEffect, useState } from "react";
 import Vertex from "@/origami/Vertex";
 import Point from "@/origami/Point";
 import Crease, { CreaseType } from "@/origami/Crease";
-import { motion } from "framer-motion";
+import { Action } from "@/origami/ProcessManager";
 
-const kami = Kami.fromString(`
-    N 0.25 0 0.25 1
-    N 0.5 0 0.5 1
-    N 0.75 0 0.75 1
-    N 0 0.25 1 0.25
-    N 0 0.5 1 0.5
-    N 0 0.75 1 0.75
-`);
+type KamiDisplayProps = {
+    kami: Kami,
+    process: (action: Action) => void
+}
 
-export default function KamiSection() {
+export default function KamiDisplay({ kami, process }: KamiDisplayProps) {
+    const kamiString = useAtomValue(kamiStringAtom);
+
     const [hoveredVertex, setHoveredVertex] = useState<Vertex>();
     const [selectedVertex, setSelectedVertex] = useState<Vertex>();
     const [mousePoint, setMousePoint] = useState<Point>();
     const [hoveredCrease, setHoveredCrease] = useState<Crease>();
     
-    const [size, setSize] = useAtom(sizeAtom);
-    const [zoom, setZoom] = useAtom(zoomAtom);
-    const [rotate, setRotate] = useAtom(rotateAtom);
+    const kamiDims = useAtomValue(kamiDimsAtom);
 
     const tool = useAtomValue(toolAtom);
     const canvasRef = useRender({ 
-        kami, 
+        kami,
+        kamiString, 
         tool, 
         hoveredVertex, 
         selectedVertex,
@@ -46,10 +43,8 @@ export default function KamiSection() {
     }, [tool]);
 
     const handleClick = () => {
-        if (zoom || rotate) return;
-
         if (tool === "E" && hoveredCrease) {
-            kami.eraseCrease(hoveredCrease);
+            process(hoveredCrease.toEraseAction());
             setHoveredCrease(undefined);
         } else if (hoveredVertex) {
             if (selectedVertex) {
@@ -57,11 +52,16 @@ export default function KamiSection() {
                     // Unselect selected Vertex by clicking on it twice
                 } else {
                     // Crease Kami by clicking two different Vertexes
-                    kami.crease(
-                        tool as CreaseType, 
-                        hoveredVertex.x, hoveredVertex.y, 
-                        selectedVertex.x, selectedVertex.y
-                    );
+                    process({
+                        name: "crease",
+                        params: {
+                            type: tool as CreaseType,
+                            x1: hoveredVertex.x,
+                            y1: hoveredVertex.y,
+                            x2: selectedVertex.x,
+                            y2: selectedVertex.y
+                        }
+                    });
                 }
 
                 setSelectedVertex(undefined);
@@ -76,7 +76,7 @@ export default function KamiSection() {
     const handleMouseMove = (e: React.MouseEvent) => {
         const canvas = canvasRef.current;
 
-        if (!canvas || zoom || rotate) return;
+        if (!canvas) return;
 
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
@@ -93,7 +93,7 @@ export default function KamiSection() {
             for (let crease of kami.creases.toList(true)) {
                 if (crease.type === "B") continue;
 
-                if (mousePoint.distance(crease) * canvas.height < HOVER_RADIUS) {
+                if (crease.distanceToPoint(mousePoint) * canvas.height < HOVER_RADIUS) {
                     hoveredCreaseFound = true;
                     setHoveredCrease(crease);
 
@@ -124,43 +124,13 @@ export default function KamiSection() {
         }
     };
 
-    const rotateKami = () => {
-        if (rotate) {
-            kami.rotate(rotate);
-            setRotate(undefined);
-        }
-    }
-
-    const stopZoom = () => {
-        setZoom(undefined);
-    }
-
     return (
-        <motion.canvas
-            animate={{
-                rotate: 
-                    rotate === "R" ? 90 :
-                    rotate === "L" ? -90 :
-                    0,
-                height: size,
-                width: size,
-                left: `calc(50% - ${size / 2}px)`,
-                top: `calc(50% - ${size / 2}px)`
-            }}
-            transition={{
-                duration: 
-                    rotate ? KAMI_ROTATION_DURATION :
-                    zoom ? 0.25 :
-                    0
-            }}
-            onAnimationComplete={
-                rotate ? rotateKami :
-                zoom ? stopZoom :
-                undefined
-            }
-            className="absolute"
+        <canvas
+            className="absolute transition-all left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%]"
             style={{
                 cursor: tool === "E" ? "url(eraserToolCursor.png) 2 8, auto" : "auto",
+                height: `${kamiDims}px`,
+                width: `${kamiDims}px`
             }}
             onClick={handleClick}
             onMouseMove={handleMouseMove}

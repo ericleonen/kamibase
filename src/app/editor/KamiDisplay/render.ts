@@ -1,10 +1,18 @@
-import Kami from "@/origami/Kami";
-import { CREASE_WIDTH, HOVERED_VERTEX_RADIUS, HOVER_CREASE_WIDTH, KAMI_BORDER_WIDTH, KAMI_PIXELS, PADDING, SELECTED_VERTEX_RADIUS } from "@/settings";
+import { 
+    CREASE_WIDTH, 
+    HOVERED_VERTEX_RADIUS, 
+    HOVER_CREASE_WIDTH, 
+    KAMI_BORDER_WIDTH, 
+    KAMI_PIXELS, 
+    PADDING, 
+    SELECTED_VERTEX_RADIUS
+} from "@/settings";
 import { RefObject, useRef, useEffect } from "react";
 import { Tool } from "../ToolSection";
 import Vertex from "@/origami/Vertex";
 import Crease, { CreaseType } from "@/origami/Crease";
 import Point from "@/origami/Point";
+import Kami from "@/origami/Kami";
 
 let rootStyle: CSSStyleDeclaration;
 
@@ -15,7 +23,8 @@ try {
 }
 
 type RenderData = {
-    kami: Kami,
+    kami: Kami
+    kamiString: string,
     tool: Tool,
     hoveredVertex?: Vertex,
     selectedVertex?: Vertex,
@@ -29,7 +38,7 @@ type RenderData = {
  * @param data RenderData
  */
 export function useRender(data: RenderData): RefObject<HTMLCanvasElement> {
-    const { kami, tool, hoveredVertex, selectedVertex, mousePoint, hoveredCrease } = data;
+    const { kamiString, tool, hoveredVertex, selectedVertex, mousePoint, hoveredCrease } = data;
 
     const kamiRef = useRef<HTMLCanvasElement>(null);
 
@@ -38,7 +47,7 @@ export function useRender(data: RenderData): RefObject<HTMLCanvasElement> {
         const context = canvas && canvas.getContext("2d");
 
         if (context) render(data, canvas, context);
-    }, [kami.toString(), tool, hoveredVertex, selectedVertex, mousePoint, hoveredCrease]);
+    }, [kamiString, tool, hoveredVertex, selectedVertex, mousePoint, hoveredCrease]);
 
     return kamiRef;
 }

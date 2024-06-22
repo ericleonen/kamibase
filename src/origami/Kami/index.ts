@@ -3,6 +3,8 @@ import Vertex from "../Vertex";
 import GeometrySet from "../GeometrySet";
 import { VERTEXES } from "../common";
 import Vector from "../Vector";
+import { EraseAction, Process, RotateAction } from "../ProcessManager";
+import { listKey } from "@/utils/string";
 
 /**
  * Represents a Kami (origami paper) with all of its Vertexes and Creases.
@@ -130,7 +132,7 @@ export default class Kami {
      * @param x2 X-coordinate of the second vertex
      * @param y2 Y-coordinate of the second vertex
      */
-    public crease(type: string, x1: number, y1: number, x2: number, y2: number) {
+    public crease(type: string, x1: number, y1: number, x2: number, y2: number): Process {
         if (!["M", "V", "N", "B"].includes(type)) {
             throw new Error(`Invalid crease type: ${type}`);
         }
@@ -146,7 +148,7 @@ export default class Kami {
             newCrease.vertex2
         );
 
-        this.creaseHelper(newCrease, this.creases.toList());
+        return this.creaseHelper(newCrease, this.creases.toList());
     }
 
     /**
@@ -155,81 +157,102 @@ export default class Kami {
      * @param newCrease Crease
      * @param oldCreases Array of the Creases already in the Kami
      */
-    private creaseHelper(newCrease: Crease, oldCreases: Crease[] = []) {
+    private creaseHelper(newCrease: Crease, oldCreases: Crease[] = []): Process {
         if (oldCreases.length === 0) {
             this.creases.add(newCrease);
             newCrease.vertex1.creases.add(newCrease);
             newCrease.vertex2.creases.add(newCrease);
-            return;
+
+            return [newCrease.toCreaseAction()];
         }
 
         const oldCrease = oldCreases.shift()!;
+        const process: Process = [];
 
         let intersection = newCrease.getIntersectionWith(oldCrease);
 
         if (intersection && oldCrease.type !== "B") {
+            // handle the case where new and old crease intersect
+
             intersection = this.vertexes.get(intersection);
 
-            this.eraseCrease(oldCrease, false);
-            oldCrease.split(intersection).forEach(crease => this.creaseHelper(crease));
+            // erase the existing crease
+            process.push(this.eraseHelper(oldCrease, false));
 
-            newCrease.split(intersection)
-                .forEach(splitCrease => this.creaseHelper(splitCrease, oldCreases));
+            // split the old crease and crease each part onto the Kami
+            oldCrease.split(intersection).forEach(crease => {
+                process.push(...this.creaseHelper(crease));
+            });
+
+            // split the new crease and crease each part onto the Kami
+            newCrease.split(intersection).forEach(splitCrease => {
+                process.push(...this.creaseHelper(splitCrease, oldCreases));
+            });
+
         } else if (oldCrease.contains(newCrease)) {
-            this.eraseCrease(oldCrease, false);
+            // handle the case where the old contains the new
 
+            // erase the existing crease
+            process.push(this.eraseHelper(oldCrease, false));
+
+            // if the creases don't share the same left/top vertex, crease the left segment onto
+            // the kami
             if (!oldCrease.vertex1.equals(newCrease.vertex1)) {
-                this.creaseHelper(new Crease(oldCrease.type, oldCrease.vertex1, newCrease.vertex1));
+                const leftCrease = new Crease(oldCrease.type, oldCrease.vertex1, newCrease.vertex1);
+                process.push(...this.creaseHelper(leftCrease));
             }
 
-            this.creaseHelper(newCrease);
+            // add the new crease onto the Kami
+            process.push(...this.creaseHelper(newCrease));
 
+            // if the creases don't share the same right/bottom vertex, crease the right segment
+            // onto the kami
             if (!newCrease.vertex2.equals(oldCrease.vertex2)) {
-                this.creaseHelper(new Crease(oldCrease.type, newCrease.vertex2, oldCrease.vertex2));
+                const rightCrease = new Crease(oldCrease.type, newCrease.vertex2, oldCrease.vertex2)
+                process.push(...this.creaseHelper(rightCrease));
             }
+
         } else if (newCrease.contains(oldCrease)) {
-            this.eraseCrease(oldCrease, false);
+            // handle the case where the new crease contains the old
 
-            this.creaseHelper(new Crease(newCrease.type, oldCrease.vertex1, oldCrease.vertex2));
+            // erase the existing crease
+            process.push(this.eraseHelper(oldCrease, false));
 
+            // if the creases don't share the same left/top vertex, crease the left segment onto
+            // the Kami
             if (!newCrease.vertex1.equals(oldCrease.vertex1)) {
-                this.creaseHelper(
-                    new Crease(newCrease.type, newCrease.vertex1, oldCrease.vertex1),
-                    oldCreases
-                );
+                const leftCrease = new Crease(newCrease.type, newCrease.vertex1, oldCrease.vertex1)
+                process.push(...this.creaseHelper(leftCrease, oldCreases));
             }
 
+            // make the old crease have the same type as the new crease
+            const retyped = new Crease(newCrease.type, oldCrease.vertex1, oldCrease.vertex2);
+            process.push(...this.creaseHelper(retyped));
+
+            // if the creases don't share the same right/bottom vertex, crease the right segment
+            // onto the Kami
             if (!oldCrease.vertex2.equals(newCrease.vertex2)) {
-                this.creaseHelper(
-                    new Crease(newCrease.type, oldCrease.vertex2, newCrease.vertex2),
-                    oldCreases
-                );
+                const rightCrease = new Crease(newCrease.type, oldCrease.vertex2, newCrease.vertex2)
+                process.push(...this.creaseHelper(rightCrease, oldCreases));
             }
-        } else if (newCrease.overlaps(oldCrease)) {
 
-            if (newCrease.contains(oldCrease.vertex1)) {
-                this.eraseCrease(oldCrease, false);
-                const [newCrease1, newCrease2] = newCrease.split(oldCrease.vertex1);
-                
-                this.creaseHelper(newCrease1, oldCreases);
-    
-                this.creaseHelper(newCrease2);
-                this.creaseHelper(new Crease(oldCrease.type, newCrease.vertex2, oldCrease.vertex2));
-    
-            } else if (newCrease.contains(oldCrease.vertex2)) {
-                this.eraseCrease(oldCrease, false);
-                const [newCrease1, newCrease2] = newCrease.split(oldCrease.vertex2);
-    
-                this.creaseHelper(new Crease(oldCrease.type, oldCrease.vertex1, newCrease.vertex1));
-                this.creaseHelper(newCrease1);
-    
-                this.creaseHelper(newCrease2, oldCreases);
-            }
         } else {
-            this.creaseHelper(newCrease, oldCreases);
+            process.push(...this.creaseHelper(newCrease, oldCreases));
         }
 
         oldCreases.unshift(oldCrease);
+
+        return process;
+    }
+
+    public erase(x1: number, y1: number, x2: number, y2: number): EraseAction {
+        const crease = this.creases.getGeometrically(x1, y1, x2, y2);
+
+        if (crease) {
+            return this.eraseHelper(crease);
+        } else {
+            throw new Error("Cannot erase a non-existing Crease");
+        }
     }
 
     /**
@@ -237,7 +260,7 @@ export default class Kami {
      * @param crease 
      * @param eraseVertexes Optional boolean, default true
      */
-    public eraseCrease(crease: Crease, eraseVertexes: boolean = true) {
+    private eraseHelper(crease: Crease, eraseVertexes: boolean = true): EraseAction {
         this.creases.remove(crease);
 
         crease.vertex1.creases.remove(crease);
@@ -247,6 +270,8 @@ export default class Kami {
             this.eraseVertex(crease.vertex1);
             this.eraseVertex(crease.vertex2);
         }
+
+        return crease.toEraseAction();
     }
 
     /**
@@ -264,13 +289,13 @@ export default class Kami {
                 const [{vertex1}, {vertex2}] = [crease1, crease2];
 
                 this.creaseHelper(new Crease(type, vertex1, vertex2));
-                this.eraseCrease(crease1);
-                this.eraseCrease(crease2);
+                this.eraseHelper(crease1);
+                this.eraseHelper(crease2);
             }
         }
     }
 
-    public clear() {
+    private clear() {
         this.creases.clear();
         this.vertexes.clear();
 
@@ -280,15 +305,15 @@ export default class Kami {
         this.crease("B", 0, 1, 0, 0);
     }
 
-    public rotate(direction: "R" | "L") {
+    public rotate(direction: "right" | "left"): RotateAction {
         const creases = this.creases.toList().filter(crease => crease.type !== "B");
 
         this.clear();
 
         for (let crease of creases) {
             const delta = new Vector(-0.5, -0.5);
-            const mx = direction === "L" ? new Vector(0, 1) : new Vector(0, -1);
-            const my = direction === "L" ? new Vector(-1, 0) : new Vector(1, 0);
+            const mx = direction === "left" ? new Vector(0, 1) : new Vector(0, -1);
+            const my = direction === "left" ? new Vector(-1, 0) : new Vector(1, 0);
 
             const v1 = crease.vertex1.translate(delta).toVector();
             const v2 = crease.vertex2.translate(delta).toVector();
@@ -300,5 +325,12 @@ export default class Kami {
 
             this.crease(crease.type, x1 + 0.5, y1 + 0.5, x2 + 0.5, y2 + 0.5);
         }
+
+        return {
+            name: "rotate",
+            params: {
+                direction
+            }
+        };
     }
 }

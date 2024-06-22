@@ -3,6 +3,8 @@ import Vector from "../Vector";
 import Vertex from "../Vertex";
 import { listKey } from "@/utils/string";
 import Geometry from "../Geometry";
+import { Action, CreaseAction, EraseAction } from "../ProcessManager";
+import Point from "../Point";
 
 export type CreaseType = "M" | "V" | "N" | "B";
 
@@ -73,17 +75,6 @@ export default class Crease implements Geometry {
     }
 
     /**
-     * Returns true if this Crease overlaps the other Crease.
-     * @param other Crease
-     */
-    public overlaps(other: Crease): boolean {
-        return (
-                (other.contains(this.vertex1) && !other.vertex2.equals(this.vertex1)) 
-                || (other.contains(this.vertex2) && !other.vertex1.equals(this.vertex2))
-            ) && this.isParallelTo(other);
-    }
-
-    /**
      * Returns true if this and the other Crease are parallel, false otherwise.
      * @param other Crease
      */
@@ -149,5 +140,41 @@ export default class Crease implements Geometry {
      */
     public toString(): string {
         return listKey(this.type, this.key());
+    }
+
+    public toCreaseAction(): CreaseAction {
+        return {
+            name: "crease",
+            params: {
+                type: this.type,
+                x1: this.vertex1.x,
+                y1: this.vertex1.y,
+                x2: this.vertex2.x,
+                y2: this.vertex2.y
+            }
+        };
+    }
+
+    public toEraseAction(): EraseAction {
+        return {
+            name: "erase",
+            params: {
+                x1: this.vertex1.x,
+                y1: this.vertex1.y,
+                x2: this.vertex2.x,
+                y2: this.vertex2.y
+            }
+        };
+    }
+
+    public distanceToPoint(point: Point): number {
+        const vertex = new Vertex(point.x, point.y);
+        const vector1 = Vector.fromVertexes(this.vertex1, vertex);
+        const vector2 = this.vector;
+
+        const x = vector1.dot(vector2) / vector2.magnitude;
+
+        if (x <= 0 || x >= vector2.magnitude) return Infinity;
+        else return Math.sqrt(vector1.magnitude * vector1.magnitude - x * x);
     }
 }

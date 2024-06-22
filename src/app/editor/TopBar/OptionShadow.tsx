@@ -1,12 +1,12 @@
 import { useAtom } from "jotai"
-import { optionAtom } from "./Option";
+import { optionMenuAtom } from "./OptionMenu";
 
 export default function OptionShadow() {
-    const [option, setOption] = useAtom(optionAtom);
+    const [optionMenu, setOptionMenu] = useAtom(optionMenuAtom);
 
-    return option && (
+    return optionMenu && (
         <div 
-            onClick={() => setOption(undefined)}
+            onClick={() => setOptionMenu(undefined)}
             className="absolute h-[calc(100vh-4rem)] w-screen top-16 left-0 z-10"
         />
     )

@@ -1,22 +1,22 @@
 import { atom, useAtom, useSetAtom } from "jotai";
 import React, { useState } from "react"
 
-export const optionAtom = atom<string | undefined>(undefined);
+export const optionMenuAtom = atom<string | undefined>(undefined);
 
-type OptionProps = {
+type OptionMenuProps = {
     name: string,
     children?: React.ReactNode
 }
 
-export default function Option({ name, children }: OptionProps) {
-    const [option, setOption] = useAtom(optionAtom);
+export default function OptionMenu({ name, children }: OptionMenuProps) {
+    const [optionMenu, setOptionMenu] = useAtom(optionMenuAtom);
 
-    const selected = option === name;
+    const selected = optionMenu === name;
 
     return (
         <div className="relative text-sm">
             <button
-                onClick={() => setOption(name)}
+                onClick={() => setOptionMenu(name)}
                 className="transition-colors hover:bg-theme-light-black flex items-center px-6 h-full"
                 style={{
                     background: selected ? "var(--theme-yellow)" : undefined,
@@ -47,18 +47,18 @@ function Dropdown({ children }: DropdownProps) {
     )
 }
 
-type ActionProps = {
+type OptionProps = {
     onClick: () => void
     shortcut?: string,
     children: React.ReactNode
 }
 
-export function Action({ onClick, shortcut, children }: ActionProps) {
-    const setOption = useSetAtom(optionAtom);
+export function Option({ onClick, shortcut, children }: OptionProps) {
+    const setOptionMenu = useSetAtom(optionMenuAtom);
 
     const handleClick = () => {
         onClick();
-        setOption(undefined);
+        setOptionMenu(undefined);
     };
 
     return (

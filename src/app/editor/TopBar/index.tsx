@@ -1,83 +1,85 @@
-import { useSetAtom } from "jotai";
-import Option, { Action } from "./Option";
+import OptionMenu, { Option } from "./OptionMenu";
 import OptionShadow from "./OptionShadow";
 import TitleField from "./TitleField";
-import { rotateAtom, sizeAtom, zoomAtom } from "../page";
-import { KAMI_ZOOM_DELTA } from "@/settings";
+import { Action } from "@/origami/ProcessManager";
 
-export default function TopBar() {
-    const setRotate = useSetAtom(rotateAtom);
-    const setSize = useSetAtom(sizeAtom);
-    const setZoom = useSetAtom(zoomAtom);
+type TopBarProps = {
+    process: (action: Action) => void
+}
 
-    const handleZoom = (z: "+" | "-") => {
-        setZoom(z);
+export default function TopBar({ process }: TopBarProps) {
+    const handleRotate = (direction: "left" | "right") => {
+        process({
+            name: "rotate",
+            params: { direction }
+        });
+    }
 
-        if (z === "+") {
-            setSize(origSize => origSize + KAMI_ZOOM_DELTA);
-        } else {
-            setSize(origSize => origSize - KAMI_ZOOM_DELTA);
-        }
-    };
+    const handleZoom = (direction: "in" | "out") => {
+        process({
+            name: "zoom",
+            params: { direction }
+        });
+    }
 
     return (
         <>
             <section className="flex relative h-16 bg-theme-black">
-                <Option name="File">
-                    <Action 
+                <OptionMenu name="File">
+                    <Option 
                         onClick={() => {}}
                         shortcut="Ctrl+N"
                     >
                         New Kami file
-                    </Action>
-                    <Action 
+                    </Option>
+                    <Option 
                         onClick={() => {}}
                         shortcut="Ctrl+O"
                     >
                         Open Kami file
-                    </Action>
-                    <Action
+                    </Option>
+                    <Option
                         onClick={() => {}}
                         shortcut="Ctrl+S"
                     >
                         Save
-                    </Action>
-                    <Action onClick={() => {}}>Delete</Action>
-                </Option>
-                <Option name="Edit">
-                    <Action
+                    </Option>
+                    <Option onClick={() => {}}>Delete</Option>
+                </OptionMenu>
+                <OptionMenu name="Edit">
+                    <Option
                         onClick={() => {}}
                         shortcut="Ctrl+Z"
                     >
                         Undo
-                    </Action>
-                    <Action
+                    </Option>
+                    <Option
                         onClick={() => {}}
                         shortcut="Ctrl+Shift+Z"
                     >
                         Redo
-                    </Action>
-                </Option>
-                <Option name="View">
-                    <Action onClick={() => handleZoom("+")}>
+                    </Option>
+                </OptionMenu>
+                <OptionMenu name="View">
+                    <Option onClick={() => handleZoom("in")}>
                         Zoom in
-                    </Action>
-                    <Action onClick={() => handleZoom("-")}>
+                    </Option>
+                    <Option onClick={() => handleZoom("out")}>
                         Zoom out
-                    </Action>
-                    <Action 
-                        onClick={() => setRotate("R")}
+                    </Option>
+                    <Option 
+                        onClick={() => handleRotate("right")}
                         shortcut="Ctrl+R"
                     >
                         Rotate 90° right
-                    </Action>
-                    <Action 
-                        onClick={() => setRotate("L")}
+                    </Option>
+                    <Option 
+                        onClick={() => handleRotate("left")}
                         shortcut="Ctrl+L"
                     >
                         Rotate 90° left
-                    </Action>
-                </Option>
+                    </Option>
+                </OptionMenu>
                 <TitleField />
             </section>
             <OptionShadow />

@@ -1,3 +1,4 @@
+import { listKey } from "@/utils/string";
 import Crease from "../Crease";
 import Geometry from "../Geometry";
 import Vertex from "../Vertex";
@@ -69,12 +70,20 @@ export default class GeometrySet<T extends Geometry> {
      * adds the item and returns it.
      * @param item 
      */
-    public get(item: T) {
+    public get(item: T): T {
         if (this.contains(item)) {
             return this.map[item.key()];
         } else {
             this.add(item);
             return item;
+        }
+    }
+
+    public getGeometrically(...n: number[]): T | undefined {
+        const key = listKey(...n);
+
+        if (key in this.map) {
+            return this.map[key];
         }
     }
 
