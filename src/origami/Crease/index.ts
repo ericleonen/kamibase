@@ -3,8 +3,8 @@ import Vector from "../Vector";
 import Vertex from "../Vertex";
 import { listKey } from "@/utils/string";
 import Geometry from "../Geometry";
-import { CreaseAction } from "..";
 import Point from "../Point";
+import { CreaseAction } from "../ProcessManager/types";
 
 export type CreaseType = "M" | "V" | "N" | "B";
 
@@ -21,9 +21,6 @@ export default class Crease implements Geometry {
     /**
      * Initializes a Crease object between two distinct Vertexes with the given type. If the given
      * Vertexes are equal, throws an Error.
-     * @param vertex1 Vertex
-     * @param vertex2 Vertex
-     * @param type CreaseType
      */
     constructor(type: CreaseType, vertex1: Vertex, vertex2: Vertex) {
         if (vertex1.equals(vertex2)) throw new Error("Creases need two distinct Vertexes.");
@@ -44,7 +41,6 @@ export default class Crease implements Geometry {
      * Returns a positive number if this Crease is greater than the other Crease, 0 if they are
      * equal, and a negative number otherwise. Creases are compared by vertex1 first followed by
      * the vertex2.
-     * @param other Crease
      */
     public compareTo(other: Crease): number {
         return round(this.vertex1.compareTo(other.vertex1))
@@ -53,7 +49,6 @@ export default class Crease implements Geometry {
 
     /**
      * Returns true if this and the other Crease are equal, false otherwise.
-     * @param other Crease
      */
     public equals(other: Crease): boolean {
         return this.compareTo(other) === 0;
@@ -61,7 +56,6 @@ export default class Crease implements Geometry {
 
     /**
      * Returns true if this Crease contains the given Vertex or Crease.
-     * @param other Vertex or Crease
      */
     public contains(other: Vertex | Crease): boolean {
         if (other instanceof Vertex) {
@@ -76,7 +70,6 @@ export default class Crease implements Geometry {
 
     /**
      * Returns true if this and the other Crease are parallel, false otherwise.
-     * @param other Crease
      */
     public isParallelTo(other: Crease): boolean {
         return this.vector.isParallelTo(other.vector);
@@ -84,9 +77,7 @@ export default class Crease implements Geometry {
 
     /**
      * Returns the Vertex intersection of this and the other Crease. If there is not intersection,
-     * returns undefined. Creases must actually intersect (no "touching") for there to be an actual
-     * intersection.
-     * @param other Crease
+     * returns undefined.
      */
     public getIntersectionWith(other: Crease): Vertex | undefined {
         if (this.isParallelTo(other)) return;
@@ -110,9 +101,8 @@ export default class Crease implements Geometry {
     }
 
     /**
-     * Splits this Crease on the given Vertex and returns the resulting Creases. If the Vertex is
+     * Splits this Crease on the given Vertex and returns the resulting Crease(s). If the Vertex is
      * not on the Crease, throws an Error.
-     * @param vertex Vertex on the Crease
      */
     public split(vertex: Vertex): Crease[] {
         if (!this.contains(vertex)) {
@@ -129,7 +119,7 @@ export default class Crease implements Geometry {
     }
 
     /**
-     * Returns the GeometryKey of this Crease.
+     * Returns the geometry key of this Crease.
      */
     public key(): string {
         return listKey(this.vertex1.key(), this.vertex2.key());
@@ -142,6 +132,9 @@ export default class Crease implements Geometry {
         return listKey(this.type, this.key());
     }
 
+    /**
+     * Converts and returns this Crease as a CreaseAction—either a crease or erase.
+     */
     public toAction(name: "crease" | "erase"): CreaseAction {
         return {
             name,
@@ -155,6 +148,10 @@ export default class Crease implements Geometry {
         };
     }
 
+    /**
+     * Returns the euclidean distance from this Crease to a point. If the point is "outside" the
+     * Crease, returns Infinity.
+     */
     public distanceToPoint(point: Point): number {
         const vertex = new Vertex(point.x, point.y);
         const vector1 = Vector.fromVertexes(this.vertex1, vertex);
