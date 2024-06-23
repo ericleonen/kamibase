@@ -10,14 +10,11 @@ import Kami from "@/origami/Kami";
 import { inBetween } from "@/utils/math";
 
 export const toolAtom = atom<Tool>("M");
-
 export const kamiDimsAtom = atom<number>(DEFAULT_KAMI_DIMS);
-
 export const kamiStringAtom = atom<string>("");
 
 export default function EditorPage() {
     const processManager = new ProcessManager();
-
     const kami = Kami.fromString(`
         N 0.25 0 0.25 1
         N 0.5 0 0.5 1
@@ -35,6 +32,7 @@ export default function EditorPage() {
 
         if (action.name === "crease") {
             const { type, x1, y1, x2, y2 } = action.params;
+            
             processTaken = kami.crease(type, x1, y1, x2, y2);
             setKamiString(kami.toString());
         } else if (action.name === "erase") {
