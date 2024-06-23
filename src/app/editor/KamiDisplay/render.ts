@@ -2,9 +2,9 @@ import {
     CREASE_WIDTH, 
     HOVERED_VERTEX_RADIUS, 
     HOVER_CREASE_WIDTH, 
-    KAMI_BORDER_WIDTH, 
-    KAMI_PIXELS, 
+    KAMI_BORDER_WIDTH,
     PADDING, 
+    PIXEL_DENSITY, 
     SELECTED_VERTEX_RADIUS
 } from "@/settings";
 import { RefObject, useRef, useEffect } from "react";
@@ -25,6 +25,7 @@ try {
 type RenderData = {
     kami: Kami
     kamiString: string,
+    kamiDims: number,
     tool: Tool,
     hoveredVertex?: Vertex,
     selectedVertex?: Vertex,
@@ -38,7 +39,15 @@ type RenderData = {
  * @param data RenderData
  */
 export function useRender(data: RenderData): RefObject<HTMLCanvasElement> {
-    const { kamiString, tool, hoveredVertex, selectedVertex, mousePoint, hoveredCrease } = data;
+    const { 
+        kamiString, 
+        kamiDims, 
+        tool, 
+        hoveredVertex, 
+        selectedVertex, 
+        mousePoint, 
+        hoveredCrease 
+    } = data;
 
     const kamiRef = useRef<HTMLCanvasElement>(null);
 
@@ -47,7 +56,7 @@ export function useRender(data: RenderData): RefObject<HTMLCanvasElement> {
         const context = canvas && canvas.getContext("2d");
 
         if (context) render(data, canvas, context);
-    }, [kamiString, tool, hoveredVertex, selectedVertex, mousePoint, hoveredCrease]);
+    }, [kamiString, kamiDims, tool, hoveredVertex, selectedVertex, mousePoint, hoveredCrease]);
 
     return kamiRef;
 }
@@ -59,7 +68,7 @@ export function useRender(data: RenderData): RefObject<HTMLCanvasElement> {
  * @param context CanvasRenderingContext2D
  */
 export function render(data: RenderData, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
-    const { kami, tool, hoveredVertex, selectedVertex, mousePoint, hoveredCrease } = data;
+    const { kami, kamiDims, tool, hoveredVertex, selectedVertex, mousePoint, hoveredCrease } = data;
 
     context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -71,20 +80,21 @@ export function render(data: RenderData, canvas: HTMLCanvasElement, context: Can
         drawLine(
             crease.type, 
             crease.vertex1, 
-            crease.vertex2, 
+            crease.vertex2,
+            kamiDims,
             context, 
             lineWidth
         );
     });
 
-    if (hoveredVertex) drawPoint(hoveredVertex, HOVERED_VERTEX_RADIUS, context);
-    else if (mousePoint) drawPoint(mousePoint, HOVERED_VERTEX_RADIUS, context);
+    if (hoveredVertex) drawPoint(hoveredVertex, HOVERED_VERTEX_RADIUS, kamiDims, context);
+    else if (mousePoint) drawPoint(mousePoint, HOVERED_VERTEX_RADIUS, kamiDims, context);
 
-    if (selectedVertex) drawPoint(selectedVertex, SELECTED_VERTEX_RADIUS, context);
+    if (selectedVertex) drawPoint(selectedVertex, SELECTED_VERTEX_RADIUS, kamiDims, context);
 
     const draggedPoint = hoveredVertex || mousePoint;
     if (tool !== "E" && selectedVertex && draggedPoint) {
-        drawLine(tool as CreaseType, selectedVertex, draggedPoint, context);
+        drawLine(tool as CreaseType, selectedVertex, draggedPoint, kamiDims, context);
     }
 }
 
@@ -100,6 +110,7 @@ function drawLine(
     type: CreaseType, 
     point1: Point, 
     point2: Point, 
+    kamiDims: number,
     context: CanvasRenderingContext2D,
     lineWidth: number = 2
 ) {
@@ -116,8 +127,14 @@ function drawLine(
         rootStyle ? rootStyle.getPropertyValue(`--theme-${strokeColor}`) : strokeColor;
 
     context.beginPath();
-    context.moveTo(point1.x * KAMI_PIXELS + PADDING, point1.y * KAMI_PIXELS + PADDING);
-    context.lineTo(point2.x * KAMI_PIXELS + PADDING, point2.y * KAMI_PIXELS + PADDING);
+    context.moveTo(
+        (point1.x * kamiDims + PADDING) * PIXEL_DENSITY, 
+        (point1.y * kamiDims + PADDING) * PIXEL_DENSITY
+    );
+    context.lineTo(
+        (point2.x * kamiDims + PADDING) * PIXEL_DENSITY, 
+        (point2.y * kamiDims + PADDING) * PIXEL_DENSITY
+    );
     context.stroke();
     context.closePath();
 }
@@ -131,6 +148,7 @@ function drawLine(
 function drawPoint(
     point: Point,
     radius: number,
+    kamiDims: number,
     context: CanvasRenderingContext2D
 ) {
     context.fillStyle =
@@ -138,8 +156,8 @@ function drawPoint(
 
     context.beginPath();
     context.arc(
-        point.x * KAMI_PIXELS + PADDING, 
-        point.y * KAMI_PIXELS + PADDING, 
+        (point.x * kamiDims + PADDING) * PIXEL_DENSITY, 
+        (point.y * kamiDims + PADDING) * PIXEL_DENSITY, 
         radius, 
         0, 
         2 * Math.PI

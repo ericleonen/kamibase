@@ -176,12 +176,10 @@ export default class Kami {
             intersection = this.vertexes.get(intersection);
 
             // erase the existing crease
-            process.push(this.eraseHelper(oldCrease, false));
+            this.eraseHelper(oldCrease, false);
 
             // split the old crease and crease each part onto the Kami
-            oldCrease.split(intersection).forEach(crease => {
-                process.push(...this.creaseHelper(crease));
-            });
+            oldCrease.split(intersection).forEach(crease => this.creaseHelper(crease));
 
             // split the new crease and crease each part onto the Kami
             newCrease.split(intersection).forEach(splitCrease => {

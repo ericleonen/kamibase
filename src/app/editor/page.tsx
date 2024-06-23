@@ -8,31 +8,33 @@ import ProcessManager, { Action, Process } from "../../origami/ProcessManager";
 import { DEFAULT_KAMI_DIMS, KAMI_DIMS_RANGE, KAMI_ZOOM_DELTA } from "@/settings";
 import Kami from "@/origami/Kami";
 import { inBetween } from "@/utils/math";
+import { useMemo } from "react";
 
 export const toolAtom = atom<Tool>("M");
 export const kamiDimsAtom = atom<number>(DEFAULT_KAMI_DIMS);
 export const kamiStringAtom = atom<string>("");
 
 export default function EditorPage() {
-    const processManager = new ProcessManager();
-    const kami = Kami.fromString(`
+    const processManager = useMemo(() => new ProcessManager(), []);
+    const kami = useMemo(() => Kami.fromString(`
         N 0.25 0 0.25 1
         N 0.5 0 0.5 1
         N 0.75 0 0.75 1
         N 0 0.25 1 0.25
         N 0 0.5 1 0.5
         N 0 0.75 1 0.75
-    `);
+    `), []);
 
     const [kamiDims, setKamiDims] = useAtom(kamiDimsAtom);
     const setKamiString = useSetAtom(kamiStringAtom);
 
     const process = (action: Action) => {
+        console.log(action);
         let processTaken: Action | Process | undefined = undefined;
 
         if (action.name === "crease") {
             const { type, x1, y1, x2, y2 } = action.params;
-            
+
             processTaken = kami.crease(type, x1, y1, x2, y2);
             setKamiString(kami.toString());
         } else if (action.name === "erase") {

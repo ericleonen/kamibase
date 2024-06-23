@@ -18,5 +18,5 @@ export function approxEqual(a: number, b: number): boolean {
 }
 
 export function inBetween(x: number, min: number, max: number): boolean {
-    return min <= x && min <= max;
+    return min <= x && x <= max;
 }

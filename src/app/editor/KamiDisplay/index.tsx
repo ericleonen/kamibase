@@ -1,6 +1,6 @@
 import Kami from "@/origami/Kami";
 import { useRender } from "./render";
-import { HOVER_RADIUS, KAMI_PIXELS, PADDING } from "@/settings";
+import { HOVER_RADIUS, PADDING, PIXEL_DENSITY } from "@/settings";
 import { useAtomValue } from "jotai";
 import { kamiDimsAtom, kamiStringAtom, toolAtom } from "../page";
 import { useEffect, useState } from "react";
@@ -23,11 +23,13 @@ export default function KamiDisplay({ kami, process }: KamiDisplayProps) {
     const [hoveredCrease, setHoveredCrease] = useState<Crease>();
     
     const kamiDims = useAtomValue(kamiDimsAtom);
+    const canvasDims = kamiDims + 2 * PADDING; // width of Canvas in HTML pixels
 
     const tool = useAtomValue(toolAtom);
     const canvasRef = useRender({ 
         kami,
-        kamiString, 
+        kamiString,
+        kamiDims, 
         tool, 
         hoveredVertex, 
         selectedVertex,
@@ -79,13 +81,11 @@ export default function KamiDisplay({ kami, process }: KamiDisplayProps) {
         if (!canvas) return;
 
         const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
 
         const mousePoint = new Point(
-            ((e.clientX - rect.left) * scaleX - PADDING) / KAMI_PIXELS,
-            ((e.clientY - rect.top) * scaleY - PADDING) / KAMI_PIXELS
-        );
+            (e.clientX - rect.left - PADDING) / kamiDims,
+            (e.clientY - rect.top - PADDING) / kamiDims
+        )
 
         if (tool === "E") {
             let hoveredCreaseFound = false;
@@ -129,14 +129,14 @@ export default function KamiDisplay({ kami, process }: KamiDisplayProps) {
             className="absolute transition-all left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%]"
             style={{
                 cursor: tool === "E" ? "url(eraserToolCursor.png) 2 8, auto" : "auto",
-                height: `${kamiDims}px`,
-                width: `${kamiDims}px`
+                height: `${canvasDims}px`,
+                width: `${canvasDims}px`
             }}
             onClick={handleClick}
             onMouseMove={handleMouseMove}
             ref={canvasRef}
-            height={KAMI_PIXELS + 2 * PADDING}
-            width={KAMI_PIXELS + 2 * PADDING}
+            height={canvasDims * PIXEL_DENSITY}
+            width={canvasDims * PIXEL_DENSITY}
         />
     )
 }
