@@ -1,6 +1,3 @@
-import { assert } from "console";
-import { inBetween } from "./utils/math";
-
 // Two numbers are equal if they are equal up to PRECISION decimal places.
 export const PRECISION = 13;
 
@@ -58,4 +55,3 @@ export const KAMI_DIMS_RANGE = [300, 700];
  * The default dimensions of a Kami will be DEFAULT_KAMI_DIMS.
  */
 export const DEFAULT_KAMI_DIMS = 500;
-assert(inBetween(DEFAULT_KAMI_DIMS, KAMI_DIMS_RANGE[0], KAMI_DIMS_RANGE[1]));
