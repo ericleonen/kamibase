@@ -38,6 +38,20 @@ export default class Crease implements Geometry {
     }
 
     /**
+     * Reads a string and returns the corresponding Crease. String must be in the format:
+     * "type x1 y1 x2 y2". ONLY USE FOR TESTING.
+     */
+    public static fromString(str: string): Crease {
+        let [type, x1, y1, x2, y2] = str.split(" ");
+        
+        return new Crease(
+            type as CreaseType,
+            new Vertex(Number(x1), Number(y1)),
+            new Vertex(Number(x2), Number(y2))
+        );
+    }
+
+    /**
      * Returns a positive number if this Crease is greater than the other Crease, 0 if they are
      * equal, and a negative number otherwise. Creases are compared by vertex1 first followed by
      * the vertex2.
@@ -107,8 +121,7 @@ export default class Crease implements Geometry {
     public split(vertex: Vertex): Crease[] {
         if (!this.contains(vertex)) {
             throw new Error("Given vertex is not on Crease");
-        }
-        if (vertex.equals(this.vertex1) || vertex.equals(this.vertex2)) {
+        } else if (vertex.equals(this.vertex1) || vertex.equals(this.vertex2)) {
             return [this];
         } else {
             return [

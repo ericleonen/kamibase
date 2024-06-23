@@ -3,7 +3,7 @@ import Vertex from "../Vertex";
 import GeometrySet from "../GeometrySet";
 import { VERTEXES } from "../common";
 import Vector from "../Vector";
-import { CreaseAction, Process, DisplayAction } from "..";
+import { Process, CreaseAction, DisplayAction } from "../ProcessManager/types";
 
 /**
  * Represents a Kami (origami paper) with all of its Vertexes and Creases.
