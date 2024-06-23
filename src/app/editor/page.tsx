@@ -5,13 +5,13 @@ import KamiDisplay from "./KamiDisplay";
 import ToolSection, { Tool } from "./ToolSection";
 import TopBar from "./TopBar";
 import ProcessManager, { Action, Process } from "../../origami/ProcessManager";
-import { KAMI_DIMS_RANGE, KAMI_ZOOM_DELTA } from "@/settings";
+import { DEFAULT_KAMI_DIMS, KAMI_DIMS_RANGE, KAMI_ZOOM_DELTA } from "@/settings";
 import Kami from "@/origami/Kami";
 import { inBetween } from "@/utils/math";
 
 export const toolAtom = atom<Tool>("M");
 
-export const kamiDimsAtom = atom<number>(500);
+export const kamiDimsAtom = atom<number>(DEFAULT_KAMI_DIMS);
 
 export const kamiStringAtom = atom<string>("");
 

@@ -1,3 +1,6 @@
+import { assert } from "console";
+import { inBetween } from "./utils/math";
+
 // Two numbers are equal if they are equal up to PRECISION decimal places.
 export const PRECISION = 13;
 
@@ -42,21 +45,17 @@ export const HOVER_CREASE_WIDTH = 10;
 export const KAMI_BORDER_WIDTH = 3;
 
 /**
- * It takes KAMI_ROTATION_DURATION seconds to rotate the Kami 90° right or left.
- */
-export const KAMI_ROTATION_DURATION = 0.3;
-
-/**
  * The zoom in and out buttons change the size of the Kami by intervals of KAMI_ZOOM_DELTA pixels.
  */
 export const KAMI_ZOOM_DELTA = 100;
 
 /**
- * It takes KAMI_ZOOM_DURATION seconds to zoom in and out when using the zoom buttons.
- */
-export const KAMI_ZOOM_DURATION = 0.25;
-
-/**
  * The dimensions of a Kami will be in the range of KAMI_DIMS_RANGE.
  */
 export const KAMI_DIMS_RANGE = [300, 700];
+
+/**
+ * The default dimensions of a Kami will be DEFAULT_KAMI_DIMS.
+ */
+export const DEFAULT_KAMI_DIMS = 500;
+assert(inBetween(DEFAULT_KAMI_DIMS, KAMI_DIMS_RANGE[0], KAMI_DIMS_RANGE[1]));
