@@ -29,8 +29,7 @@ export default function EditorPage() {
     const setKamiString = useSetAtom(kamiStringAtom);
 
     const process = (action: Action) => {
-        console.log(action);
-        let processTaken: Action | Process | undefined = undefined;
+        let processTaken: Process | undefined;
 
         if (action.name === "crease") {
             const { type, x1, y1, x2, y2 } = action.params;
@@ -40,12 +39,12 @@ export default function EditorPage() {
         } else if (action.name === "erase") {
             const { x1, y1, x2, y2 } = action.params;
 
-            processTaken = kami.erase(x1, y1, x2, y2);
+            processTaken = [kami.erase(x1, y1, x2, y2)];
             setKamiString(kami.toString());
         } else if (action.name === "rotate") {
             const { direction } = action.params;
 
-            processTaken = kami.rotate(direction);
+            processTaken = [kami.rotate(direction)];
             setKamiString(kami.toString());
         } else if (action.name === "zoom") {
             const { direction } = action.params;
@@ -55,16 +54,15 @@ export default function EditorPage() {
                 KAMI_DIMS_RANGE[0], 
                 KAMI_DIMS_RANGE[1]
             )) {
-                processTaken = action;
+                processTaken = [action];
                 setKamiDims(origDims => origDims + KAMI_ZOOM_DELTA * direction)
             }
         }
 
         if (!processTaken) return;
-        else if (action.type !== "undo") {
+        else if (!action.type) {
             processManager.push(processTaken);
-
-            if (action.type !== "redo") processManager.clearUndoHistory();
+            processManager.clearUndoHistory();
         }
     }
 

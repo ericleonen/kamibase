@@ -19,50 +19,43 @@ export type DisplayAction = {
 };
 
 export type Action = CreaseAction | DisplayAction;
-
-/**
- * A list of independent Actions.
- */
 export type Process = Action[];
 
 /**
  * The processing unit of Processes taken on a Kami object. Holds a history Processes.
  */
 export default class ProcessManager {
-    private history: (Process | Action)[];
-    private undoHistory: (Process | Action)[];
+    private history: Process[];
+    private undoHistory: Process[];
 
     constructor() {
         this.history = [];
         this.undoHistory = [];
     }
 
-    public push(process: Process | Action) {
+    public push(process: Process) {
         this.history.push(process);
     }
 
     public undo(): Process | undefined {
-        const process = this.history.pop();
+        let process = this.history.pop();
 
         if (!process) return;
 
         this.undoHistory.push(process);
 
-        const undoProcess = Array.isArray(process) ? process
-            .toReversed()
-            .map(action => this.reverseAction(action)) :
-            [this.reverseAction(process)]
-
-        return undoProcess.map(action => ({...action, type: "undo"}))
+        return process.toReversed()
+            .map(action => ({...this.reverseAction(action), type: "undo"}));
     }
 
     public redo(): Process | undefined {
-        const process = this.undoHistory.pop();
+        let process = this.undoHistory.pop();
+
         if (!process) return;
         
-        const redoProcess = Array.isArray(process) ? process : [process];
+        this.history.push(process);
 
-        return redoProcess.map(action => ({...action, type: "redo"}))
+        return process.map(action => ({...action, type: "redo"}))
     }
 
     private reverseAction(action: Action): Action {
