@@ -1,4 +1,4 @@
-import { CreaseType } from "./Crease";
+import { CreaseType } from "../Crease";
 
 export type CreaseAction = { 
     name: "crease" | "erase", 

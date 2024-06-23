@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import Vertex from "@/origami/Vertex";
 import Point from "@/origami/Point";
 import Crease, { CreaseType } from "@/origami/Crease";
-import { Action } from "@/origami/ProcessManager";
+import { Action } from "@/origami";
 
 type KamiDisplayProps = {
     kami: Kami,

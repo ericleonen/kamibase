@@ -3,7 +3,7 @@ import Vector from "../Vector";
 import Vertex from "../Vertex";
 import { listKey } from "@/utils/string";
 import Geometry from "../Geometry";
-import { CreaseAction } from "../ProcessManager";
+import { CreaseAction } from "..";
 import Point from "../Point";
 
 export type CreaseType = "M" | "V" | "N" | "B";

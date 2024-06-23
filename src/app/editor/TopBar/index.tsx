@@ -1,7 +1,7 @@
 import OptionMenu, { Option } from "./OptionMenu";
 import OptionShadow from "./OptionShadow";
 import TitleField from "./TitleField";
-import ProcessManager, { Action } from "@/origami/ProcessManager";
+import ProcessManager, { Action } from "@/origami";
 
 type TopBarProps = {
     process: (action: Action) => void,

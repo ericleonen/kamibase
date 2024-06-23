@@ -4,7 +4,7 @@ import { atom, useAtom, useSetAtom } from "jotai";
 import KamiDisplay from "./KamiDisplay";
 import ToolSection, { Tool } from "./ToolSection";
 import TopBar from "./TopBar";
-import ProcessManager, { Action, Process } from "../../origami/ProcessManager";
+import ProcessManager, { Action, Process } from "@/origami/ProcessManager";
 import { DEFAULT_KAMI_DIMS, KAMI_DIMS_RANGE, KAMI_ZOOM_DELTA } from "@/settings";
 import Kami from "@/origami/Kami";
 import { inBetween } from "@/utils/math";
