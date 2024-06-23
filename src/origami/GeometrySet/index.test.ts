@@ -3,86 +3,150 @@ import Crease from "../Crease";
 import Vertex from "../Vertex";
 import { CREASES, VERTEXES } from "../common";
 
-test("constructor() instantiates a GeometrySet from a list of Vertexes", () => {
-    const vertexes = Object.values(VERTEXES);
+const vertexesList = Object.values(VERTEXES);
+const creasesList = [CREASES["major mountain"], CREASES["minor valley"]];
+
+test("constructor() instantiates a GeometrySet and length() returns its length", () => {
+    const vertexes = vertexesList;
     const vertexesTwice = vertexes.concat(vertexes);
-    const set = new GeometrySet<Vertex>(vertexesTwice);
+    const vertexesSet = new GeometrySet<Vertex>(vertexesTwice);
 
-    expect(set.length()).toBe(vertexes.length);
-    expect(set.contains(...vertexes)).toBeTruthy();
+    const creases = creasesList;
+    const creasesTwice = creases.concat(creases);
+    const creasesSet = new GeometrySet<Crease>(creasesTwice);
+
+    // vertexes
+    expect(vertexesSet.length()).toBe(vertexes.length);
+    expect(vertexesSet.contains(...vertexes)).toBeTruthy();
+    // creases
+    expect(creasesSet.length()).toBe(creases.length);
+    expect(creasesSet.contains(...creases)).toBeTruthy();
 });
 
-test("contains() confirms a GeometrySet contains a Crease", () => {
-    const creases = [CREASES["major mountain"], CREASES["minor valley"]];
-    const set = new GeometrySet<Crease>(creases);
+test("contains() confirms whether or not a GeometrySet has items", () => {
+    const vertexesSet = new GeometrySet<Vertex>(vertexesList);
+    const creasesSet = new GeometrySet<Crease>(creasesList);
 
-    expect(set.contains(...creases)).toBeTruthy();
-    expect(set.contains(new Crease("N", VERTEXES["top left"], VERTEXES["bottom right"])))
-        .toBeFalsy();
+    // vertexes in vertex set
+    expect(vertexesSet.contains(...vertexesList)).toBeTruthy();
+    // vertex not in vertex set
+    expect(vertexesSet.contains(new Vertex(0.25, 0.25))).toBeFalsy();
+    // creases
+    expect(creasesSet.contains(...creasesList)).toBeTruthy();
+    // creases not in crease set
+    expect(creasesSet.contains(CREASES["minor mountain"], CREASES["major valley"])).toBeFalsy();
 });
 
-test("add() adds a Vertex to a GeometrySet", () => {
-    const set = new GeometrySet<Vertex>();
+test("add() adds items to a GeometrySet", () => {
+    const vertexesSet = new GeometrySet<Vertex>();
+    vertexesSet.add(VERTEXES["center"], VERTEXES["bottom right"]);
+    const creasesSet = new GeometrySet<Crease>();
+    creasesSet.add(CREASES["minor mountain"], CREASES["major valley"]);
 
-    expect(set.length()).toBe(0);
-
-    set.add(VERTEXES["center"], VERTEXES["bottom right"]);
-
-    expect(set.length()).toBe(2);
+    // vertexes
+    expect(vertexesSet.length()).toBe(2);
+    // creases
+    expect(creasesSet.length()).toBe(2);
 });
 
-test("remove() removes a Vertex from a GeometrySet", () => {
-    const set = new GeometrySet<Vertex>([VERTEXES["center"]]);
-    set.remove(VERTEXES["center"]);
+test("remove() removes an item from a GeometrySet", () => {
+    const vertexesSet = new GeometrySet<Vertex>([VERTEXES["center"]]);
+    const creasesSet = new GeometrySet<Crease>([CREASES["major mountain"]]);
 
-    expect(set.length()).toBe(0);
+    // vertex not in set
+    vertexesSet.remove(VERTEXES["top left"]);
+    expect(vertexesSet.length()).toBe(1);
+    // vertex in set
+    vertexesSet.remove(VERTEXES["center"]);
+    expect(vertexesSet.length()).toBe(0);
+    // crease not in set
+    creasesSet.remove(CREASES["minor mountain"]);
+    expect(creasesSet.length()).toBe(1);
+    // crease in set
+    creasesSet.remove(CREASES["major mountain"]);
+    expect(creasesSet.length()).toBe(0);
 });
 
-test("get() adds a new Vertex to a GeometrySet and returns it", () => {
-    const set = new GeometrySet<Vertex>();
-    set.get(VERTEXES["center"]);
+test("get() retrieves an item from a GeometrySet, adding to it if needed", () => {
+    const vertexesSet = new GeometrySet<Vertex>([VERTEXES["center"]]);
+    const creasesSet = new GeometrySet<Crease>([CREASES["major mountain"]]);
 
-    expect(set.contains(VERTEXES["center"])).toBeTruthy();
+    // vertex in set
+    expect(vertexesSet.get(VERTEXES["center"]).equals(VERTEXES["center"])).toBeTruthy();
+    expect(vertexesSet.length()).toBe(1);
+    // vert not in set
+    expect(vertexesSet.get(VERTEXES["top right"]).equals(VERTEXES["top right"])).toBeTruthy();
+    expect(vertexesSet.length()).toBe(2);
+    // crease in set
+    expect(creasesSet.get(CREASES["major mountain"])
+        .equals(CREASES["major mountain"])).toBeTruthy();
+    expect(creasesSet.length()).toBe(1);
+    // crease not in set
+    expect(creasesSet.get(CREASES["minor mountain"])
+        .equals(CREASES["minor mountain"])).toBeTruthy();
+    expect(creasesSet.length()).toBe(2);
 });
 
-test("toList() returns a sorted list of Creases", () => {
-    const unsorted = [CREASES["minor mountain"], CREASES["major valley"]];
-    const set = new GeometrySet<Crease>(unsorted);
+test("toList(true) returns a sorted list of items", () => {
+    const unsortedVertexes = [VERTEXES["center"], VERTEXES["top left"]];
+    const vertexesSet = new GeometrySet<Vertex>(unsortedVertexes);
+    const sortedVertexes = vertexesSet.toList(true);
 
-    const sorted = set.toList(true);
+    const unsortedCreases = [CREASES["minor mountain"], CREASES["major valley"]];
+    const creasesSet = new GeometrySet<Crease>(unsortedCreases);
+    const sortedCreases = creasesSet.toList(true);
 
+    // vertexes
     expect(
-        sorted[0].equals(CREASES["major valley"]) 
-        && sorted[1].equals(CREASES["minor mountain"])
+        sortedVertexes[0].equals(VERTEXES["top left"]) 
+        && sortedVertexes[1].equals(VERTEXES["center"])
+    ).toBeTruthy();
+    // creases
+    expect(
+        sortedCreases[0].equals(CREASES["major valley"]) 
+        && sortedCreases[1].equals(CREASES["minor mountain"])
     ).toBeTruthy();
 });
 
-test("length() returns the number of elements in a GeometrySet", () => {
-    const set = new GeometrySet<Vertex>();
+test("isEmpty() confirms whether or not a GeometrySet is empty", () => {
+    const vertexesSet = new GeometrySet<Vertex>();
+    const creasesSet = new GeometrySet<Crease>();
 
-    expect(set.length()).toBe(0);
-
-    set.add(VERTEXES["top left"]);
-
-    expect(set.length()).toBe(1);
-});
-
-test("isEmpty() confirms if a GeometrySet is empty", () => {
-    const set = new GeometrySet<Vertex>();
-
-    expect(set.isEmpty()).toBeTruthy();
-
-    set.add(VERTEXES["top left"]);
-    
-    expect(set.isEmpty()).toBeFalsy();
+    // vertexes set is empty
+    expect(vertexesSet.isEmpty()).toBeTruthy();
+    // vertexes set is not empty
+    vertexesSet.add(VERTEXES["top left"]);    
+    expect(vertexesSet.isEmpty()).toBeFalsy();
+    // creases set is empty
+    expect(creasesSet.isEmpty()).toBeTruthy();
+    // creases set is not empty
+    creasesSet.add(CREASES["minor mountain"]);    
+    expect(creasesSet.isEmpty()).toBeFalsy();
 });
 
 test("copy() returns a copy of a GeometrySet", () => {
-    const vertexes = Object.values(VERTEXES)
+    const vertexesSet = new GeometrySet<Vertex>(vertexesList);
+    const vertexesSetCopy = vertexesSet.copy();
+    const creasesSet = new GeometrySet<Crease>(creasesList);
+    const creasesSetCopy = creasesSet.copy();
 
-    const orig = new GeometrySet<Vertex>(vertexes);
-    const copy = orig.copy();
+    // vertexes set has same items as copy, but not the same reference
+    expect(vertexesSet.length()).toBe(vertexesSetCopy.length());
+    expect(vertexesSet === vertexesSetCopy).toBeFalsy();
+    // creases set has the same items as copy, but not the same reference
+    expect(creasesSet.length()).toBe(creasesSetCopy.length());
+    expect(creasesSet === creasesSetCopy).toBeFalsy();
+});
 
-    expect(copy.length()).toBe(vertexes.length);
-    expect(orig === copy).toBeFalsy();
+test("clear() clears a GeometrySet of its items", () => {
+    const vertexesSet = new GeometrySet<Vertex>(vertexesList);
+    const creasesSet = new GeometrySet<Crease>(creasesList);
+    
+    vertexesSet.clear();
+    creasesSet.clear();
+
+    // vertexes set is cleared
+    expect(vertexesSet.isEmpty()).toBeTruthy();
+    // creases set is cleared
+    expect(creasesSet.isEmpty()).toBeTruthy();
 });

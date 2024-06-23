@@ -12,7 +12,6 @@ export default class GeometrySet<T extends Geometry> {
 
     /**
      * Initializes a GeometrySet object with an optional list of items.
-     * @param items Optional list of Creases or Vertexes
      */
     constructor(items: T[] = []) {
         this.map = {};
@@ -27,8 +26,7 @@ export default class GeometrySet<T extends Geometry> {
     }
 
     /**
-     * Returns true if this GeometrySet has all items, false otherwise.
-     * @param items Array of items
+     * Returns true if this GeometrySet has all specified items, false otherwise.
      */
     public contains(...items: T[]): boolean {
         return items.every(item => {
@@ -43,7 +41,6 @@ export default class GeometrySet<T extends Geometry> {
 
     /**
      * Adds all of the given items to the GeometrySet.
-     * @param items Array of items
      */
     public add(...items: T[]) {
         items.forEach(item => {
@@ -56,7 +53,6 @@ export default class GeometrySet<T extends Geometry> {
 
     /**
      * Removes item from the GeometrySet. If the item is not in the GeometrySet, does nothing.
-     * @param item 
      */
     public remove(item: T) {
         if (this.contains(item)) {
@@ -68,7 +64,6 @@ export default class GeometrySet<T extends Geometry> {
     /**
      * Retrieves the equivalent item from the GeometrySet. If the item is not in the GeometrySet,
      * adds the item and returns it.
-     * @param item 
      */
     public get(item: T): T {
         if (this.contains(item)) {
@@ -79,6 +74,10 @@ export default class GeometrySet<T extends Geometry> {
         }
     }
 
+    /**
+     * Retrieves the item in the GeometrySet defined by the given geometry position. If no item has
+     * that geometry position, returns undefined.
+     */
     public getGeometrically(...n: number[]): T | undefined {
         const key = listKey(...n);
 
@@ -89,7 +88,6 @@ export default class GeometrySet<T extends Geometry> {
 
     /**
      * Returns an optionally sorted loopable array of this GeometrySet's items.
-     * @param sorted Optional boolean that determines if the returned list is sorted
      */
     public toList(sorted: boolean = false): T[] {
         const list = Object.values(this.map);
@@ -130,6 +128,9 @@ export default class GeometrySet<T extends Geometry> {
         return new GeometrySet<T>(this.toList());
     }
 
+    /**
+     * Clears all items in this GeometrySet.
+     */
     public clear() {
         this.map = {};
         this.size = 0;
