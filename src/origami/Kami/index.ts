@@ -14,8 +14,6 @@ export default class Kami {
 
     /**
      * Initializes a Kami object with (optionally) preset Vertexes and Creases.
-     * @param vertexes Optional Vertex array
-     * @param creases Optional crease array
      */
     constructor(vertexes: Vertex[] = [], creases: Crease[] = []) {
         const topLeft = VERTEXES["top left"].copy();
@@ -46,8 +44,6 @@ export default class Kami {
     /**
      * Returns the Kami object from reading the valid KamiString. If the KamiString is in an
      * invalid format, throws an Error.
-     * @param str Valid KamiString. Each line represents a crease with format:
-     *            "type x1 y1 x2 y2"
      */
     public static fromString(str: string): Kami {
         const kami = new Kami();
@@ -72,7 +68,6 @@ export default class Kami {
 
     /**
      * Returns the optionally compressed String version of this Kami as a KamiString.
-     * @param compressed Optional flag to compress the KamiString. Default is false
      */
     public toString(compressed: boolean = false): string {
         let creases: Crease[] = this.creases.toList().filter(crease => crease.type !== "B");
@@ -124,12 +119,8 @@ export default class Kami {
     }
 
     /**
-     * Creases the Kami as specified. If the crease is invalid, throws an Error.
-     * @param type CreaseType
-     * @param x1 X-coordinate of the first vertex
-     * @param y1 Y-coordinate of the first vertex
-     * @param x2 X-coordinate of the second vertex
-     * @param y2 Y-coordinate of the second vertex
+     * Creases the Kami as specified. If the crease is invalid, throws an Error. Returns the Crease
+     * Process.
      */
     public crease(type: string, x1: number, y1: number, x2: number, y2: number): Process {
         if (!["M", "V", "N", "B"].includes(type)) {
@@ -152,9 +143,7 @@ export default class Kami {
 
     /**
      * Recursively alters the Kami object to reflect the current state of the Kami after making the
-     * new Crease.
-     * @param newCrease Crease
-     * @param oldCreases Array of the Creases already in the Kami
+     * new Crease. Returns the resulting Process.
      */
     private creaseHelper(newCrease: Crease, oldCreases: Crease[] = []): Process {
         if (oldCreases.length === 0) {
@@ -242,6 +231,10 @@ export default class Kami {
         return process;
     }
 
+    /**
+     * Erases a Crease from the Kami. If the erasure is invalid, throws an Error. Returns the
+     * erasure Process.
+     */
     public erase(x1: number, y1: number, x2: number, y2: number): CreaseAction {
         const crease = this.creases.getGeometrically(x1, y1, x2, y2);
 
@@ -253,9 +246,8 @@ export default class Kami {
     }
 
     /**
-     * Erases a Crease from the Kami and optionally garbage collects any unused Vertexes.
-     * @param crease 
-     * @param eraseVertexes Optional boolean, default true
+     * Erases a Crease from the Kami and optionally garbage collects any unused Vertexes. Returns
+     * the erasure Process.
      */
     private eraseHelper(crease: Crease, eraseVertexes: boolean = true): CreaseAction {
         this.creases.remove(crease);
@@ -273,7 +265,6 @@ export default class Kami {
 
     /**
      * Erases a Vertex from the Kami if the Vertex is not used by any Crease.
-     * @param vertex Vertex
      */
     private eraseVertex(vertex: Vertex) {
         if (vertex.creases.isEmpty()) {
@@ -292,6 +283,9 @@ export default class Kami {
         }
     }
 
+    /**
+     * Clears all creases from this Kami. Keeps the borders.
+     */
     private clear() {
         this.creases.clear();
         this.vertexes.clear();
@@ -302,6 +296,10 @@ export default class Kami {
         this.crease("B", 0, 1, 0, 0);
     }
 
+    /**
+     * Rotates a Kami's creases by 90° in the specified direction: right is 1, left is -1. Returns
+     * the rotate Process.
+     */
     public rotate(direction: 1 | -1): DisplayAction {
         const creases = this.creases.toList().filter(crease => crease.type !== "B");
 
