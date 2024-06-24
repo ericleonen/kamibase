@@ -87,6 +87,20 @@ test("get() retrieves an item from a GeometrySet, adding to it if needed", () =>
     expect(creasesSet.length()).toBe(2);
 });
 
+test("getGeometrically() retrieves an item by its geometry, if it's in the GeometrySet", () => {
+    const vertexesSet = new GeometrySet<Vertex>([VERTEXES["center"]]);
+    const creasesSet = new GeometrySet<Crease>([CREASES["major mountain"]]);
+
+    // vertex in set
+    expect(vertexesSet.getGeometrically(0.5, 0.5)).toBeTruthy();
+    // vertex not in set
+    expect(vertexesSet.getGeometrically(0, 0)).toBeFalsy();
+    // crease in set
+    expect(creasesSet.getGeometrically(0, 0, 1, 1)).toBeTruthy();
+    // crease not in set
+    expect(creasesSet.getGeometrically(1, 0, 0, 1)).toBeFalsy();
+});
+
 test("toList(true) returns a sorted list of items", () => {
     const unsortedVertexes = [VERTEXES["center"], VERTEXES["top left"]];
     const vertexesSet = new GeometrySet<Vertex>(unsortedVertexes);
