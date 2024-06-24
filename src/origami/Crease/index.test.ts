@@ -135,7 +135,7 @@ test("toAction returns a Crease's action", () => {
 
 test("distanceToPoint() returns a Creases's distance to a Point", () => {
     const inside = new Point(1, 1);
-    const outside = new Point(1, 0.5);
+    const outside = new Point(1, 0.25);
     const crease = Crease.fromString("V 0.25 0.75 0.75 0.25");
 
     // point is "inside" crease
