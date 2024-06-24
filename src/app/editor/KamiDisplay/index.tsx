@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import Vertex from "@/origami/Vertex";
 import Point from "@/origami/Point";
 import Crease, { CreaseType } from "@/origami/Crease";
-import { Action } from "@/origami";
+import { Action } from "@/origami/ProcessManager/types";
 
 type KamiDisplayProps = {
     kami: Kami,
@@ -37,6 +37,7 @@ export default function KamiDisplay({ kami, process }: KamiDisplayProps) {
         hoveredCrease
     });
 
+    // clear all Kami interface state when changing tools
     useEffect(() => {
         setHoveredCrease(undefined);
         setSelectedVertex(undefined);
