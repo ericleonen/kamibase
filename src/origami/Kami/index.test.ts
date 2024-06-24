@@ -12,10 +12,10 @@ test("constructor() initializes a new Kami", () => {
     const kami = new Kami([topLeft, bottomRight], [crease]);
 
     // check all vertexes are present
-    expect(kami.vertexes.length()).toBe(2);
+    expect(kami.vertexes.length()).toBe(4);
     expect(kami.vertexes.contains(topLeft, bottomRight)).toBe(true);
     // check all creases are present
-    expect(kami.creases.length()).toBe(1);
+    expect(kami.creases.length()).toBe(5);
     expect(kami.creases.contains(crease)).toBe(true);
 });
 
@@ -75,8 +75,8 @@ test("crease() handles intersecting creases", () => {
     // correct processes returned
     expect(process1).toEqual([Crease.fromString("M 0 0 1 1").toAction("crease")]);
     expect(process2).toEqual([
-        Crease.fromString("V 0.5 0.5 1 0").toAction("crease"),
-        Crease.fromString("V 0 1 0.5 0.5").toAction("crease")
+        Crease.fromString("V 0 1 0.5 0.5").toAction("crease"),
+        Crease.fromString("V 0.5 0.5 1 0").toAction("crease")
     ]);
 });
 
@@ -132,9 +132,9 @@ test("crease() handles new crease containing an old crease", () => {
     expect(kami.creases.length()).toBe(7);
     expect(kami.creases.contains(leftCrease, middleCrease, rightCrease)).toBeTruthy();
     // correct processes returned
-    expect(process1).toEqual([Crease.fromString("V 0.24 0.25 0.75 0.75").toAction("crease")]);
+    expect(process1).toEqual([Crease.fromString("V 0.25 0.25 0.75 0.75").toAction("crease")]);
     expect(process2).toEqual([
-        Crease.fromString("V 0.24 0.25 0.75 0.75").toAction("erase"),
+        Crease.fromString("V 0.25 0.25 0.75 0.75").toAction("erase"),
         leftCrease.toAction("crease"),
         middleCrease.toAction("crease"),
         rightCrease.toAction("crease")
