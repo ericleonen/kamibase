@@ -55,6 +55,8 @@ function ToolButton({ name, iconSrc }: ToolButtonProps) {
                 alt={`${name} tool`}
                 height={45}
                 width={45}
+                priority
+                className="w-auto h-auto p-2"
             />
         </button>
     )
