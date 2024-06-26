@@ -67,6 +67,25 @@ export default class Kami {
     }
 
     /**
+     * Returns a Kami pre-creased with a grid with specified dimensions. 
+     */
+    public static creaseGrid(dims: number): Kami {
+        const kami = new Kami();
+
+        const delta = 1 / dims;
+
+        for (let x = delta; x <= 1 - delta; x += delta) {
+            kami.crease("N", x, 0, x, 1);
+        }
+
+        for (let y = delta; y <= 1 - delta; y += delta) {
+            kami.crease("N", 0, y, 1, y);
+        }
+
+        return kami;
+    }
+
+    /**
      * Returns the optionally compressed String version of this Kami as a KamiString.
      */
     public toString(compressed: boolean = false): string {
@@ -116,6 +135,27 @@ export default class Kami {
         return creases.toSorted((a, b) => a.compareTo(b))
             .map(crease => crease.toString())
             .join("\n");
+    }
+
+    /**
+     * Returns a list of this Kami's Creases in the appropriate render order. Borders are rendered
+     * on top, followed by the hovered crease, followed by neutral creases, and then finally
+     * mountain and valley creases.
+     */
+    public toRenderable(hoveredCrease?: Crease): Crease[] {
+        const creasePriority = (crease: Crease): number => {
+            if (hoveredCrease && crease.equals(hoveredCrease)) return 3;
+
+            if (["M", "V"].includes(crease.type)) return 1;
+            else if (crease.type === "N") return 2;
+            else return 4;
+        };
+
+        const renderCompare = (crease1: Crease, crease2: Crease): number => {
+            return creasePriority(crease1) - creasePriority(crease2);
+        };
+
+        return this.creases.toList().toSorted(renderCompare);
     }
 
     /**

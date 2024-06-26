@@ -6,7 +6,7 @@ export type Tool = "M" | "V" | "N" | "E";
 
 export default function ToolSection() {
     return (
-        <div className="fixed flex flex-col justify-center px-5 h-full bg-theme-light-gray">
+        <div className="flex flex-col justify-center px-5 h-full bg-theme-light-gray">
             <ToolButton
                 name="Mountain"
                 iconSrc="mountainToolIcon.svg"

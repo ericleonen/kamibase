@@ -9,25 +9,24 @@ import { Action, Process } from "@/origami/ProcessManager/types";
 import { DEFAULT_KAMI_DIMS, KAMI_DIMS_RANGE, KAMI_ZOOM_DELTA } from "@/settings";
 import Kami from "@/origami/Kami";
 import { inBetween } from "@/utils/math";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import Point from "@/origami/Point";
 
 export const toolAtom = atom<Tool>("M");
 export const kamiDimsAtom = atom<number>(DEFAULT_KAMI_DIMS);
 export const kamiStringAtom = atom<string>("");
+export const originAtom = atom<Point | undefined>(undefined);
 
 export default function EditorPage() {
     const processManager = useMemo(() => new ProcessManager(), []);
-    const kami = useMemo(() => Kami.fromString(`
-        N 0.25 0 0.25 1
-        N 0.5 0 0.5 1
-        N 0.75 0 0.75 1
-        N 0 0.25 1 0.25
-        N 0 0.5 1 0.5
-        N 0 0.75 1 0.75
-    `), []);
+    const kami = useMemo(() => Kami.creaseGrid(8), []);
 
     const [kamiDims, setKamiDims] = useAtom(kamiDimsAtom);
     const setKamiString = useSetAtom(kamiStringAtom);
+
+    useEffect(() => {
+        setKamiString(kami.toString());
+    }, [kami]);
 
     const process = (action: Action) => {
         let processTaken: Process | undefined;
@@ -71,7 +70,7 @@ export default function EditorPage() {
         <div className="h-screen flex flex-col">
             <TopBar {...{process, processManager}}/>
             <section 
-                className="flex-grow bg-theme-white relative overflow-scroll"
+                className="flex flex-grow bg-theme-white relative overflow-scroll"
             >
                 <ToolSection />
                 <KamiDisplay {...{kami, process}} />
