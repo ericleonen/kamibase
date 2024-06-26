@@ -1,3 +1,4 @@
+import { useKeyDown } from "@/utils/input";
 import { atom, useAtom, useSetAtom } from "jotai";
 import React, { useState } from "react"
 
@@ -25,25 +26,30 @@ export default function OptionMenu({ name, children }: OptionMenuProps) {
             >
                 {name}
             </button>
-            { selected && <Dropdown>{children}</Dropdown> }
+            <Dropdown show={selected}>{children}</Dropdown>
         </div>
     )
 }
 
 type DropdownProps = {
+    show: boolean,
     children: React.ReactNode
 }
 
-function Dropdown({ children }: DropdownProps) {
+function Dropdown({ show, children }: DropdownProps) {
     return (
-        <>
+        <div
+            style={{
+                display: show ? "block" : "none"
+            }}
+        >
             <div 
                 className="absolute top-[calc(100%+2px)] left-1/2 translate-x-[-50%] z-20 w-0 h-0 border-l-[4px] border-r-[4px] border-b-[6px] border-transparent border-b-theme-black"
             />
             <div className="text-sm absolute top-[calc(100%+8px)] left-[4px] z-20 flex flex-col bg-theme-black w-max rounded-sm">
                 {children}
             </div>
-        </>
+        </div>
     )
 }
 
@@ -60,6 +66,8 @@ export function Option({ onClick, shortcut, children }: OptionProps) {
         onClick();
         setOptionMenu(undefined);
     };
+
+    useKeyDown(shortcut, onClick);
 
     return (
         <button
