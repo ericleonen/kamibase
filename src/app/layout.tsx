@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "KamiBase",
-  description: "Save your crease patterns",
+  description: "Save your crease patterns"
 };
 
 export default function RootLayout({

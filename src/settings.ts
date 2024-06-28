@@ -14,15 +14,15 @@ export const PADDING = 20;
 /**
  * Your mouse hovers a Vertex or Crease if the mouse is within HOVER_RADIUS Canvas pixels of it.
  */
-export const HOVER_RADIUS = 10;
+export const HOVER_RADIUS = 5;
 
 /**
- * A selected Vertex has radius SELECTED_VERTEX_RADIUS Canvas pixels.
+ * A selected Vertex has radius SELECTED_VERTEX_RADIUS HTML pixels.
  */
 export const SELECTED_VERTEX_RADIUS = 4;
 
 /**
- * A hovered Vertex has radius HOVERED_VERTEX_RADIUS Canvas pixels;
+ * A hovered Vertex has radius HOVERED_VERTEX_RADIUS HTML pixels;
  */
 export const HOVERED_VERTEX_RADIUS = 6;
 
@@ -56,3 +56,19 @@ export const KAMI_DIMS_RANGE = [300, 700];
  * The default dimensions of a Kami will be DEFAULT_KAMI_DIMS HTML pixels.
  */
 export const DEFAULT_KAMI_DIMS = 500;
+
+/**
+ * When you zoom into the Kami, the kami dimensions grow/shrink by a factor of KAMI_ZOOM_FACTOR.
+ */
+export const KAMI_ZOOM_FACTOR = 4;
+
+/**
+ * When you scroll a Kami vertically or horizontally, the kami moves by a factor of
+ * KAMI_SCROLL_FACTOR.
+ */
+export const KAMI_SCROLL_FACTOR = 1 / 2;
+
+/**
+ * The Kami's dimensions can be no smaller than MIN_KAMI_DIMS HTML pixels.
+ */
+export const MIN_KAMI_DIMS = 100;

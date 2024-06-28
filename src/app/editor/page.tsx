@@ -70,7 +70,7 @@ export default function EditorPage() {
         <div className="h-screen flex flex-col">
             <TopBar {...{process, processManager}}/>
             <section 
-                className="flex flex-grow bg-theme-white relative overflow-scroll"
+                className="flex-grow bg-theme-white relative overflow-scroll"
             >
                 <ToolSection />
                 <KamiDisplay {...{kami, process}} />
