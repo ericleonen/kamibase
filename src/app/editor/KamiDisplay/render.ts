@@ -9,6 +9,7 @@ import { Action } from "@/origami/ProcessManager/types";
 import Vertex from "@/origami/Vertex";
 import { Tool } from "../ToolSection";
 
+// Load in theme colors if window is available.
 let rootStyle: CSSStyleDeclaration;
 
 try {
@@ -16,17 +17,6 @@ try {
 } catch (err) {
     
 }
-
-type RenderData = {
-    kami: Kami,
-    tool: Tool,
-    origin: Point,
-    kamiDims: number,
-    hoveredVertex?: Vertex,
-    selectedVertex?: Vertex,
-    hoveredCrease?: Crease,
-    kamiCursor?: Point
-};
 
 type RenderAPI = [
     RefObject<HTMLCanvasElement>,
@@ -40,6 +30,9 @@ type RenderAPI = [
     }
 ];
 
+/**
+ * Custom hook that does all the work of handling KamiDisplay interactivity.
+ */
 export default function useRender(kami: Kami, process: (action: Action) => void): RenderAPI {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -130,6 +123,7 @@ export default function useRender(kami: Kami, process: (action: Action) => void)
         const { deltaX, deltaY } = e;
 
         if (e.ctrlKey && canvas) {
+            // make the Kami larger/smaller with a Ctrl+Scroll or pinching gesture on the mousepad
             const deltaKamiDims = -deltaY;
 
             if (kamiDims + deltaKamiDims < MIN_KAMI_DIMS && deltaKamiDims < 0) return;
@@ -142,7 +136,8 @@ export default function useRender(kami: Kami, process: (action: Action) => void)
             setOrigin(origOrigin => {
                 if (!origOrigin) return origOrigin;
 
-                const percentDeltaKamiDims = (kamiDims + deltaKamiDims * KAMI_ZOOM_FACTOR) / kamiDims;
+                const percentDeltaKamiDims = 
+                    (kamiDims + deltaKamiDims * KAMI_ZOOM_FACTOR) / kamiDims;
                 const cursorX = (e.clientX - rect.left) * PIXEL_DENSITY - origOrigin.x;
                 const cursorY = (e.clientY - rect.top) * PIXEL_DENSITY - origOrigin.y;
 
@@ -152,6 +147,7 @@ export default function useRender(kami: Kami, process: (action: Action) => void)
                 );
             });
         } else {
+            // move the Kami horizontally or vertically by scrolling
             setOrigin(origOrigin => {
                 return origOrigin && 
                     new Point(
@@ -164,11 +160,12 @@ export default function useRender(kami: Kami, process: (action: Action) => void)
 
     const handleClick = () => {
         if (tool === "E" && hoveredCrease) {
+            // erase a Crease by clicking it with the eraser tool
             process(hoveredCrease.toAction("erase"));
             setHoveredCrease(undefined);
         } else if (hoveredVertex) {
             if (selectedVertex) {
-                // unselect selected Vertex by clicking it again
+                // unselect a selected Vertex by clicking it again
                 if (hoveredVertex.equals(selectedVertex)) {
                     setSelectedVertex(undefined);
                 } else {
@@ -189,7 +186,7 @@ export default function useRender(kami: Kami, process: (action: Action) => void)
 
                 setKamiCursor(undefined);
             } else {
-                // select a Vertex
+                // select a Vertex by clicking it
                 setSelectedVertex(hoveredVertex);
                 setHoveredVertex(undefined);
             }
@@ -197,11 +194,13 @@ export default function useRender(kami: Kami, process: (action: Action) => void)
     };
 
     const handleMouseDown = () => {
+        // start dragging the Kami by pressing the mouse down
         setDragging(true);
     };
 
     const handleMouseMove = (e: React.MouseEvent) => {
         if (dragging) {
+            // drag the Kami by moving the down mouse around
             setOrigin(origOrigin => {
                 return origOrigin && 
                     new Point(
@@ -222,10 +221,12 @@ export default function useRender(kami: Kami, process: (action: Action) => void)
             );
 
             if (selectedVertex) {
+                // simulate a Crease by moving around the cursor after selecting a Vertex
                 setKamiCursor(kamiCursor);
             }
 
             if (tool === "E") {
+                // threaten to delete a Crease by hovering it with the eraser tool
                 let foundHoveredCrease = false;
 
                 for (let crease of kami.creases.toList(true)) {
@@ -241,6 +242,7 @@ export default function useRender(kami: Kami, process: (action: Action) => void)
 
                 if (!foundHoveredCrease) setHoveredCrease(undefined);
             } else {
+                // prepare to select a Vertex by hovering it with a creasing tool
                 let foundHoveredVertex = false;
 
                 for (let vertex of kami.vertexes.toList(true)) {
@@ -263,10 +265,12 @@ export default function useRender(kami: Kami, process: (action: Action) => void)
     };
 
     const handleMouseUp = () => {
+        // stop dragging the Kami by letting the mouse up
         setDragging(false);
     }
 
     const handleMouseOut = () => {
+        // stop dragging the Kami by moving the cursor outside of the KamiDisplay
         setDragging(false);
     };
 
@@ -280,6 +284,20 @@ export default function useRender(kami: Kami, process: (action: Action) => void)
     }];
 }
 
+type RenderData = {
+    kami: Kami,
+    tool: Tool,
+    origin: Point,
+    kamiDims: number,
+    hoveredVertex?: Vertex,
+    selectedVertex?: Vertex,
+    hoveredCrease?: Crease,
+    kamiCursor?: Point
+};
+
+/**
+ * Draws all lines and hovered lines and vertexes onto the canvas.
+ */
 function render(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, data: RenderData) {
     const {
         kami,
@@ -334,6 +352,7 @@ function render(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, da
         });
 
         if (kamiCursor && tool !== "E") {
+            // draw simulated crease
             drawPoint({
                 point: kamiCursor,
                 radius: SELECTED_VERTEX_RADIUS,
@@ -368,6 +387,9 @@ type LineParams = {
     kamiDims: number
 };
 
+/**
+ * Draws a line of specified width on the canvas.
+ */
 function drawLine(params: LineParams) {
     const { line, lineWidth, origin, context, kamiDims } = params;
 
@@ -404,6 +426,9 @@ type PointParams = {
     kamiDims: number
 };
 
+/**
+ * Draws a Point with specified radius onto the canvas.
+ */
 function drawPoint(params: PointParams) {
     const { point, radius, context, origin, kamiDims } = params;
 
