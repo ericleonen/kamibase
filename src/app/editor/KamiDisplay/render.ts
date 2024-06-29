@@ -248,6 +248,8 @@ export default function useRender(kami: Kami, process: (action: Action) => void)
                         kamiCursor.distance(vertex) * kamiDims < HOVER_RADIUS &&
                         !selectedVertex?.onSameBorder(vertex)
                     ) {
+                        if (selectedVertex) setKamiCursor(vertex);
+
                         foundHoveredVertex = true;
                         setHoveredVertex(vertex);
 

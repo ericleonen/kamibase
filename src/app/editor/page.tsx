@@ -6,9 +6,8 @@ import ToolSection, { Tool } from "./ToolSection";
 import TopBar from "./TopBar";
 import ProcessManager from "@/origami/ProcessManager";
 import { Action, Process } from "@/origami/ProcessManager/types";
-import { DEFAULT_KAMI_DIMS, KAMI_DIMS_RANGE, KAMI_ZOOM_DELTA } from "@/settings";
+import { DEFAULT_KAMI_DIMS } from "@/settings";
 import Kami from "@/origami/Kami";
-import { inBetween } from "@/utils/math";
 import { useEffect, useMemo } from "react";
 import Point from "@/origami/Point";
 
@@ -19,9 +18,8 @@ export const originAtom = atom<Point | undefined>(undefined);
 
 export default function EditorPage() {
     const processManager = useMemo(() => new ProcessManager(), []);
-    const kami = useMemo(() => Kami.creaseGrid(8), []);
-
-    const [kamiDims, setKamiDims] = useAtom(kamiDimsAtom);
+    const kami = useMemo(() => Kami.creaseGrid(7), []);
+    
     const setKamiString = useSetAtom(kamiStringAtom);
 
     useEffect(() => {

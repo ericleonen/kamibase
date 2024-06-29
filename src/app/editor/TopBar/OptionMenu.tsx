@@ -44,7 +44,7 @@ function Dropdown({ show, children }: DropdownProps) {
             }}
         >
             <div 
-                className="absolute top-[calc(100%+2px)] left-1/2 translate-x-[-50%] z-20 w-0 h-0 border-l-[4px] border-r-[4px] border-b-[6px] border-transparent border-b-theme-black"
+                className="absolute top-[calc(100%+2.5px)] left-1/2 translate-x-[-50%] z-20 w-0 h-0 border-l-[4px] border-r-[4px] border-b-[6px] border-transparent border-b-theme-black"
             />
             <div className="text-sm absolute top-[calc(100%+8px)] left-[4px] z-20 flex flex-col bg-theme-black w-max rounded-sm">
                 {children}
