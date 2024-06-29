@@ -54,6 +54,27 @@ test("Kami.fromString() reads waterbomb.kami", () => {
     )).toBeTruthy();
 });
 
+test("Kami.creaseGrid() initializes a Kami with a pre-creased grid", () => {
+    const kami = Kami.creaseGrid(4);
+
+    const expectedCreases = [];
+
+    for (let x = 0; x < 1; x += 0.25) {
+        for (let y = 0.25; y < 1; y += 0.25) {
+            expectedCreases.push(Crease.fromString(`N ${x} ${y} ${x + 0.25} ${y}`));
+        }
+    }
+
+    for (let y = 0; y < 1; y += 0.25) {
+        for (let x = 0.25; x < 1; x += 0.25) {
+            expectedCreases.push(Crease.fromString(`N ${x} ${y} ${x} ${y + 0.25}`));
+        }
+    }
+
+    expect(kami.creases.contains(...expectedCreases)).toBeTruthy();
+    expect(kami.creases.length()).toBe(expectedCreases.length + 4);
+});
+
 test("toString() returns the Kami as a string, compressed if specified", () => {
     const kamiStr = "M 0 0 0.5 0.5\nM 0.5 0.5 1 1";
     const kami = Kami.fromString(kamiStr);
