@@ -13,7 +13,7 @@ export type CreaseAction = {
 };
 
 export type DisplayAction = { 
-    name: "rotate" | "zoom", 
+    name: "rotate", 
     type?: "undo" | "redo",
     params: { direction: 1 | -1 } 
 };

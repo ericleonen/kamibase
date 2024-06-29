@@ -3,6 +3,9 @@ import OptionShadow from "./OptionShadow";
 import TitleField from "./TitleField";
 import { Action } from "@/origami/ProcessManager/types";
 import ProcessManager from "@/origami/ProcessManager";
+import { useSetAtom } from "jotai";
+import { kamiDimsAtom } from "../page";
+import { KAMI_ZOOM_DELTA } from "@/settings";
 
 type TopBarProps = {
     process: (action: Action) => void,
@@ -10,6 +13,8 @@ type TopBarProps = {
 }
 
 export default function TopBar({ process, processManager }: TopBarProps) {
+    const setKamiDims = useSetAtom(kamiDimsAtom);
+
     const handleUndo = () => {
         processManager.undo()?.forEach(process);
     }
@@ -21,13 +26,6 @@ export default function TopBar({ process, processManager }: TopBarProps) {
     const handleRotate = (direction: 1 | -1) => {
         process({
             name: "rotate",
-            params: { direction }
-        });
-    }
-
-    const handleZoom = (direction: 1 | -1) => {
-        process({
-            name: "zoom",
             params: { direction }
         });
     }
@@ -71,12 +69,6 @@ export default function TopBar({ process, processManager }: TopBarProps) {
                     </Option>
                 </OptionMenu>
                 <OptionMenu name="View">
-                    <Option onClick={() => handleZoom(1)}>
-                        Zoom in
-                    </Option>
-                    <Option onClick={() => handleZoom(-1)}>
-                        Zoom out
-                    </Option>
                     <Option 
                         onClick={() => handleRotate(1)}
                         shortcut="Ctrl+R"

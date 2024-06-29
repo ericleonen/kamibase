@@ -46,17 +46,6 @@ export default function EditorPage() {
 
             processTaken = [kami.rotate(direction)];
             setKamiString(kami.toString());
-        } else if (action.name === "zoom") {
-            const { direction } = action.params;
-
-            if (inBetween(
-                kamiDims + KAMI_ZOOM_DELTA * direction, 
-                KAMI_DIMS_RANGE[0], 
-                KAMI_DIMS_RANGE[1]
-            )) {
-                processTaken = [action];
-                setKamiDims(origDims => origDims + KAMI_ZOOM_DELTA * direction)
-            }
         }
 
         if (!processTaken) return;
