@@ -85,6 +85,30 @@ test("toString() returns the Kami as a string, compressed if specified", () => {
     expect(kami.toString(true)).toBe("M 0 0 1 1");
 });
 
+test("toRenderable() returns a list of Kami creases ready for rendering", () => {
+    const kami = Kami.creaseGrid(2);
+    kami.crease("M", 0, 0, 0.5, 0.5);
+    kami.crease("V", 0.5, 0.5, 1, 1);
+
+    const hoveredCrease = Crease.fromString("V 0.5 0.5 1 1");
+
+    const creasePriority = (crease: Crease): number => {
+        if (crease.equals(hoveredCrease)) return 3;
+
+        if (["M", "V"].includes(crease.type)) return 1;
+        else if (crease.type === "N") return 2;
+        else return 4;
+    };
+
+    const creases = kami.toRenderable(hoveredCrease);
+
+    for (let i = 0; i < kami.creases.length() - 1; i++) {
+        const diff = creasePriority(creases[i + 1]) - creasePriority(creases[i]);
+
+        expect(diff).toBeGreaterThanOrEqual(0);
+    }
+});
+
 test("crease() handles intersecting creases", () => {
     const kami = new Kami();
     const process1 = kami.crease("M", 0, 0, 1, 1);

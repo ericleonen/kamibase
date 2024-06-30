@@ -67,9 +67,12 @@ export default class Kami {
     }
 
     /**
-     * Returns a Kami pre-creased with a grid with specified dimensions. 
+     * Returns a Kami pre-creased with a grid with specified dimensions. If dimensions are less
+     * than 1, throws an Error.
      */
     public static creaseGrid(dims: number): Kami {
+        if (dims < 1) throw new Error("dims must be at least 1");
+
         const kami = new Kami();
 
         const delta = 1 / dims;
