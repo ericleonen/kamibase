@@ -18,7 +18,7 @@ export const originAtom = atom<Point | undefined>(undefined);
 
 export default function EditorPage() {
     const processManager = useMemo(() => new ProcessManager(), []);
-    const kami = useMemo(() => Kami.creaseGrid(7), []);
+    const kami = useMemo(() => Kami.creaseGrid(16), []);
     
     const setKamiString = useSetAtom(kamiStringAtom);
 
@@ -54,10 +54,10 @@ export default function EditorPage() {
     }
 
     return (
-        <div className="h-screen flex flex-col">
+        <div className="h-screen flex flex-col bg-theme-white">
             <TopBar {...{process, processManager}}/>
             <section 
-                className="flex-grow bg-theme-white relative overflow-scroll"
+                className="flex-grow relative overflow-scroll"
             >
                 <ToolSection />
                 <KamiDisplay {...{kami, process}} />

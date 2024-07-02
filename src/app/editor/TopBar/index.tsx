@@ -13,8 +13,6 @@ type TopBarProps = {
 }
 
 export default function TopBar({ process, processManager }: TopBarProps) {
-    const setKamiDims = useSetAtom(kamiDimsAtom);
-
     const handleUndo = () => {
         processManager.undo()?.forEach(process);
     }

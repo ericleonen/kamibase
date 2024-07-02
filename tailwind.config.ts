@@ -14,7 +14,9 @@ const config: Config = {
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
       colors: {
+        "theme-light-white": "var(--theme-light-white)",
         "theme-white": "var(--theme-white)",
+        "theme-dark-white": "var(--theme-dark-white)",
         "theme-light-black": "var(--theme-light-black)",
         "theme-black": "var(--theme-black)",
         "theme-dark-black": "var(--theme-dark-black)",
