@@ -3,9 +3,6 @@ import OptionShadow from "./OptionShadow";
 import TitleField from "./TitleField";
 import { Action } from "@/origami/ProcessManager/types";
 import ProcessManager from "@/origami/ProcessManager";
-import { useSetAtom } from "jotai";
-import { kamiDimsAtom } from "../page";
-import { KAMI_ZOOM_DELTA } from "@/settings";
 
 type TopBarProps = {
     process: (action: Action) => void,

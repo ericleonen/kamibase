@@ -1,6 +1,5 @@
 import { useKeyDown } from "@/utils/input";
 import { atom, useAtom, useSetAtom } from "jotai";
-import React, { useState } from "react"
 
 export const optionMenuAtom = atom<string | undefined>(undefined);
 
