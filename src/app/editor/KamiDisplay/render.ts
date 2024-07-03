@@ -4,10 +4,10 @@ import Point from "@/origami/Point";
 import { CREASE_WIDTH, HOVERED_VERTEX_RADIUS, HOVER_CREASE_WIDTH, HOVER_RADIUS, KAMI_BORDER_WIDTH, KAMI_SCROLL_FACTOR, KAMI_ZOOM_FACTOR, MIN_KAMI_DIMS, PIXEL_DENSITY, SELECTED_VERTEX_RADIUS } from "@/settings";
 import { useAtom, useAtomValue } from "jotai";
 import { useRef, useEffect, RefObject, useState } from "react";
-import { kamiDimsAtom, kamiStringAtom, originAtom, toolAtom } from "../page";
 import { Action } from "@/origami/ProcessManager/types";
 import Vertex from "@/origami/Vertex";
-import { Tool } from "../ToolSection";
+import { Tool, toolAtom } from "../ToolSection";
+import { kamiStringAtom, originAtom, kamiDimsAtom } from ".";
 
 // Load in theme colors if window is available.
 let rootStyle: CSSStyleDeclaration;

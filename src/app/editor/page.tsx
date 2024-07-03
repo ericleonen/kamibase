@@ -1,20 +1,13 @@
 "use client"
 
-import { atom, useAtom, useSetAtom } from "jotai";
-import KamiDisplay from "./KamiDisplay";
-import ToolSection, { Tool } from "./ToolSection";
+import { useSetAtom } from "jotai";
+import KamiDisplay, { kamiStringAtom } from "./KamiDisplay";
+import ToolSection from "./ToolSection";
 import TopBar from "./TopBar";
 import ProcessManager from "@/origami/ProcessManager";
 import { Action, Process } from "@/origami/ProcessManager/types";
-import { DEFAULT_KAMI_DIMS } from "@/settings";
 import Kami from "@/origami/Kami";
 import { useEffect, useMemo } from "react";
-import Point from "@/origami/Point";
-
-export const toolAtom = atom<Tool>("M");
-export const kamiDimsAtom = atom<number>(DEFAULT_KAMI_DIMS);
-export const kamiStringAtom = atom<string>("");
-export const originAtom = atom<Point | undefined>(undefined);
 
 export default function EditorPage() {
     const processManager = useMemo(() => new ProcessManager(), []);

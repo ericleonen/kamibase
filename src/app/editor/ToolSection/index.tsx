@@ -1,8 +1,8 @@
-import { useAtom } from "jotai";
+import { atom, useAtom } from "jotai";
 import Image from "next/image";
-import { toolAtom } from "../page";
 
 export type Tool = "M" | "V" | "N" | "E";
+export const toolAtom = atom<Tool>("M");
 
 export default function ToolSection() {
     return (

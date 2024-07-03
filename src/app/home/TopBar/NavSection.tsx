@@ -58,6 +58,20 @@ function NavMenu({ name, iconSrc, children }: NavMenuProps) {
                     className="h-8 w-8"
                 />
             </button>
+            <Dropdown show={selected}>{children}</Dropdown>
         </div>
     );
+}
+
+type DropdownProps = {
+    show: boolean,
+    children: React.ReactNode
+}
+
+function Dropdown({ show, children }: DropdownProps) {
+    return show && (
+        <div className="absolute rounded-lg shadow-md bg-theme-light-white p-2 z-10">
+            {children}
+        </div>
+    )
 }

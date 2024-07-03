@@ -1,12 +1,14 @@
 import Kami from "@/origami/Kami"
 import { Action } from "@/origami/ProcessManager/types"
 import useRender from "./render"
-import React, { useEffect, useState } from "react"
-import { useAtom, useSetAtom } from "jotai"
-import { kamiDimsAtom, originAtom } from "../page"
 import Point from "@/origami/Point"
-import { KAMI_SCROLL_FACTOR, KAMI_ZOOM_FACTOR, PIXEL_DENSITY } from "@/settings"
-import Vertex from "@/origami/Vertex"
+import { DEFAULT_KAMI_DIMS } from "@/settings"
+import { atom } from "jotai"
+import { useEffect } from "react"
+
+export const kamiDimsAtom = atom<number>(DEFAULT_KAMI_DIMS);
+export const kamiStringAtom = atom<string>("");
+export const originAtom = atom<Point | undefined>(undefined);
 
 type KamiDisplayProps = {
     kami: Kami,
