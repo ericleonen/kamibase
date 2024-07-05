@@ -1,6 +1,7 @@
 import Image from "next/image"
 import NavShadow from "./NavShadow"
 import NavSection from "./NavSection"
+import Logo from "@/app/components/Logo"
 
 export default function TopBar() {
     return <>
@@ -11,19 +12,6 @@ export default function TopBar() {
         </section>
         <NavShadow />
     </>
-}
-
-function Logo() {
-    return (
-        <Image 
-            src="logo.svg"
-            alt="KamiBase logo"
-            height={86}
-            width={20}
-            priority
-            className="w-auto h-auto"
-        />
-    )
 }
 
 function SearchBar() {

@@ -11,7 +11,7 @@ import { useEffect, useMemo } from "react";
 
 export default function EditorPage() {
     const processManager = useMemo(() => new ProcessManager(), []);
-    const kami = useMemo(() => Kami.creaseGrid(16), []);
+    const kami = useMemo(() => Kami.creaseGrid(32), []);
     
     const setKamiString = useSetAtom(kamiStringAtom);
 
