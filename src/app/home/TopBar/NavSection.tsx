@@ -1,3 +1,4 @@
+import { useLogOut } from "@/auth/logOut";
 import { capitalize } from "@/utils/string";
 import { atom, useAtom } from "jotai";
 import Image from "next/image";
@@ -6,6 +7,8 @@ type NavMenuOption = "create" | "settings" | "profile";
 export const selectedNavMenuAtom = atom<NavMenuOption | undefined>(undefined);
 
 export default function NavSection() {
+    const { isLoggingOut, logOut } = useLogOut();
+
     return (
         <div className="ml-auto flex">
             <NavMenu
@@ -24,7 +27,12 @@ export default function NavSection() {
                 name="profile"
                 iconSrc="icons/profilePlaceholder.svg"
             >
-
+                <button 
+                    onClick={logOut}
+                    className="text-theme-black py-2 px-3 w-32"
+                >
+                    Log out
+                </button>
             </NavMenu>
         </div>
     )
@@ -42,7 +50,7 @@ function NavMenu({ name, iconSrc, children }: NavMenuProps) {
     const selected = name === selectedNavMenu;
 
     return (
-        <div className="relative ml-8">
+        <div className="relative h-full ml-8">
             <button 
                 onClick={() => setSelectedNavMenu(name)}
                 className="rounded-full hover:bg-theme-light-gray p-1"
@@ -70,7 +78,7 @@ type DropdownProps = {
 
 function Dropdown({ show, children }: DropdownProps) {
     return show && (
-        <div className="absolute rounded-lg shadow-md bg-theme-light-white p-2 z-10">
+        <div className="absolute rounded-lg shadow-md bg-theme-light-white p-2 z-10 top-[calc(100%+2px)] right-2">
             {children}
         </div>
     )
