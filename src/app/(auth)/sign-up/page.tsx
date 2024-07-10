@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react";
-import Container from "../components/Container";
+import { useEffect, useState } from "react";
+import Form from "../components/Form";
 import TextField from "../components/TextField";
 import SubmitButton from "../components/SubmitButton";
 import { useSignUp } from "@/auth/signUp";
@@ -14,7 +14,8 @@ export default function SignUp() {
 
     const { isSigningUp, signUp, error } = useSignUp();
 
-    const handleSubmit = () => {
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
         signUp(name, email, password);
     }
 
@@ -22,7 +23,10 @@ export default function SignUp() {
 
     return (
         <div className="h-screen flex justify-center items-center bg-theme-white">
-            <Container preText="Sign up for">
+            <Form 
+                onSubmit={handleSubmit}
+                preText="Sign up for"
+            >
                 <TextField 
                     text={name}
                     setText={setName}
@@ -39,8 +43,8 @@ export default function SignUp() {
                     placeholder="Password"
                     sensitive
                 />
-                <SubmitButton onClick={handleSubmit}/>
-            </Container>
+                <SubmitButton />
+            </Form>
         </div>
     );
 }

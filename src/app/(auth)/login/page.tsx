@@ -1,18 +1,33 @@
 "use client"
 
-import { useState } from "react";
-import Container from "../components/Container";
+import React, { useEffect, useState } from "react";
+import Form from "../components/Form";
 import TextField from "../components/TextField";
 import SubmitButton from "../components/SubmitButton";
+import { useAutoLogIn, useLogIn } from "@/auth/login";
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
+    const { isLoggingIn, logIn, error } = useLogIn();
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        logIn(email, password);
+    }
+
+    useEffect(() => {
+        console.log(error?.message);
+    }, [error]);
+
+    useAutoLogIn();
+
     return (
         <div className="h-screen w-screen flex items-center justify-center">
-            <Container
+            <Form
                 preText="Log in to"
+                onSubmit={handleSubmit}
             >
                 <TextField
                     text={email}
@@ -26,7 +41,7 @@ export default function Login() {
                     sensitive
                 />
                 <SubmitButton />
-            </Container>
+            </Form>
         </div>
     )
 }
