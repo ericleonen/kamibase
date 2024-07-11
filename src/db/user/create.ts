@@ -1,5 +1,6 @@
 import { db } from "@/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { User } from "./schemas";
 
 export async function initializeUser(
     name: string,

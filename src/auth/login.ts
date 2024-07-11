@@ -10,7 +10,7 @@ export function useAutoLogIn() {
 
     useEffect(() => {
         if (authUser && !authLoading && !authError) {
-            router.push("/home");
+            router.push("/app/home");
         }
     }, [authUser, authLoading, authError]);
 }

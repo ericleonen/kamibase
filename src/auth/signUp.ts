@@ -21,16 +21,16 @@ export function useSignUp(): {
     signUp: (name: string, email: string, password: string) => void,
     error?: Error
 } {
-    const [isSigningUp, setisSigningUp] = useState(false);
+    const [isSigningUp, setIsSigningUp] = useState(false);
     const [error, setError] = useState<Error>();
 
     const signUp = async (name: string, email: string, password: string) => {
-        setisSigningUp(true);
+        setIsSigningUp(true);
 
         const error = await signUpLocally(name, email, password);
 
         if (error) {
-            setisSigningUp(false);
+            setIsSigningUp(false);
             setError(error);
         }
     }

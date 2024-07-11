@@ -22,11 +22,11 @@ export function useLogOut(): {
 
 export function useAutoLogOut() {
     const router = useRouter();
-    const authUser = useAuthState(auth)[0];
+    const [authUser, authLoading, authError] = useAuthState(auth);
 
     useEffect(() => {
-        if (!authUser) {
+        if (!authUser && !authLoading) {
             router.push("/");
         }
-    }, [authUser]);
+    }, [authUser, authLoading]);
 }

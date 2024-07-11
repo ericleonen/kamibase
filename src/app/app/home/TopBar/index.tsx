@@ -18,7 +18,7 @@ function SearchBar() {
     return (
         <div className="absolute flex items-center py-2 px-3 bg-theme-dark-white rounded-lg left-1/2 translate-x-[-50%]">
             <Image 
-                src="icons/search.svg"
+                src="/icons/search.svg"
                 alt="Search icon"
                 height={19}
                 width={19}
