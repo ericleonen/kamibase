@@ -1,8 +1,8 @@
-import { userAtom } from "@/auth/atoms";
 import { useLogOut } from "@/auth/logOut";
 import { useCreateKami } from "@/db/kami/create";
+import Kami from "@/origami/Kami";
 import { capitalize } from "@/utils/string";
-import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
+import { atom, useAtom, useSetAtom } from "jotai";
 import Image from "next/image";
 
 type NavMenuOption = "create" | "settings" | "profile";
@@ -12,6 +12,13 @@ export default function NavSection() {
     const { isLoggingOut, logOut } = useLogOut();
     const { isCreatingKami, createKami, error } = useCreateKami();
 
+    const createKamiGrid = (dims: number) => {
+        createKami(
+            `Untitled ${dims}&times;${dims} kami`,
+            Kami.creaseGrid(dims).toString(true)
+        );
+    }
+
     return (
         <div className="ml-auto h-full flex">
             <NavMenu
@@ -19,9 +26,9 @@ export default function NavSection() {
                 iconSrc="/icons/plus.svg"
             >
                 <Option onClick={() => createKami("Untitled blank kami")}>New blank</Option>
-                <Option>New precreased 8&times;8 grid</Option>
-                <Option>New precreased 16&times;16 grid</Option>
-                <Option>New precreased 32&times;32 grid</Option>
+                <Option onClick={() => createKamiGrid(8)}>New precreased 8&times;8 grid</Option>
+                <Option onClick={() => createKamiGrid(16)}>New precreased 16&times;16 grid</Option>
+                <Option onClick={() => createKamiGrid(32)}>New precreased 32&times;32 grid</Option>
             </NavMenu>
             <NavMenu
                 name="settings"

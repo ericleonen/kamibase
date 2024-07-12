@@ -9,19 +9,19 @@ export default function ToolSection() {
         <div className="fixed flex flex-col justify-center px-5 h-full bg-theme-light-gray">
             <ToolButton
                 name="Mountain"
-                iconSrc="mountainToolIcon.svg"
+                iconSrc="/icons/mountainTool.svg"
             />
             <ToolButton
                 name="Valley"
-                iconSrc="valleyToolIcon.svg"
+                iconSrc="/icons/valleyTool.svg"
             />
             <ToolButton
                 name="Neutral"
-                iconSrc="neutralToolIcon.svg"
+                iconSrc="/icons/neutralTool.svg"
             />
             <ToolButton
                 name="Eraser"
-                iconSrc="eraserToolIcon.svg"
+                iconSrc="/icons/eraserTool.svg"
             />
         </div>
     )
