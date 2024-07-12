@@ -1,17 +1,11 @@
 import Kami from "@/origami/Kami"
 import { Action } from "@/origami/ProcessManager/types"
 import useRender from "./render"
-import Point from "@/origami/Point"
-import { DEFAULT_KAMI_DIMS } from "@/settings"
 import { atom } from "jotai"
 import { useEffect } from "react"
 
-export const kamiDimsAtom = atom<number>(DEFAULT_KAMI_DIMS);
-export const kamiStringAtom = atom<string>("");
-export const originAtom = atom<Point | undefined>(undefined);
-
 type KamiDisplayProps = {
-    kami: Kami,
+    kamiObject: Kami,
     process: (action: Action) => void
 }
 
@@ -27,7 +21,7 @@ function useDisableZoom() {
     }, [handleWheel]);
 }
 
-export default function KamiDisplay({ kami, process }: KamiDisplayProps) {
+export default function KamiDisplay({ kamiObject, process }: KamiDisplayProps) {
     const [canvasRef, {
         handleWheel,
         handleClick,
@@ -35,7 +29,7 @@ export default function KamiDisplay({ kami, process }: KamiDisplayProps) {
         handleMouseMove,
         handleMouseUp,
         handleMouseOut
-    }] = useRender(kami, process);
+    }] = useRender(kamiObject, process);
 
     useDisableZoom();
 

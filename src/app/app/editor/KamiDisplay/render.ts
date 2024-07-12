@@ -1,13 +1,13 @@
 import Crease, { CreaseType } from "@/origami/Crease";
 import Kami from "@/origami/Kami";
 import Point from "@/origami/Point";
-import { CREASE_WIDTH, HOVERED_VERTEX_RADIUS, HOVER_CREASE_WIDTH, HOVER_RADIUS, KAMI_BORDER_WIDTH, KAMI_SCROLL_FACTOR, KAMI_ZOOM_FACTOR, MIN_KAMI_DIMS, PIXEL_DENSITY, SELECTED_VERTEX_RADIUS } from "@/settings";
-import { useAtom, useAtomValue } from "jotai";
+import { CREASE_WIDTH, DEFAULT_KAMI_DIMS, HOVERED_VERTEX_RADIUS, HOVER_CREASE_WIDTH, HOVER_RADIUS, KAMI_BORDER_WIDTH, KAMI_SCROLL_FACTOR, KAMI_ZOOM_FACTOR, MIN_KAMI_DIMS, PIXEL_DENSITY, SELECTED_VERTEX_RADIUS } from "@/settings";
+import { useAtomValue } from "jotai";
 import { useRef, useEffect, RefObject, useState } from "react";
 import { Action } from "@/origami/ProcessManager/types";
 import Vertex from "@/origami/Vertex";
 import { Tool, toolAtom } from "../ToolSection";
-import { kamiStringAtom, originAtom, kamiDimsAtom } from ".";
+import { kamiAtom } from "@/atoms/kami";
 
 // Load in theme colors if window is available.
 let rootStyle: CSSStyleDeclaration;
@@ -37,9 +37,9 @@ export default function useRender(kami: Kami, process: (action: Action) => void)
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     const tool = useAtomValue(toolAtom);
-    const kamiString = useAtomValue(kamiStringAtom);
-    const [origin, setOrigin] = useAtom(originAtom);
-    const [kamiDims, setKamiDims] = useAtom(kamiDimsAtom);
+    const { kamiString } = useAtomValue(kamiAtom);
+    const [origin, setOrigin] = useState<Point>();
+    const [kamiDims, setKamiDims] = useState(DEFAULT_KAMI_DIMS);
 
     const [hoveredVertex, setHoveredVertex] = useState<Vertex | undefined>(undefined);
     const [selectedVertex, setSelectedVertex] = useState<Vertex | undefined>(undefined);

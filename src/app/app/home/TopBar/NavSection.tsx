@@ -1,5 +1,6 @@
 import { userAtom } from "@/auth/atoms";
 import { useLogOut } from "@/auth/logOut";
+import { useCreateKami } from "@/db/kami/create";
 import { capitalize } from "@/utils/string";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import Image from "next/image";
@@ -9,7 +10,7 @@ export const selectedNavMenuAtom = atom<NavMenuOption | undefined>(undefined);
 
 export default function NavSection() {
     const { isLoggingOut, logOut } = useLogOut();
-    const { name } = useAtomValue(userAtom);
+    const { isCreatingKami, createKami, error } = useCreateKami();
 
     return (
         <div className="ml-auto h-full flex">
@@ -17,7 +18,7 @@ export default function NavSection() {
                 name="create"
                 iconSrc="/icons/plus.svg"
             >
-                <Option>New blank</Option>
+                <Option onClick={() => createKami("Untitled blank kami")}>New blank</Option>
                 <Option>New precreased 8&times;8 grid</Option>
                 <Option>New precreased 16&times;16 grid</Option>
                 <Option>New precreased 32&times;32 grid</Option>
@@ -32,7 +33,7 @@ export default function NavSection() {
                 name="profile"
                 iconSrc="/icons/profilePlaceholder.svg"
             >
-                <Option onClick={logOut}>Log out {name}</Option>
+                <Option onClick={logOut}>Log out</Option>
             </NavMenu>
         </div>
     )

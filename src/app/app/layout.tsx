@@ -7,7 +7,7 @@ type AppLayoutProps = {
 }
 
 function AppLayout({ children }: AppLayoutProps) {
-    useLoadUser();
+    const loadUserError = useLoadUser();
 
     return children;
 }
