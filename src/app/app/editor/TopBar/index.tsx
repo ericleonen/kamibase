@@ -3,6 +3,8 @@ import OptionShadow from "./OptionShadow";
 import TitleField from "./TitleField";
 import { Action } from "@/origami/ProcessManager/types";
 import ProcessManager from "@/origami/ProcessManager";
+import { useSaveKami } from "@/db/kami/update";
+import { usePathKamiID } from "@/db/kami/read";
 
 type TopBarProps = {
     process: (action: Action) => void,
@@ -10,6 +12,13 @@ type TopBarProps = {
 }
 
 export default function TopBar({ process, processManager }: TopBarProps) {
+    const kamiID = usePathKamiID();
+    const { saveKami, saveKamiError } = useSaveKami(kamiID);
+    
+    const handleSave = () => {
+        saveKami();
+    }
+
     const handleUndo = () => {
         processManager.undo()?.forEach(process);
     }
@@ -42,7 +51,7 @@ export default function TopBar({ process, processManager }: TopBarProps) {
                         Open Kami file
                     </Option>
                     <Option
-                        onClick={() => {}}
+                        onClick={handleSave}
                         shortcut="Ctrl+S"
                     >
                         Save

@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 export function useKeyDown(code: string | undefined, callback: () => void) {    
-    const handler = (e: KeyboardEvent) => {
+    const handler = useCallback((e: KeyboardEvent) => {
         const codeKeys = code ? code.split("+") : [];
 
         if (e.ctrlKey && codeKeys.shift() !== "Ctrl") return;
@@ -12,12 +12,12 @@ export function useKeyDown(code: string | undefined, callback: () => void) {
         e.stopPropagation();
 
         callback();
-    };
+    }, [callback]);
 
     useEffect(() => {
         if (!code) return;
 
         document.addEventListener("keydown", handler);
         return () => document.removeEventListener("keydown", handler);
-    }, []);
+    }, [handler]);
 }

@@ -7,21 +7,11 @@ import TopBar from "../TopBar";
 import ProcessManager from "@/origami/ProcessManager";
 import { Action, Process } from "@/origami/ProcessManager/types";
 import Kami from "@/origami/Kami";
-import { useMemo } from "react";
-import { usePathname } from "next/navigation";
-import { useLoadKami } from "@/db/kami/read";
-import { kamiAtom, useSetKamiString } from "@/atoms/kami";
+import { useEffect, useState } from "react";
+import { useLoadKami, usePathKamiID } from "@/db/kami/read";
+import { kamiAtom, useKamiSaveStatus, useSetKamiString } from "@/atoms/kami";
 import { KamiDisplayError, KamiDisplayLoader } from "../KamiDisplay/fallback";
-
-/**
- * Custom hook that reads and returns the requested kamiID from the URL path.
- */
-function usePathKamiID(): string {
-    const path = usePathname();
-    const kamiID = path.split("/")[3];
-
-    return kamiID;
-}
+import { useUnsavedChangesPopup } from "@/utils/window";
 
 export default function EditorPage() {
     const kamiID = usePathKamiID();
@@ -29,11 +19,23 @@ export default function EditorPage() {
 
     const kami = useAtomValue(kamiAtom);
     const setKamiString = useSetKamiString();
+    const { kamiSaveStatus, setKamiSaveStatus } = useKamiSaveStatus();
 
-    const processManager = useMemo(() => new ProcessManager(), [kami]);
-    const kamiObject = useMemo(() => Kami.fromString(kami.kamiString), [kami]);
+    const [processManager, setProcessManager] = useState<ProcessManager>(new ProcessManager());
+    const [kamiObject, setKamiObject] = useState<Kami>(new Kami());
+
+    useEffect(() => {
+        if (kami.loadStatus === "succeeded") {
+            setProcessManager(new ProcessManager());
+            setKamiObject(Kami.fromString(kami.kamiString));
+        }
+    }, [kami.loadStatus]);
 
     const process = (action: Action) => {
+        if (!kamiObject || !processManager) return;
+
+        setKamiSaveStatus("unsaved");
+
         let processTaken: Process | undefined;
 
         if (action.name === "crease") {
@@ -59,6 +61,8 @@ export default function EditorPage() {
             processManager.clearUndoHistory();
         }
     }
+
+    useUnsavedChangesPopup(kamiSaveStatus !== "saved");
 
     return (
         <div className="h-screen flex flex-col bg-theme-white">
