@@ -1,63 +1,29 @@
 import { Kami } from "@/db/kami/schemas";
-import { Resource, SaveStatus } from "@/atoms/types";
-import { atom, useAtom, useSetAtom } from "jotai";
+import { Resource } from "@/atoms/types";
+import { atom, useSetAtom } from "jotai";
 
-/**
- * Atom that stores the information about the current editable Kami.
- */
-export const kamiAtom = atom<Kami & Resource>({
+export const initialKamiState: Kami & Resource = {
     title: "",
     userID: "",
     kamiString: "",
     visibility: "private",
     loadStatus: "idle",
-    saveStatus: "saved"
-});
+    saveStatus: "saved",
+    error: undefined
+};
 
 /**
- * Custom hook that provides the state and state setter of the Kami atom's title field.
+ * Atom that stores the information about the current editable Kami.
  */
-export function useKamiTitle() {
-    const [kami, setKami] = useAtom(kamiAtom);
-
-    return {
-        kamiTitle: kami.title,
-        setKamiTitle: (kamiTitle: string) => {
-            setKami(prevKami => ({
-                ...prevKami,
-                title: kamiTitle
-            }));
-        }
-    };
-}
+export const kamiAtom = atom<Kami & Resource>(initialKamiState);
 
 /**
- * Custom hook that provides a function to update the Kami atom's kamiString field.
+ * Custom hook that provides a setter that allows you to target specific fields of the kamiAtom.
  */
-export function useSetKamiString() {
+export function useSetKami(): (kami: Partial<Kami & Resource>) => void {
     const setKami = useSetAtom(kamiAtom);
 
-    return (kamiString: string) => {
-        setKami(prevKami => ({
-            ...prevKami,
-            kamiString
-        }));
-    };
-}
-
-/**
- * Custom hook that provides the state and state setter of the Kami atom's saveStatus field. 
- */
-export function useKamiSaveStatus() {
-    const [kami, setKami] = useAtom(kamiAtom);
-
-    return {
-        kamiSaveStatus: kami.saveStatus,
-        setKamiSaveStatus: (kamiSaveStatus: SaveStatus) => {
-            setKami(prevKami => ({
-                ...prevKami,
-                saveStatus: kamiSaveStatus
-            }));
-        }
+    return (kami: Partial<Kami & Resource>) => {
+        setKami(prevKami => ({ ...prevKami, ...kami }));
     };
 }

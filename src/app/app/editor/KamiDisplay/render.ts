@@ -97,7 +97,7 @@ export default function useRender(kami: Kami, process: (action: Action) => void)
                 kamiCursor,
                 origin,
                 kamiDims
-            });
+            }, PIXEL_DENSITY);
         }
     }, [
         kamiString, 
@@ -286,19 +286,25 @@ export default function useRender(kami: Kami, process: (action: Action) => void)
 
 type RenderData = {
     kami: Kami,
-    tool: Tool,
+    tool?: Tool,
     origin: Point,
     kamiDims: number,
     hoveredVertex?: Vertex,
     selectedVertex?: Vertex,
     hoveredCrease?: Crease,
-    kamiCursor?: Point
+    kamiCursor?: Point,
+    background?: boolean
 };
 
 /**
  * Draws all lines and hovered lines and vertexes onto the canvas.
  */
-function render(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, data: RenderData) {
+export function render(
+    canvas: HTMLCanvasElement, 
+    context: CanvasRenderingContext2D, 
+    data: RenderData, 
+    PIXEL_DENSITY: number = 1
+) {
     const {
         kami,
         tool,
@@ -307,11 +313,21 @@ function render(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, da
         hoveredCrease,
         kamiCursor,
         origin,
-        kamiDims
+        kamiDims,
+        background
     } = data;
 
     // wipe the canvas clear
     context.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (background) {
+        drawRectangle(context, {
+            origin,
+            width: canvas.width,
+            height: canvas.height,
+            color: "white"
+        });
+    }
 
     // draw all creases
     kami.toRenderable().forEach(crease => {
@@ -327,7 +343,7 @@ function render(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, da
             origin,
             context,
             kamiDims
-        });
+        }, PIXEL_DENSITY);
     });
 
     // draw hovered vertex
@@ -338,7 +354,7 @@ function render(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, da
             context,
             origin,
             kamiDims
-        });
+        }, PIXEL_DENSITY);
     }
 
     // draw selected vertex
@@ -349,9 +365,9 @@ function render(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, da
             context,
             origin,
             kamiDims
-        });
+        }, PIXEL_DENSITY);
 
-        if (kamiCursor && tool !== "E") {
+        if (kamiCursor && tool && tool !== "E") {
             // draw simulated crease
             drawPoint({
                 point: kamiCursor,
@@ -359,7 +375,7 @@ function render(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, da
                 context,
                 origin,
                 kamiDims
-            });
+            }, PIXEL_DENSITY);
             drawLine({
                 line: {
                     vertex1: selectedVertex,
@@ -370,7 +386,7 @@ function render(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, da
                 context,
                 origin,
                 kamiDims
-            });
+            }, PIXEL_DENSITY);
         }
     }
 }
@@ -390,7 +406,7 @@ type LineParams = {
 /**
  * Draws a line of specified width on the canvas.
  */
-function drawLine(params: LineParams) {
+function drawLine(params: LineParams, PIXEL_DENSITY: number) {
     const { line, lineWidth, origin, context, kamiDims } = params;
 
     context.lineWidth = lineWidth;
@@ -429,7 +445,7 @@ type PointParams = {
 /**
  * Draws a Point with specified radius onto the canvas.
  */
-function drawPoint(params: PointParams) {
+function drawPoint(params: PointParams, PIXEL_DENSITY: number) {
     const { point, radius, context, origin, kamiDims } = params;
 
     context.fillStyle =
@@ -445,4 +461,22 @@ function drawPoint(params: PointParams) {
     );
     context.fill();
     context.closePath();
+}
+
+type RectangleParams = {
+    origin: Point,
+    height: number,
+    width: number,
+    point?: Point,
+    color: string
+}
+
+export function drawRectangle(context: CanvasRenderingContext2D, params: RectangleParams, PIXEL_DENSITY: number = 1) {
+    const { origin, height, width, point, color } = params;
+
+    context.fillStyle =
+        rootStyle ? rootStyle.getPropertyValue(`--theme-white`) : color;
+
+    context.rect(origin.x, origin.y, width * PIXEL_DENSITY, height * PIXEL_DENSITY);
+    context.fill();
 }

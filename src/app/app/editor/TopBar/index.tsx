@@ -5,26 +5,32 @@ import { Action } from "@/origami/ProcessManager/types";
 import ProcessManager from "@/origami/ProcessManager";
 import { useSaveKami } from "@/db/kami/update";
 import { usePathKamiID } from "@/db/kami/read";
+import { useDeleteKami } from "@/db/kami/delete";
 
 type TopBarProps = {
     process: (action: Action) => void,
-    processManager: ProcessManager
+    processManager?: ProcessManager
 }
 
 export default function TopBar({ process, processManager }: TopBarProps) {
     const kamiID = usePathKamiID();
-    const { saveKami, saveKamiError } = useSaveKami(kamiID);
+    const saveKami = useSaveKami(kamiID);
+    const deleteKami = useDeleteKami(kamiID);
     
-    const handleSave = () => {
-        saveKami();
+    const handleSave = async () => {
+        await saveKami();
     }
 
+    const handleDelete = async () => {
+        await deleteKami();
+    };
+
     const handleUndo = () => {
-        processManager.undo()?.forEach(process);
+        processManager?.undo()?.forEach(process);
     }
 
     const handleRedo = () => {
-        processManager.redo()?.forEach(process);
+        processManager?.redo()?.forEach(process);
     }
     
     const handleRotate = (direction: 1 | -1) => {
@@ -56,7 +62,7 @@ export default function TopBar({ process, processManager }: TopBarProps) {
                     >
                         Save
                     </Option>
-                    <Option onClick={() => {}}>Delete</Option>
+                    <Option onClick={handleDelete}>Delete</Option>
                 </OptionMenu>
                 <OptionMenu name="Edit">
                     <Option

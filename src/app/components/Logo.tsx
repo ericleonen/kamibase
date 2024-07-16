@@ -1,14 +1,24 @@
 import Image from "next/image"
 
-export default function Logo() {
+type LogoProps = {
+    size?: "sm" | "md" | "lg"
+};
+
+export default function Logo({ size }: LogoProps) {
+    const sizeScaler = size === "sm" ? 14 / 16 :
+        size === "lg" ? 18 / 16 : 1;
+    
     return (
         <Image 
             src="/logo.svg"
             alt="KamiBase logo"
-            height={86}
-            width={20}
+            width={86 * sizeScaler}
+            height={20 * sizeScaler}
             priority
-            className="w-auto h-auto"
+            style={{
+                width: `${86 * sizeScaler}px`,
+                height: `${20 * sizeScaler}px`
+            }}
         />
     )
 }

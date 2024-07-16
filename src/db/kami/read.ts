@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/firebase";
-import { useAtom } from "jotai";
-import { kamiAtom } from "@/atoms/kami";
+import { initialKamiState, useSetKami } from "@/atoms/kami";
 import { Kami } from "./schemas";
 import { usePathname } from "next/navigation";
 
@@ -17,32 +16,27 @@ export function usePathKamiID(): string {
 }
 
 /**
- * Custom hook that uses the setKami setter to load the specified Kami data into an atom. If
- * loading is unsuccessful, returns an Error, otherwise undefined.
+ * Custom hook that uses the setKami setter to load the specified Kami data into an atom.
  */
-export function useLoadKami(kamiID: string): Error | undefined {
-    const [kami, setKami] = useAtom(kamiAtom);
-    const [error, setError] = useState<Error>();
+export function useLoadKami(kamiID: string) {
+    const setKami = useSetKami();
     
     useEffect(() => {
-        if (kami.loadStatus === "idle") {
-            setKami(prevKami => ({ ...prevKami, loadStatus: "loading" }));
+    setKami({ ...initialKamiState, loadStatus: "loading" });
 
-            const kamiRef = doc(db, "kamis", kamiID);
-            getDoc(kamiRef)
-                .then(kamiSnap => {
-                    setKami(prevKami => ({
-                        ...prevKami,
-                        ...(kamiSnap.data() as Kami),
-                        loadStatus: "succeeded"
-                    }));
-                })
-                .catch(err => {
-                    setKami(prevKami => ({ ...prevKami, loadStatus: "failed" }));
-                    setError(err);
-                })
-        }
-    }, [kamiID, kami.loadStatus]);
-
-    return error;
+        const kamiRef = doc(db, "kamis", kamiID);
+        getDoc(kamiRef)
+            .then(kamiSnap => {
+                setKami({
+                    ...(kamiSnap.data() as Kami),
+                    loadStatus: "succeeded"
+                });
+            })
+            .catch(err => {
+                setKami({ 
+                    loadStatus: "failed",
+                    error: err
+                });
+            })
+    }, [kamiID]);
 }

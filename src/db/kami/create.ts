@@ -1,5 +1,5 @@
 import { db } from "@/firebase";
-import { addDoc, arrayUnion, collection, doc, setDoc, updateDoc } from "firebase/firestore";
+import { addDoc, collection } from "firebase/firestore";
 import { useState } from "react"
 import { Kami } from "./schemas";
 import { useAtomValue } from "jotai";
@@ -12,8 +12,8 @@ import { useRouter } from "next/navigation";
  */
 export function useCreateKami(): { 
     isCreatingKami: boolean, 
-    createKami: (title?: string, baseKamiString?: string) => void,
-    error?: Error
+    createKami: (title?: string, baseKamiString?: string) => Promise<void>,
+    createKamiError?: Error
 } {
     const [isCreatingKami, setIsCreatingKami] = useState(false);
     const [error, setError] = useState<Error>();
@@ -33,17 +33,12 @@ export function useCreateKami(): {
             } as Kami);
             const newKamiID = newKamiRef.id;
 
-            const userRef = doc(db, "users", userID);
-            await updateDoc(userRef, {
-                kamiIDs: arrayUnion(newKamiID)
-            });
-
             router.push(`/app/editor/${newKamiID}`)
         } catch (err) {
-            console.error(err)
+            setIsCreatingKami(false);
             setError(err as Error)
         }
     }
 
-    return { isCreatingKami, createKami, error };
+    return { isCreatingKami, createKami, createKamiError: error };
 }

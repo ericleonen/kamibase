@@ -19,8 +19,7 @@ export async function initializeUser(
             await setDoc(userRef, {
                 name,
                 userID,
-                email,
-                kamiIDs: [] as string[]
+                email
             } as User);
         } else {
             throw new Error("User already exists.");

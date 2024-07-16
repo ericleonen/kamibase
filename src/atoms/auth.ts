@@ -1,4 +1,4 @@
-import { LoadStatus, Resource } from "@/atoms/types";
+import { Resource } from "@/atoms/types";
 import { User } from "@/db/user/schemas";
 import { atom, useSetAtom } from "jotai";
 
@@ -10,18 +10,18 @@ export const userAtom = atom<User & Resource>({
     name: "",
     email: "",
     userID: "",
-    kamiIDs: [] as string[],
     loadStatus: "idle",
-    saveStatus: "saved"
+    saveStatus: "saved",
+    error: undefined
 });
 
 /**
- * Custom hook that provides a function to update the user atom's load status.
+ * Custom hook that provides a setter that allows you to target specific fields of the kamiAtom.
  */
-export function useSetUserLoadStatus(): (userLoadStatus: LoadStatus) => void {
+export function useSetUser(): (user: Partial<User & Resource>) => void {
     const setUser = useSetAtom(userAtom);
 
-    return (userLoadStatus: LoadStatus) => {
-        setUser(prevUser => ({ ...prevUser, loadStatus: userLoadStatus }));
-    }
+    return (user: Partial<User & Resource>) => {
+        setUser(prevUser => ({ ...prevUser, ...user }));
+    };
 }

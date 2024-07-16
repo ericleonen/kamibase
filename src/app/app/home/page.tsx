@@ -1,13 +1,11 @@
 "use client"
 
-import { useAutoLogOut } from "@/auth/logOut";
-import TopBar from "./TopBar";
+import TopBar from "./components/TopBar"
 
 export default function Home() {
-    useAutoLogOut();
 
     return (
-        <div className="h-screen flex flex-col bg-theme-white">
+        <div className="h-screen flex-col bg-theme-white overflow-hidden">
             <TopBar />
         </div>
     )

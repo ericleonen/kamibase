@@ -1,12 +1,15 @@
-import { useKamiSaveStatus, useKamiTitle } from "@/atoms/kami";
+import { kamiAtom, useSetKami } from "@/atoms/kami";
+import { useAtomValue } from "jotai";
 
 export default function TitleField() {
-    const { kamiTitle, setKamiTitle } = useKamiTitle();
-    const { setKamiSaveStatus } = useKamiSaveStatus();
+    const kamiTitle = useAtomValue(kamiAtom).title;
+    const setKami = useSetKami();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setKamiTitle(e.target.value);
-        setKamiSaveStatus("unsaved");
+        setKami({
+            title: e.target.value,
+            saveStatus: "unsaved"
+        });
     }
 
     return (

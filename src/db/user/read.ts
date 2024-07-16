@@ -1,43 +1,39 @@
-import { useSetUserLoadStatus, userAtom } from "@/atoms/auth";
+import { useSetUser, userAtom } from "@/atoms/auth";
 import { auth, db } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import { useAtom } from "jotai";
-import { useEffect, useState } from "react";
+import { useAtomValue } from "jotai";
+import { useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { User } from "./schemas";
 
 /**
- * Custom hook that loads a logged-in user's data into the user atom. Returns an Error if something
- * went wrong, otherwise undefined.
+ * Custom hook that loads a logged-in user's data into the user atom.
  */
-export function useLoadUser(): Error | undefined {
+export function useLoadUser() {
     const [authUser, authLoading, authError] = useAuthState(auth);
-    const [user, setUser] = useAtom(userAtom);
-    const setUserLoadStatus = useSetUserLoadStatus();
-
-    const [error, setError] = useState<Error>();
+    const userLoadStatus = useAtomValue(userAtom).loadStatus;
+    const setUser = useSetUser();
 
     useEffect(() => {
         if (!authUser || authLoading || authError) return;
 
-        if (user.loadStatus === "idle") {
-            setUserLoadStatus("loading")
+        if (userLoadStatus === "idle") {
+            setUser({ loadStatus: "loading" });
 
             const userRef = doc(db, "users", authUser.uid);
             getDoc(userRef)
                 .then(userSnap => {
-                    setUser(prevUser => ({
-                        ...prevUser,
+                    setUser({
                         ...(userSnap.data() as User),
                         loadStatus: "succeeded",
-                    }));
+                    });
                 })
                 .catch(err => {
-                    setUserLoadStatus("failed")
-                    setError(err);
+                    setUser({
+                        loadStatus: "failed",
+                        error: err
+                    });
                 });
         }
-    }, [authUser, authLoading, authError, user.loadStatus]);
-
-    return error;
+    }, [authUser, authLoading, authError, userLoadStatus]);
 }

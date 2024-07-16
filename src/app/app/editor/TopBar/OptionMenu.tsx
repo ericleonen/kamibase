@@ -62,8 +62,8 @@ export function Option({ onClick, shortcut, children }: OptionProps) {
     const setOptionMenu = useSetAtom(optionMenuAtom);
 
     const handleClick = () => {
-        onClick();
-        setOptionMenu(undefined);
+        Promise.resolve(onClick())
+            .then(() => setOptionMenu(undefined));
     };
 
     useKeyDown(shortcut, onClick);

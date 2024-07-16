@@ -10,11 +10,11 @@ export const selectedNavMenuAtom = atom<NavMenuOption | undefined>(undefined);
 
 export default function NavSection() {
     const { isLoggingOut, logOut } = useLogOut();
-    const { isCreatingKami, createKami, error } = useCreateKami();
+    const { isCreatingKami, createKami, createKamiError } = useCreateKami();
 
-    const createKamiGrid = (dims: number) => {
-        createKami(
-            `Untitled ${dims}&times;${dims} kami`,
+    const createKamiGrid = async (dims: number) => {
+        await createKami(
+            `Untitled ${dims}x${dims} kami`,
             Kami.creaseGrid(dims).toString(true)
         );
     }
@@ -25,7 +25,7 @@ export default function NavSection() {
                 name="create"
                 iconSrc="/icons/plus.svg"
             >
-                <Option onClick={() => createKami("Untitled blank kami")}>New blank</Option>
+                <Option onClick={async () => await createKami("Untitled blank kami")}>New blank</Option>
                 <Option onClick={() => createKamiGrid(8)}>New precreased 8&times;8 grid</Option>
                 <Option onClick={() => createKamiGrid(16)}>New precreased 16&times;16 grid</Option>
                 <Option onClick={() => createKamiGrid(32)}>New precreased 32&times;32 grid</Option>
@@ -102,8 +102,8 @@ function Option({ onClick, children }: OptionProps) {
 
     const handleClick = () => {
         if (onClick) {
-            onClick();
-            setSelectedNavMenu(undefined);
+            Promise.resolve(onClick())
+                .then(() => setSelectedNavMenu(undefined));
         }
     }
 

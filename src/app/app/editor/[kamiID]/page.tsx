@@ -9,20 +9,19 @@ import { Action, Process } from "@/origami/ProcessManager/types";
 import Kami from "@/origami/Kami";
 import { useEffect, useState } from "react";
 import { useLoadKami, usePathKamiID } from "@/db/kami/read";
-import { kamiAtom, useKamiSaveStatus, useSetKamiString } from "@/atoms/kami";
+import { kamiAtom, useSetKami, } from "@/atoms/kami";
 import { KamiDisplayError, KamiDisplayLoader } from "../KamiDisplay/fallback";
 import { useUnsavedChangesPopup } from "@/utils/window";
 
 export default function EditorPage() {
     const kamiID = usePathKamiID();
-    const loadKamiError = useLoadKami(kamiID);
+    useLoadKami(kamiID);
 
     const kami = useAtomValue(kamiAtom);
-    const setKamiString = useSetKamiString();
-    const { kamiSaveStatus, setKamiSaveStatus } = useKamiSaveStatus();
+    const setKami = useSetKami();
 
-    const [processManager, setProcessManager] = useState<ProcessManager>(new ProcessManager());
-    const [kamiObject, setKamiObject] = useState<Kami>(new Kami());
+    const [processManager, setProcessManager] = useState<ProcessManager>();
+    const [kamiObject, setKamiObject] = useState<Kami>();
 
     useEffect(() => {
         if (kami.loadStatus === "succeeded") {
@@ -34,7 +33,7 @@ export default function EditorPage() {
     const process = (action: Action) => {
         if (!kamiObject || !processManager) return;
 
-        setKamiSaveStatus("unsaved");
+        setKami({ saveStatus: "unsaved" });
 
         let processTaken: Process | undefined;
 
@@ -42,27 +41,27 @@ export default function EditorPage() {
             const { type, x1, y1, x2, y2 } = action.params;
 
             processTaken = kamiObject.crease(type, x1, y1, x2, y2);
-            setKamiString(kamiObject.toString());
         } else if (action.name === "erase") {
             const { x1, y1, x2, y2 } = action.params;
 
             processTaken = [kamiObject.erase(x1, y1, x2, y2)];
-            setKamiString(kamiObject.toString());
         } else if (action.name === "rotate") {
             const { direction } = action.params;
 
             processTaken = [kamiObject.rotate(direction)];
-            setKamiString(kamiObject.toString());
         }
 
         if (!processTaken) return;
-        else if (!action.type) {
+
+        setKami({ kamiString: kamiObject.toString() });
+
+        if (!action.type) {
             processManager.push(processTaken);
             processManager.clearUndoHistory();
         }
     }
 
-    useUnsavedChangesPopup(kamiSaveStatus !== "saved");
+    useUnsavedChangesPopup(kami.saveStatus !== "saved");
 
     return (
         <div className="h-screen flex flex-col bg-theme-white">
@@ -72,9 +71,9 @@ export default function EditorPage() {
             >
                 <ToolSection />
                 {
-                    kami.loadStatus === "succeeded" ? <KamiDisplay {...{kamiObject, process}} /> :
+                    kami.loadStatus === "succeeded" && kamiObject ? <KamiDisplay {...{kamiObject, process}} /> :
                     ["idle", "loading"].includes(kami.loadStatus) ? <KamiDisplayLoader /> :
-                    <KamiDisplayError error={loadKamiError} />
+                    <KamiDisplayError />
                 }
             </section>
         </div>
