@@ -26,7 +26,7 @@ export async function createKamiImage(kamiID: string, kamiString: string) {
         kami: Kami.fromString(kamiString),
         origin,
         kamiDims: canvas.width,
-        background: true
+        display: true
     });
 
     canvas.toBlob(kamiBlob => {

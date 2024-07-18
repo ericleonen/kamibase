@@ -300,7 +300,7 @@ type RenderData = {
     selectedVertex?: Vertex,
     hoveredCrease?: Crease,
     kamiCursor?: Point,
-    background?: boolean
+    display?: boolean
 };
 
 /**
@@ -321,13 +321,13 @@ export function render(
         kamiCursor,
         origin,
         kamiDims,
-        background
+        display
     } = data;
 
     // wipe the canvas clear
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (background) {
+    if (display) {
         drawRectangle(context, {
             origin,
             width: canvas.width,
@@ -341,16 +341,18 @@ export function render(
         const hovered = hoveredCrease?.equals(crease);
         const isBorder = crease.type === "B";
 
-        drawLine({
-            line: crease,
-            lineWidth: 
-                hovered ? HOVER_CREASE_WIDTH :
-                isBorder ? KAMI_BORDER_WIDTH :
-                CREASE_WIDTH,
-            origin,
-            context,
-            kamiDims
-        }, PIXEL_DENSITY);
+        if (!display || !isBorder) {
+            drawLine({
+                line: crease,
+                lineWidth: 
+                    hovered ? HOVER_CREASE_WIDTH :
+                    isBorder ? KAMI_BORDER_WIDTH :
+                    CREASE_WIDTH,
+                origin,
+                context,
+                kamiDims
+            }, PIXEL_DENSITY);
+        }
     });
 
     // draw hovered vertex

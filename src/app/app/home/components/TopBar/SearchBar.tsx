@@ -7,7 +7,7 @@ export default function SearchBar() {
             <input 
                 type="text"
                 placeholder="Search for CPs"
-                className="bg-transparent ml-2 focus:outline-none placeholder:text-theme-dark-gray text-sm"
+                className="border-2 font-medium bg-transparent ml-2 focus:outline-none placeholder:text-theme-dark-gray text-sm"
             />
         </div>
     )

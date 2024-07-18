@@ -5,7 +5,7 @@ export default function KamiCards() {
     const publicKamis = usePublicKamis();
 
     return (
-        <div className="h-[calc(100%-5rem)] w-full overflow-y-scroll flex justify-center flex-wrap">
+        <div className="h-max w-full flex justify-center flex-wrap">
             {
                 publicKamis.list.map(publicKami => 
                     <KamiCard 

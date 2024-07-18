@@ -9,7 +9,7 @@ export default function ProfileButton() {
     return (
         <button 
             onClick={logOut}
-            className="flex items-center justify-center relative h-10 w-10 rounded-full border-2 bg-blue-500 ml-3"
+            className="flex items-center justify-center relative h-12 w-12 rounded-full border-2 border-theme-light-gray ml-3 bg-theme-blue"
         >
             <span className="font-bold text-theme-white">{userName.charAt(0).toUpperCase()}</span>
         </button>
