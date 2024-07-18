@@ -6,7 +6,7 @@ type LogoProps = {
 
 export default function Logo({ size }: LogoProps) {
     const sizeScaler = size === "sm" ? 14 / 16 :
-        size === "lg" ? 18 / 16 : 1;
+        size === "lg" ? 20 / 16 : 1;
     
     return (
         <Image 

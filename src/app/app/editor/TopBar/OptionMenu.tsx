@@ -19,8 +19,8 @@ export default function OptionMenu({ name, children }: OptionMenuProps) {
                 onClick={() => setOptionMenu(name)}
                 className="transition-colors hover:bg-theme-light-black flex items-center px-6 h-full"
                 style={{
-                    background: selected ? "var(--theme-yellow)" : undefined,
-                    color: selected ? "var(--theme-black)" : "var(--theme-white)"
+                    background: selected ? "rgb(var(--theme-yellow))" : undefined,
+                    color: selected ? "rgb(var(--theme-black))" : "rgb(var(--theme-white))"
                 }}
             >
                 {name}

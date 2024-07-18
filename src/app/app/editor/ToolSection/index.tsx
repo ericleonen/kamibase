@@ -1,8 +1,6 @@
-import { atom, useAtom } from "jotai";
+import { useAtom } from "jotai";
 import Image from "next/image";
-
-export type Tool = "M" | "V" | "N" | "E";
-export const toolAtom = atom<Tool>("M");
+import { Tool, toolAtom } from "@/atoms/kami";
 
 export default function ToolSection() {
     return (
@@ -47,7 +45,7 @@ function ToolButton({ name, iconSrc }: ToolButtonProps) {
             onClick={handleClick}
             className="transition-colors bg-theme-gray hover:bg-theme-dark-gray h-16 w-16 rounded-md mb-5 last:mb-0 relative flex justify-center items-center"
             style={{
-                background: isSelected ? "var(--theme-yellow)" : undefined
+                background: isSelected ? "rgb(var(--theme-yellow))" : undefined
             }}
         >
             <Image 

@@ -1,11 +1,7 @@
-import { drawRectangle, render } from "@/app/app/editor/KamiDisplay/render";
 import { kamiAtom, useSetKami } from "@/atoms/kami";
-import { db, storage } from "@/firebase";
-import Kami from "@/origami/Kami";
-import Point from "@/origami/Point";
-import { DEFAULT_KAMI_DIMS, PIXEL_DENSITY } from "@/settings";
+import { db } from "@/firebase";
+import { createKamiImage } from "@/storage/kamis/create";
 import { doc, updateDoc } from "firebase/firestore";
-import { ref, uploadBytes } from "firebase/storage";
 import { useAtomValue } from "jotai";
 
 /**
@@ -27,34 +23,10 @@ export function useSaveKami(kamiID: string): () => Promise<void> {
             await updateDoc(kamiRef, {
                 title: kami.title,
                 kamiString: kami.kamiString,
-                visibility: kami.visibility
+                public: kami.public
             });
 
-            // update Kami icon in Storage
-            const kamiImagesRef = ref(storage, `kamis/${kamiID}.png`);
-
-            const canvas = document.createElement("canvas");
-            canvas.width = canvas.height = DEFAULT_KAMI_DIMS * PIXEL_DENSITY;
-            const context = canvas.getContext("2d");
-            
-            if (!context) {
-                throw new Error("Canvas Context is null.");
-            }
-
-            const origin = new Point(0, 0);
-            
-            render(canvas, context, {
-                kami: Kami.fromString(kami.kamiString),
-                origin,
-                kamiDims: canvas.width,
-                background: true
-            });
-
-            canvas.toBlob(kamiBlob => {
-                if (kamiBlob) {
-                    uploadBytes(kamiImagesRef, kamiBlob);
-                }
-            });
+            await createKamiImage(kamiID, kami.kamiString);
 
             setKami({ saveStatus: "saved" });
         } catch (err) {

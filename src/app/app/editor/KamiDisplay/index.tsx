@@ -1,6 +1,6 @@
 import Kami from "@/origami/Kami"
 import { Action } from "@/origami/ProcessManager/types"
-import useRender from "./render"
+import { useRender } from "@/origami/render"
 import { useEffect } from "react"
 
 type KamiDisplayProps = {

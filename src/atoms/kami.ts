@@ -6,7 +6,7 @@ export const initialKamiState: Kami & Resource = {
     title: "",
     userID: "",
     kamiString: "",
-    visibility: "private",
+    public: false,
     loadStatus: "idle",
     saveStatus: "saved",
     error: undefined
@@ -27,3 +27,13 @@ export function useSetKami(): (kami: Partial<Kami & Resource>) => void {
         setKami(prevKami => ({ ...prevKami, ...kami }));
     };
 }
+
+/**
+ * Type for different types of tools: (M)ountain, (V)alley, (N)eutral, and (E)raser.
+ */
+export type Tool = "M" | "V" | "N" | "E";
+
+/**
+ * Atom that stors information about the Kami editor's tool.
+ */
+export const toolAtom = atom<Tool>("M");

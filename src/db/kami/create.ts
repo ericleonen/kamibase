@@ -11,34 +11,34 @@ import { useRouter } from "next/navigation";
  * kami creation is happening and the error. 
  */
 export function useCreateKami(): { 
-    isCreatingKami: boolean, 
-    createKami: (title?: string, baseKamiString?: string) => Promise<void>,
-    createKamiError?: Error
+    isCreating: boolean, 
+    create: (title?: string, baseKamiString?: string) => Promise<void>,
+    error?: Error
 } {
-    const [isCreatingKami, setIsCreatingKami] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
     const [error, setError] = useState<Error>();
     const { userID } = useAtomValue(userAtom);
     const router = useRouter();
 
-    const createKami = async (title?: string, baseKamiString?: string) => {
+    const create = async (title?: string, baseKamiString?: string) => {
         try {
-            setIsCreatingKami(true);
+            setIsCreating(true);
 
             const kamisRef = collection(db, "kamis");
             const newKamiRef = await addDoc(kamisRef, {
                 title: title || "Untitled kami",
                 userID,
                 kamiString: baseKamiString || "",
-                visibility: "private"
+                public: false
             } as Kami);
             const newKamiID = newKamiRef.id;
 
             router.push(`/app/editor/${newKamiID}`)
         } catch (err) {
-            setIsCreatingKami(false);
+            setIsCreating(false);
             setError(err as Error)
         }
     }
 
-    return { isCreatingKami, createKami, createKamiError: error };
+    return { isCreating, create, error };
 }

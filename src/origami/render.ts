@@ -6,8 +6,7 @@ import { useAtomValue } from "jotai";
 import { useRef, useEffect, RefObject, useState } from "react";
 import { Action } from "@/origami/ProcessManager/types";
 import Vertex from "@/origami/Vertex";
-import { Tool, toolAtom } from "../ToolSection";
-import { kamiAtom } from "@/atoms/kami";
+import { Tool, kamiAtom, toolAtom } from "@/atoms/kami";
 
 // Load in theme colors if window is available.
 let rootStyle: CSSStyleDeclaration;
@@ -16,6 +15,14 @@ try {
     rootStyle = window.getComputedStyle(document.body);
 } catch (err) {
     
+}
+
+function getColor(color: string): string {
+    if (rootStyle) {
+        return `rgb(${rootStyle.getPropertyValue(`--theme-${color}`)})`
+    } else {
+        return color;
+    }
 }
 
 type RenderAPI = [
@@ -33,7 +40,7 @@ type RenderAPI = [
 /**
  * Custom hook that does all the work of handling KamiDisplay interactivity.
  */
-export default function useRender(kami: Kami, process: (action: Action) => void): RenderAPI {
+export function useRender(kami: Kami, process: (action: Action) => void): RenderAPI {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     const tool = useAtomValue(toolAtom);
@@ -418,8 +425,7 @@ function drawLine(params: LineParams, PIXEL_DENSITY: number) {
         line.type === "N" ? "gray" :
         "black";
 
-    context.strokeStyle =
-        rootStyle ? rootStyle.getPropertyValue(`--theme-${color}`) : color;
+    context.strokeStyle = getColor(color);
 
     context.beginPath();
     context.moveTo(
@@ -448,8 +454,7 @@ type PointParams = {
 function drawPoint(params: PointParams, PIXEL_DENSITY: number) {
     const { point, radius, context, origin, kamiDims } = params;
 
-    context.fillStyle =
-        rootStyle ? rootStyle.getPropertyValue("--theme-black") : "black";
+    context.fillStyle = getColor("black");
 
     context.beginPath();
     context.arc(
@@ -474,8 +479,7 @@ type RectangleParams = {
 export function drawRectangle(context: CanvasRenderingContext2D, params: RectangleParams, PIXEL_DENSITY: number = 1) {
     const { origin, height, width, point, color } = params;
 
-    context.fillStyle =
-        rootStyle ? rootStyle.getPropertyValue(`--theme-white`) : color;
+    context.fillStyle = getColor(color);
 
     context.rect(origin.x, origin.y, width * PIXEL_DENSITY, height * PIXEL_DENSITY);
     context.fill();
