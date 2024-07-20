@@ -29,7 +29,7 @@ export const HOVERED_VERTEX_RADIUS = 6;
 /**
  * A Crease is normally rendered with width CREASE_WIDTH Canvas pixels.
  */
-export const CREASE_WIDTH = 2;
+export const CREASE_WIDTH = 3;
 
 /**
  * A Crease grows to line width HOVER_CREASE_WIDTH Canvas pixels if hovered (with eraser tool).
@@ -39,7 +39,7 @@ export const HOVER_CREASE_WIDTH = 6;
 /**
  * A border Crease has line width KAMI_BORDER_WIDTH Canvas pixels.
  */
-export const KAMI_BORDER_WIDTH = 3;
+export const KAMI_BORDER_WIDTH = 4;
 
 /**
  * The zoom in and out buttons change the size of the Kami by intervals of KAMI_ZOOM_DELTA HTML

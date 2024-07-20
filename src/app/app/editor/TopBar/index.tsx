@@ -6,6 +6,9 @@ import ProcessManager from "@/origami/ProcessManager";
 import { useSaveKami } from "@/db/kami/update";
 import { usePathKamiID } from "@/db/kami/read";
 import { useDeleteKami } from "@/db/kami/delete";
+import HomeButton from "./HomeButton";
+import { FaEllipsis, FaEyeSlash, FaRegFolder, FaEarthAmericas, FaPlus, FaRotateLeft, FaRotateRight, FaRegTrashCan } from "react-icons/fa6";
+import { FaRedo, FaRegSave, FaUndo } from "react-icons/fa";
 
 type TopBarProps = {
     process: (action: Action) => void,
@@ -43,37 +46,48 @@ export default function TopBar({ process, processManager }: TopBarProps) {
     return (
         <>
             <section className="flex relative h-16 bg-theme-black">
+                <HomeButton />
                 <OptionMenu name="File">
                     <Option 
                         onClick={() => {}}
                         shortcut="Ctrl+N"
+                        Icon={FaPlus}
                     >
                         New Kami file
                     </Option>
                     <Option 
                         onClick={() => {}}
                         shortcut="Ctrl+O"
+                        Icon={FaRegFolder}
                     >
                         Open Kami file
                     </Option>
                     <Option
                         onClick={handleSave}
                         shortcut="Ctrl+S"
+                        Icon={FaRegSave}
                     >
                         Save
                     </Option>
-                    <Option onClick={handleDelete}>Delete</Option>
+                    <Option 
+                        onClick={handleDelete}
+                        Icon={FaRegTrashCan}
+                    >
+                        Delete
+                    </Option>
                 </OptionMenu>
                 <OptionMenu name="Edit">
                     <Option
                         onClick={handleUndo}
                         shortcut="Ctrl+Z"
+                        Icon={FaUndo}
                     >
                         Undo
                     </Option>
                     <Option
                         onClick={handleRedo}
                         shortcut="Ctrl+Shift+Z"
+                        Icon={FaRedo}
                     >
                         Redo
                     </Option>
@@ -82,17 +96,40 @@ export default function TopBar({ process, processManager }: TopBarProps) {
                     <Option 
                         onClick={() => handleRotate(1)}
                         shortcut="Ctrl+R"
+                        Icon={FaRotateRight}
                     >
                         Rotate 90° right
                     </Option>
                     <Option 
                         onClick={() => handleRotate(-1)}
                         shortcut="Ctrl+L"
+                        Icon={FaRotateLeft}
                     >
                         Rotate 90° left
                     </Option>
+                    <Option 
+                        onClick={() => {}}
+                        shortcut="Ctrl+N"
+                        Icon={FaEyeSlash}
+                    >
+                        Hide neutral creases
+                    </Option>
                 </OptionMenu>
                 <TitleField />
+                <div className="ml-auto h-full">
+                    <OptionMenu
+                        name="Settings"
+                        Icon={FaEllipsis}
+                        dropdownDirection="left"
+                    >
+                        <Option 
+                            onClick={() => {}}
+                            Icon={FaEarthAmericas}
+                        >
+                            Make Kami public
+                        </Option>
+                    </OptionMenu>
+                </div>
             </section>
             <OptionShadow />
         </>

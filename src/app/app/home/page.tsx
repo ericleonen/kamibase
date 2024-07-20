@@ -5,7 +5,7 @@ import TopBar from "./components/TopBar"
 
 export default function Home() {
     return (
-        <div className="h-screen flex-col bg-theme-white overflow-y-scroll">
+        <div className="h-screen items-center flex-col bg-theme-white overflow-y-scroll">
             <TopBar />
             <KamiCards />
         </div>
