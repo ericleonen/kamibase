@@ -11,20 +11,16 @@ export default function KamiCard({ kamiData }: KamiCardProps) {
     // TODO: Add feature that when a KamiCard is hovered, reveals title, author, and a button to view
 
     return (
-        <div className="flex flex-col items-center w-[20rem] mx-auto m-3">
-            <div className="w-full border-2 rounded-lg border-theme-gray overflow-hidden">
-                <img 
-                    src={kamiImage.src}
-                    alt={kamiData.title}
-                    className="w-auto h-auto"
-                />
+        <div className="relative flex flex-col items-center w-[20rem] mx-auto m-3 border-2 rounded-lg border-theme-gray overflow-hidden">
+            <img 
+                src={kamiImage.src}
+                alt={kamiData.title}
+                className="w-auto h-auto"
+            />
+            <div className="absolute h-full w-full opacity-0 hover:opacity-100 bg-theme-blue/40 backdrop-blur-sm transition-opacity flex flex-col items-center justify-center">
+                <p className="font-bold text-2xl text-theme-black">{kamiData.title}</p>
+                <p className="text-sm text-theme-darker-gray mt-1">by {kamiData.userName}</p>
             </div>
-            {/* <p className="mt-3 w-full flex items-center">
-                <div className="h-7 w-7 rounded-full bg-theme-blue flex items-center justify-center">
-                    <span className="text-theme-white font-bold">{kamiData.userName.charAt(0).toUpperCase()}</span>
-                </div>
-                <span className="ml-2 font-medium text-theme-black">{kamiData.userName}</span>
-            </p> */}
         </div>
     )
 }

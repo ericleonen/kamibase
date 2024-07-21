@@ -3,12 +3,16 @@ import OptionShadow from "./OptionShadow";
 import TitleField from "./TitleField";
 import { Action } from "@/origami/ProcessManager/types";
 import ProcessManager from "@/origami/ProcessManager";
-import { useSaveKami } from "@/db/kami/update";
+import { useKamiPublicityToggler, useSaveKami } from "@/db/kami/update";
 import { usePathKamiID } from "@/db/kami/read";
 import { useDeleteKami } from "@/db/kami/delete";
 import HomeButton from "./HomeButton";
 import { FaEllipsis, FaEyeSlash, FaRegFolder, FaEarthAmericas, FaPlus, FaRotateLeft, FaRotateRight, FaRegTrashCan } from "react-icons/fa6";
 import { FaRedo, FaRegSave, FaUndo } from "react-icons/fa";
+import { useAtomValue } from "jotai";
+import { kamiAtom } from "@/atoms/kami";
+import { MdLock } from "react-icons/md";
+import Spinner from "@/app/components/Spinner";
 
 type TopBarProps = {
     process: (action: Action) => void,
@@ -16,9 +20,11 @@ type TopBarProps = {
 }
 
 export default function TopBar({ process, processManager }: TopBarProps) {
+    const kami = useAtomValue(kamiAtom);
     const kamiID = usePathKamiID();
     const saveKami = useSaveKami(kamiID);
     const deleteKami = useDeleteKami(kamiID);
+    const kamiPublicityToggler = useKamiPublicityToggler(kamiID);
     
     const handleSave = async () => {
         await saveKami();
@@ -122,11 +128,14 @@ export default function TopBar({ process, processManager }: TopBarProps) {
                         Icon={FaEllipsis}
                         dropdownDirection="left"
                     >
-                        <Option 
-                            onClick={() => {}}
-                            Icon={FaEarthAmericas}
+                        <Option
+                            onClick={kamiPublicityToggler.toggle}
+                            Icon={
+                                kamiPublicityToggler.inProgress ? Spinner :
+                                kami.public ? MdLock : FaEarthAmericas
+                            }
                         >
-                            Make Kami public
+                            Make Kami { kami.public ? "private" : "public" }
                         </Option>
                     </OptionMenu>
                 </div>

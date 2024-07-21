@@ -70,7 +70,7 @@ type OptionProps = {
     onClick: () => void
     shortcut?: string,
     children: React.ReactNode,
-    Icon: IconType
+    Icon: React.ElementType
 }
 
 export function Option({ onClick, shortcut, children, Icon }: OptionProps) {
