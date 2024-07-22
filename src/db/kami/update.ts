@@ -1,6 +1,6 @@
 import { kamiAtom, useSetKami } from "@/atoms/kami";
 import { db } from "@/firebase";
-import { createKamiImage } from "@/storage/kamis/create";
+import { createKamiImage } from "@/storage/kami/create";
 import { doc, updateDoc } from "firebase/firestore";
 import { useAtomValue } from "jotai";
 import { useCallback, useEffect, useState } from "react";

@@ -11,9 +11,9 @@ import { User } from "../user/schemas";
  */
 export function usePathKamiID(): string {
     const path = usePathname();
-    const kamiID = path.split("/")[3];
+    const segments = path.split("/");
 
-    return kamiID;
+    return segments[segments.length - 1];
 }
 
 /**
