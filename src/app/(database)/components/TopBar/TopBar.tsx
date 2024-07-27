@@ -12,7 +12,7 @@ export default function TopBar() {
     const showMobileSearchBar = useAtomValue(showMobileSearchBarAtom);
 
     return (
-        <section className="flex items-center h-20 w-full relative p-6">
+        <section className="flex items-center h-20 w-full relative p-6 border-b-2 border-theme-dark-white">
             <div 
                 className="mr-auto transition-opacity"
                 style={{
