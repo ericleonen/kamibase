@@ -1,28 +1,37 @@
-import { PublicKami } from "@/db/kami/read";
-import { useKamiImage } from "@/storage/kami/read";
-import Link from "next/link";
+import { useSetViewableKami } from "@/atoms/kami";
+import { ViewableKami } from "@/db/kami/schemas";
+import { useRouter } from "next/navigation";
 
 type KamiCardProps = {
-    kamiData: PublicKami
+    viewableKami: ViewableKami
 };
 
-export default function KamiCard({ kamiData }: KamiCardProps) {
-    const kamiImage = useKamiImage(kamiData.kamiID);
+export default function KamiCard({ viewableKami }: KamiCardProps) {
+    const router = useRouter();
+    const setViewableKami = useSetViewableKami();
+
+    const handleClick = () => {
+        setViewableKami({
+            ...viewableKami,
+            loadStatus: "succeeded"
+        });
+        router.push(`/viewer/${viewableKami.kamiID}`);
+    }
 
     return (
-        <Link 
-            href={`/viewer/${kamiData.kamiID}`}
+        <button
+            onClick={handleClick}
             className="relative flex flex-col items-center w-[20rem] mx-auto m-3 border-2 rounded-lg border-theme-gray hover:border-theme-blue overflow-hidden transition-colors"
         >
             <img 
-                src={kamiImage.src}
-                alt={kamiData.title}
+                src={viewableKami.src}
+                alt={viewableKami.title}
                 className="w-auto h-auto"
             />
             <div className="absolute h-full w-full opacity-0 hover:opacity-100 bg-theme-blue/10 backdrop-blur-sm transition-opacity flex flex-col items-center justify-center">
-                <p className="font-bold text-2xl text-theme-blue">{kamiData.title}</p>
-                <p className="text-sm text-theme-black mt-1">by {kamiData.userName}</p>
+                <p className="font-bold text-2xl text-theme-blue">{viewableKami.title}</p>
+                <p className="text-sm text-theme-black mt-1">by {viewableKami.userName}</p>
             </div>
-        </Link>
+        </button>
     )
 }

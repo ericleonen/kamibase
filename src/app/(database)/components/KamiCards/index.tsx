@@ -10,7 +10,7 @@ export default function KamiCards() {
                 publicKamis.list.map(publicKami => 
                     <KamiCard 
                         key={publicKami.kamiID}
-                        kamiData={publicKami}
+                        viewableKami={publicKami}
                     />
                 )
             }

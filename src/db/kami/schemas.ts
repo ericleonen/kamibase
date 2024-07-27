@@ -4,3 +4,11 @@ export type Kami = {
     kamiString: string,
     public: boolean
 }
+
+export type ViewableKami = {
+    kamiID: string,
+    title: string,
+    userID: string,
+    userName: string,
+    src: string
+}

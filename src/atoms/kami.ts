@@ -1,8 +1,8 @@
-import { Kami } from "@/db/kami/schemas";
+import { Kami, ViewableKami } from "@/db/kami/schemas";
 import { Resource } from "@/atoms/types";
 import { atom, useSetAtom } from "jotai";
 
-export const initialKamiState: Kami & Resource = {
+export const initialEditableKamiState: Kami & Resource = {
     title: "",
     userID: "",
     kamiString: "",
@@ -15,18 +15,42 @@ export const initialKamiState: Kami & Resource = {
 /**
  * Atom that stores the information about the current editable Kami.
  */
-export const kamiAtom = atom<Kami & Resource>(initialKamiState);
+export const editableKamiAtom = atom<Kami & Resource>(initialEditableKamiState);
 
 /**
  * Custom hook that provides a setter that allows you to target specific fields of the kamiAtom.
  */
-export function useSetKami(): (kami: Partial<Kami & Resource>) => void {
-    const setKami = useSetAtom(kamiAtom);
+export function useSetEditableKami(): (kami: Partial<Kami & Resource>) => void {
+    const setEditableKami = useSetAtom(editableKamiAtom);
 
-    return (kami: Partial<Kami & Resource>) => {
-        setKami(prevKami => ({ ...prevKami, ...kami }));
+    return (editableKami: Partial<Kami & Resource>) => {
+        setEditableKami(prevEditableKami => ({ ...prevEditableKami, ...editableKami }));
     };
 }
+
+export const initialViewableKamiState: ViewableKami & Resource = {
+    kamiID: "",
+    title: "",
+    userID: "",
+    userName: "",
+    src: "",
+    loadStatus: "idle",
+    saveStatus: "saved",
+    error: undefined
+}
+
+export function useSetViewableKami(): (viewableKami: Partial<ViewableKami & Resource>) => void {
+    const setViewableKami = useSetAtom(viewableKamiAtom);
+
+    return (viewableKami: Partial<ViewableKami & Resource>) => {
+        setViewableKami(prevViewableKami => ({ ...prevViewableKami, ...viewableKami }));
+    };
+}
+
+/**
+ * Atom that stores the information about the current viewable Kami.
+ */
+export const viewableKamiAtom = atom<ViewableKami & Resource>(initialViewableKamiState);
 
 /**
  * Type for different types of tools: (M)ountain, (V)alley, (N)eutral, and (E)raser.
@@ -34,6 +58,6 @@ export function useSetKami(): (kami: Partial<Kami & Resource>) => void {
 export type Tool = "M" | "V" | "N" | "E";
 
 /**
- * Atom that stors information about the Kami editor's tool.
+ * Atom that stores information about the Kami editor's tool.
  */
 export const toolAtom = atom<Tool>("M");
