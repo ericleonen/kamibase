@@ -12,9 +12,9 @@ export default function TopBar() {
     return (
         <section className="flex justify-between items-center h-20 w-full relative px-6">
             <Logo size="lg" />
-            <div className="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%]">
+            {/* <div className="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%]">
                 <SearchBar />
-            </div>
+            </div> */}
             <div className="flex">
                 {
                     isUserLoggedIn ? (
@@ -26,13 +26,13 @@ export default function TopBar() {
                         <>
                             <Link 
                                 href="/login"
-                                className="text-sm rounded-full hover:bg-theme-light-gray text-theme-black font-medium p-3"
+                                className="text-sm rounded-md hover:bg-theme-light-gray text-theme-black font-medium p-3"
                             >
                                 Log in
                             </Link>
                             <Link 
                                 href="/sign-up"
-                                className="text-sm rounded-full bg-theme-black hover:bg-theme-light-black text-theme-white font-medium p-3 ml-3"
+                                className="text-sm rounded-md bg-theme-black hover:bg-theme-light-black text-theme-white font-medium p-3 ml-3"
                             >
                                 Sign up
                             </Link>
