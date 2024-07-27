@@ -1,5 +1,5 @@
 import Logo from "@/app/components/Logo";
-import SearchBar from "./SearchBar";
+import SearchBar, { showMobileSearchBarAtom } from "./SearchBar/";
 import ProfileButton from "./ProfileButton";
 import CreateButton from "./CreateButton";
 import { useAtomValue } from "jotai";
@@ -9,13 +9,25 @@ import Link from "next/link";
 export default function TopBar() {
     const isUserLoggedIn = useAtomValue(userAtom).loadStatus === "succeeded";
 
+    const showMobileSearchBar = useAtomValue(showMobileSearchBarAtom);
+
     return (
-        <section className="flex justify-between items-center h-20 w-full relative px-6">
-            <Logo size="lg" />
-            {/* <div className="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%]">
-                <SearchBar />
-            </div> */}
-            <div className="flex">
+        <section className="flex items-center h-20 w-full relative p-6">
+            <div 
+                className="mr-auto transition-opacity"
+                style={{
+                    opacity: showMobileSearchBar ? 0 : 1
+                }}
+            >
+                <Logo size="lg" />
+            </div>
+            <SearchBar />
+            <div 
+                className="flex transition-opacity"
+                style={{
+                    opacity: showMobileSearchBar ? 0 : 1
+                }}
+            >
                 {
                     isUserLoggedIn ? (
                         <>
@@ -26,13 +38,13 @@ export default function TopBar() {
                         <>
                             <Link 
                                 href="/login"
-                                className="text-sm rounded-md hover:bg-theme-light-gray text-theme-black font-medium p-3"
+                                className="hidden sm:block text-sm rounded-full hover:bg-theme-light-gray text-theme-black font-medium p-3"
                             >
                                 Log in
                             </Link>
                             <Link 
                                 href="/sign-up"
-                                className="text-sm rounded-md bg-theme-black hover:bg-theme-light-black text-theme-white font-medium p-3 ml-3"
+                                className="text-sm rounded-full bg-theme-black hover:bg-theme-light-black text-theme-white font-medium p-3 ml-3"
                             >
                                 Sign up
                             </Link>
