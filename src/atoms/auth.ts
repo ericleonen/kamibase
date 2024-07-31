@@ -1,4 +1,4 @@
-import { Resource } from "@/atoms/types";
+import { EditableResource } from "@/atoms/types";
 import { User } from "@/db/user/schemas";
 import { atom, useSetAtom } from "jotai";
 
@@ -6,22 +6,21 @@ import { atom, useSetAtom } from "jotai";
  * Atom that stores information about the logged-in user. For a user without an account, the
  * loading status will be idle.
  */
-export const userAtom = atom<User & Resource>({
+export const userAtom = atom<User & EditableResource>({
     name: "",
-    email: "",
     userID: "",
+    profileSrc: "",
     loadStatus: "idle",
-    saveStatus: "saved",
-    error: undefined
+    saveStatus: "saved"
 });
 
 /**
  * Custom hook that provides a setter that allows you to target specific fields of the kamiAtom.
  */
-export function useSetUser(): (user: Partial<User & Resource>) => void {
+export function useSetUser(): (user: Partial<User & EditableResource>) => void {
     const setUser = useSetAtom(userAtom);
 
-    return (user: Partial<User & Resource>) => {
+    return (user: Partial<User & EditableResource>) => {
         setUser(prevUser => ({ ...prevUser, ...user }));
     };
 }

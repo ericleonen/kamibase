@@ -29,7 +29,7 @@ export default function SearchBar() {
     return (
         <>
             <div 
-                className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] flex opacity-0 w-0 sm:w-72 sm:opacity-100 p-3 overflow-hidden items-center bg-theme-light-gray rounded-full text-theme-darker-gray transition-[width,opacity]"
+                className="absolutely-centered sm:not-absolutely-centered flex opacity-0 w-0 sm:grow sm:mx-3 sm:opacity-100 p-3 overflow-hidden items-center bg-theme-light-gray rounded-full text-theme-darker-gray transition-[width,opacity,margin,flex-grow]"
                 style={{
                     width: showMobileSearchBar ? "calc(100% - 3rem)" : undefined,
                     opacity: showMobileSearchBar ? 1 : undefined

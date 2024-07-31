@@ -17,3 +17,19 @@
     --theme-red: 255 0 0;
     --theme-blue: 1 133 255;
 }
+
+@layer components {
+    .absolutely-centered {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .not-absolutely-centered {
+        position: static;
+        top: auto;
+        left: auto;
+        transform: none;
+    }
+}

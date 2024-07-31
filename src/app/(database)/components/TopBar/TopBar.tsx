@@ -1,10 +1,12 @@
+"use client"
+
 import Logo from "@/app/components/Logo";
 import SearchBar, { showMobileSearchBarAtom } from "./SearchBar/";
 import ProfileButton from "./ProfileButton";
 import CreateButton from "./CreateButton";
 import { useAtomValue } from "jotai";
 import { userAtom } from "@/atoms/auth";
-import Link from "next/link";
+import NavButton from "./NavButton";
 
 export default function TopBar() {
     const isUserLoggedIn = useAtomValue(userAtom).loadStatus === "succeeded";
@@ -12,9 +14,11 @@ export default function TopBar() {
     const showMobileSearchBar = useAtomValue(showMobileSearchBarAtom);
 
     return (
-        <section className="flex items-center h-20 w-full relative p-6 border-b-2 border-theme-dark-white">
+        <section 
+            className="flex items-center h-20 w-full relative p-6 border-b-2 border-theme-light-gray"
+        >
             <div 
-                className="mr-auto transition-opacity"
+                className="mr-auto transition-opacity flex items-center"
                 style={{
                     opacity: showMobileSearchBar ? 0 : 1
                 }}
@@ -23,7 +27,7 @@ export default function TopBar() {
             </div>
             <SearchBar />
             <div 
-                className="flex transition-opacity"
+                className="transition-opacity flex"
                 style={{
                     opacity: showMobileSearchBar ? 0 : 1
                 }}
@@ -36,18 +40,16 @@ export default function TopBar() {
                         </>
                     ) : (
                         <>
-                            <Link 
+                            <NavButton
                                 href="/login"
-                                className="hidden sm:block text-sm rounded-full hover:bg-theme-light-gray text-theme-black font-medium p-3"
-                            >
-                                Log in
-                            </Link>
-                            <Link 
+                                label="Log in"
+                            />
+                            <NavButton
                                 href="/sign-up"
-                                className="text-sm rounded-full bg-theme-black hover:bg-theme-light-black text-theme-white font-medium p-3 ml-3"
-                            >
-                                Sign up
-                            </Link>
+                                label="Sign up"
+                                dark
+                                forMobile
+                            />
                         </>
                     )
                 }

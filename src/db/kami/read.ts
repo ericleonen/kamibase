@@ -1,163 +1,65 @@
-import { useEffect, useState } from "react";
 import { collection, doc, documentId, getDoc, getDocs, query, where } from "firebase/firestore";
-import { db, storage } from "@/firebase";
-import { initialEditableKamiState, initialViewableKamiState, useSetEditableKami, useSetViewableKami, viewableKamiAtom } from "@/atoms/kami";
-import { Kami, ViewableKami } from "./schemas";
-import { usePathname } from "next/navigation";
+import { db } from "@/firebase";
+import { Kami, ReadOnlyKami } from "./schemas";
 import { User } from "../user/schemas";
 import { getKamiImage } from "@/storage/kami/read";
-import { useAtom, useAtomValue } from "jotai";
-import { ref } from "firebase/storage";
 
-/**
- * Custom hook that reads and returns the requested kamiID from the URL path.
- */
-export function usePathKamiID(): string {
-    const path = usePathname();
-    const segments = path.split("/");
+export async function getPublicKamis(): Promise<ReadOnlyKami[]> {
+    const kamisRef = collection(db, "kamis");
+    const publicKamisQuery = query(kamisRef, where("public", "==", true));
 
-    return segments[segments.length - 1];
-}
+    const publicKamisSnap = await getDocs(publicKamisQuery);
+    const relevantUserIDs = new Set<string>();
+    const publicKamisMap: { [kamiID: string]: Kami } = {};
 
-/**
- * Custom hook that uses the setKami setter to load the specified Kami data into an atom.
- */
-export function useLoadEditableKami(kamiID: string) {
-    const setKami = useSetEditableKami();
-    
-    useEffect(() => {
-        setKami({ ...initialEditableKamiState, loadStatus: "loading" });
+    publicKamisSnap.forEach(publicKamiSnap => {
+        const publicKami = publicKamiSnap.data() as Kami;
+        publicKamisMap[publicKamiSnap.id] = publicKami;
+        relevantUserIDs.add(publicKami.userID);
+    });
 
-        const kamiRef = doc(db, "kamis", kamiID);
-        getDoc(kamiRef)
-            .then(kamiSnap => {
-                setKami({
-                    ...(kamiSnap.data() as Kami),
-                    loadStatus: "succeeded"
-                });
-            })
-            .catch(err => {
-                setKami({ 
-                    loadStatus: "failed",
-                    error: err
-                });
-            })
-    }, [kamiID]);
-}
+    const usersRef = collection(db, "users");
+    const relevantUsersQuery = query(usersRef, where(documentId(), "in", Array.from(relevantUserIDs)));
+    const userIDToUserMap: { [userID: string]: User } = {};
+    const relevantUsersSnap = await getDocs(relevantUsersQuery);
 
-/**
- * Custom hook that provides a list of all public Kami data and loading and error information.
- */
-export function usePublicKamis(): {
-    isLoading: boolean,
-    list: ViewableKami[],
-    error?: Error
-} {
-    const [isLoading, setIsLoading] = useState(true);
-    const [list, setList] = useState<ViewableKami[]>([]);
-    const [error, setError] = useState<Error>();
+    relevantUsersSnap.forEach(relevantUserSnap => {
+        const relevantUser = relevantUserSnap.data() as User;
+        userIDToUserMap[relevantUser.userID] = relevantUser;
+    });
 
-    useEffect(() => {
-        setIsLoading(true);
+    return Object.keys(publicKamisMap).map(kamiID => {
+        const publicKami = publicKamisMap[kamiID];
 
-        (async () => {
-            try {
-                const kamisRef = collection(db, "kamis");
-                const publicQuery = query(kamisRef, where("public", "==", true));
-
-                // handle kamiID, title, and userID
-                const publicKamisSnap = await getDocs(publicQuery);
-                const relevantUserIDs = new Set<string>();
-                const publicKamis: ViewableKami[] = [];
-
-                for (let publicKamiSnap of publicKamisSnap.docs) {
-                    const publicKami = publicKamiSnap.data() as Kami;
-
-                    publicKamis.push({
-                        kamiID: publicKamiSnap.id,
-                        title: publicKami.title,
-                        userID: publicKami.userID,
-                        userName: "",
-                        src: await getKamiImage(publicKamiSnap.id)
-                    });
-
-                    relevantUserIDs.add(publicKami.userID);
-                }
-
-                // handle userName
-                const usersRef = collection(db, "users");
-                const relevantQuery = query(usersRef, where(documentId(), "in", Array.from(relevantUserIDs)));
-
-                const userIDToNameMap: { [userID: string]: string } = {};
-                const relevantUsersSnap = await getDocs(relevantQuery);
-
-                relevantUsersSnap.forEach(relevantUserSnap => {
-                    const relevantUser = relevantUserSnap.data() as User;
-                    userIDToNameMap[relevantUser.userID] = relevantUser.name;
-                });
-
-                setIsLoading(false);
-                setList(publicKamis.map(publicKami => ({
-                    ...publicKami,
-                    userName: userIDToNameMap[publicKami.userID]
-                })));
-            } catch (err) {
-                setIsLoading(false);
-                setError(err as Error);
-            }
-        })();
-    }, []);
-
-    return { isLoading, list, error };
+        return {
+            kamiID,
+            title: publicKami.title,
+            author: userIDToUserMap[publicKami.userID],
+            imageSrc: publicKami.imageSrc,
+            description: publicKami.description
+        };
+    });
 }
 
 /**
  * Accepts a kamiID and returns a Promise that resolves to a ViewableKami data.
  */
-async function getViewableKami(kamiID: string): Promise<ViewableKami> {
+export async function getViewableKami(kamiID: string): Promise<ReadOnlyKami> {
     const kamiRef = doc(db, "kamis", kamiID);
     const kamiSnap = await getDoc(kamiRef);
-    const { userID, title } = kamiSnap.data() as Kami;
+    const { userID, title, description } = kamiSnap.data() as Kami;
 
     const userRef = doc(db, "users", userID);
     const userSnap = await getDoc(userRef);
-    const { name } = userSnap.data() as User;
+    const user = userSnap.data() as User;
 
-    const src = await getKamiImage(kamiID);
+    const imageSrc = await getKamiImage(kamiID);
 
     return {
-        userID,
-        title,
         kamiID,
-        userName: name,
-        src
+        title,
+        author: user,
+        imageSrc,
+        description
     };
-}
-
-export function useLoadViewableKami(kamiID: string) {
-    const viewableKami = useAtomValue(viewableKamiAtom);
-    const setViewableKami = useSetViewableKami();
-
-    useEffect(() => {
-        if (viewableKami.kamiID !== kamiID) {
-            setViewableKami({
-                ...initialViewableKamiState,
-                loadStatus: "loading" 
-            });
-
-            getViewableKami(kamiID)
-                .then(viewableKami => {
-                    setViewableKami({
-                        ...viewableKami,
-                        loadStatus: "succeeded"
-                    });
-                })
-                .catch(err => {
-                    setViewableKami({
-                        loadStatus: "failed",
-                        error: err
-                    });
-                });
-        }
-    }, [viewableKami.loadStatus, setViewableKami]);
 }

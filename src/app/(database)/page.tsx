@@ -1,5 +1,3 @@
-"use client"
-
 import KamiCards from "./components/KamiCards";
 import TopBar from "./components/TopBar";
 
