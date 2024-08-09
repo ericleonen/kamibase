@@ -1,6 +1,6 @@
-import { initializeUser } from "@/db/user/create";
+import { createUser } from "@/db/user/create";
 import { auth } from "@/firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useState } from "react";
 
 /**
@@ -8,46 +8,40 @@ import { useState } from "react";
  * fields.
  */
 async function signUpLocally(name: string, email: string, password: string) {
-    try {
-        if (name.length === 0) {
-            throw new Error("Name field is empty.");
-        } else if (email.length === 0) {
-            throw new Error("Email field is empty.");
-        } else if (password.length === 0) {
-            throw new Error("Password field is empty.");
-        }
-        
-        const res = await createUserWithEmailAndPassword(auth, email, password);
-        const user = res.user;
-
-        return await initializeUser(name, user.uid, email);
-    } catch (err) {
-        return err as Error;
+    if (name.length === 0) {
+        throw new Error("Name field is empty.");
+    } else if (email.length === 0) {
+        throw new Error("Email field is empty.");
+    } else if (password.length === 0) {
+        throw new Error("Password field is empty.");
     }
+    
+    const res = await createUserWithEmailAndPassword(auth, email, password);
+    const user = res.user;
+
+    await updateProfile(user, {
+        displayName: name
+    });
+
+    await createUser(user.uid, name);
 }
 
 /**
- * Custom hoom that provides sign up functionality and information: whether or not the sign-up
- * process taking place and the error.
+ * Custom hook that provides a sign up function and a progress state.
  */
 export function useSignUp(): {
     isSigningUp: boolean,
-    signUp: (name: string, email: string, password: string) => void,
-    error?: Error
+    signUp: (name: string, email: string, password: string) => void
 } {
     const [isSigningUp, setIsSigningUp] = useState(false);
-    const [error, setError] = useState<Error>();
 
     const signUp = async (name: string, email: string, password: string) => {
         setIsSigningUp(true);
 
-        const error = await signUpLocally(name, email, password);
+        await signUpLocally(name, email, password);
 
-        if (error) {
-            setIsSigningUp(false);
-            setError(error);
-        }
+        setIsSigningUp(false);
     }
 
-    return { isSigningUp, signUp, error };
+    return { isSigningUp, signUp };
 }

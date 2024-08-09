@@ -1,11 +1,11 @@
-import { User } from "../user/schemas"
+import { ReadOnlyUser } from "../user/schemas"
 
 export type Kami = {
     title: string,
-    userID: string,
+    authorUid: string,
     kamiString: string,
     public: boolean,
-    imageSrc: string,
+    imageURL: string,
     description: string
 }
 
@@ -19,7 +19,7 @@ export type EditableKami = {
 export type ReadOnlyKami = {
     kamiID: string,
     title: string,
-    author: User,
-    imageSrc: string,
+    author: ReadOnlyUser,
+    imageURL: string,
     description: string
 }

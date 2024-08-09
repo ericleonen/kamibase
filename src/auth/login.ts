@@ -2,56 +2,45 @@ import { auth } from "@/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
+import { useAuthenticatedUser } from "./read";
 
 /**
- * Custom hook that logs authenticated users in and takes them to the home page.
+ * Custom hook that reroutes user to given href if they are authenticated.
  */
-export function useAutoLogIn() {
+export function useAuthenticatedReroute(href: string) {
     const router = useRouter();
-    const [authUser, authLoading, authError] = useAuthState(auth);
+    const user = useAuthenticatedUser();
 
     useEffect(() => {
-        if (authUser && !authLoading && !authError) {
-            router.push("/app/home");
+        if (user) {
+            router.replace(href);
         }
-    }, [authUser, authLoading, authError]);
+    }, [user]);
 }
 
 /**
- * Logs in a user with given email and password. Returns a Promise that resolves to an Error if
- * something goes wrong, undefined otherwise.
+ * Logs in a user with given email and password.
  */
 async function logInLocally(email: string, password: string) {
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
-    } catch (err) {
-        return err as Error;
-    }
+    await signInWithEmailAndPassword(auth, email, password);
 }
 
 /**
- * Custom hook that provides login functionality and information: whether or not the process of
- * logging in is happening and the error.
+ * Custom hook that provides a log in functiion and progress state.
  */
 export function useLogIn(): {
     isLoggingIn: boolean,
-    logIn: (email: string, password: string) => void,
-    error?: Error
+    logIn: (email: string, password: string) => void
 } {
     const [isLoggingIn, setIsLoggingIn] = useState(false);
-    const [error, setError] = useState<Error>();
 
     const logIn = async (email: string, password: string) => {
         setIsLoggingIn(true);
 
-        const error = await logInLocally(email, password);
+        await logInLocally(email, password);
 
-        if (error) {
-            setIsLoggingIn(false);
-            setError(error);
-        }
+        setIsLoggingIn(false);
     }
 
-    return { isLoggingIn, logIn, error };
+    return { isLoggingIn, logIn };
 }

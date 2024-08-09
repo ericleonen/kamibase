@@ -1,8 +1,9 @@
 import { collection, doc, documentId, getDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/firebase";
-import { Kami, ReadOnlyKami } from "./schemas";
-import { User } from "../user/schemas";
+import { EditableKami, Kami, ReadOnlyKami } from "./schemas";
+import { ReadOnlyUser } from "../user/schemas";
 import { getKamiImage } from "@/storage/kami/read";
+import { cache } from "react";
 
 export async function getPublicKamis(): Promise<ReadOnlyKami[]> {
     const kamisRef = collection(db, "kamis");
@@ -12,20 +13,28 @@ export async function getPublicKamis(): Promise<ReadOnlyKami[]> {
     const relevantUserIDs = new Set<string>();
     const publicKamisMap: { [kamiID: string]: Kami } = {};
 
+    let isEmpty = true;
+
     publicKamisSnap.forEach(publicKamiSnap => {
         const publicKami = publicKamiSnap.data() as Kami;
         publicKamisMap[publicKamiSnap.id] = publicKami;
-        relevantUserIDs.add(publicKami.userID);
+        relevantUserIDs.add(publicKami.authorUid);
+
+        isEmpty = false;
     });
+
+    if (isEmpty) {
+        return [];
+    }
 
     const usersRef = collection(db, "users");
     const relevantUsersQuery = query(usersRef, where(documentId(), "in", Array.from(relevantUserIDs)));
-    const userIDToUserMap: { [userID: string]: User } = {};
+    const userIDToUserMap: { [uid: string]: ReadOnlyUser } = {};
     const relevantUsersSnap = await getDocs(relevantUsersQuery);
 
     relevantUsersSnap.forEach(relevantUserSnap => {
-        const relevantUser = relevantUserSnap.data() as User;
-        userIDToUserMap[relevantUser.userID] = relevantUser;
+        const relevantUser = relevantUserSnap.data() as ReadOnlyUser;
+        userIDToUserMap[relevantUser.uid] = relevantUser;
     });
 
     return Object.keys(publicKamisMap).map(kamiID => {
@@ -34,8 +43,8 @@ export async function getPublicKamis(): Promise<ReadOnlyKami[]> {
         return {
             kamiID,
             title: publicKami.title,
-            author: userIDToUserMap[publicKami.userID],
-            imageSrc: publicKami.imageSrc,
+            author: userIDToUserMap[publicKami.authorUid],
+            imageURL: publicKami.imageURL,
             description: publicKami.description
         };
     });
@@ -47,19 +56,34 @@ export async function getPublicKamis(): Promise<ReadOnlyKami[]> {
 export async function getViewableKami(kamiID: string): Promise<ReadOnlyKami> {
     const kamiRef = doc(db, "kamis", kamiID);
     const kamiSnap = await getDoc(kamiRef);
-    const { userID, title, description } = kamiSnap.data() as Kami;
+    const { authorUid, title, description, imageURL } = kamiSnap.data() as Kami;
 
-    const userRef = doc(db, "users", userID);
+    const userRef = doc(db, "users", authorUid);
     const userSnap = await getDoc(userRef);
-    const user = userSnap.data() as User;
-
-    const imageSrc = await getKamiImage(kamiID);
+    const user = userSnap.data() as ReadOnlyUser;
 
     return {
         kamiID,
         title,
         author: user,
-        imageSrc,
+        imageURL,
         description
     };
 }
+
+// export async function getEditableKami(kamiID: string): Promise<EditableKami> {
+//     const kamiRef = doc(db, "kamis", kamiID);
+//     const kamiSnap = await getDoc(kamiRef);
+//     const kami = kamiSnap.data() as Kami;
+
+//     return {
+//         title: kami.title,
+//         kamiString: kami.kamiString,
+//         public: kami.public,
+//         description: kami.description
+//     };
+// }
+
+// export const getEditableKami = cache(async (kamiId: string) => {
+//     const user = getAuthenticatedUser()
+// })

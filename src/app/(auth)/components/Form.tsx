@@ -12,7 +12,7 @@ export default function Form({ preText, onSubmit, children }: ContainerProps) {
             onSubmit={onSubmit}
             className="flex flex-col items-center"
         >
-            <div className="flex mb-3">
+            <div className="flex mb-2">
                 <p className="mr-1 font-bold text-theme-black">{preText}</p>
                 <Logo />
             </div>

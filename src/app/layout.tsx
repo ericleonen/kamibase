@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Providers from "./Providers";
+import AuthProvider from "@/auth/AuthProvider";
+import Shadow from "./components/Shadow";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Montserrat({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "KamiBase",
@@ -19,7 +21,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Providers>
-          {children}
+          <AuthProvider>
+            {children}
+            <Shadow />
+          </AuthProvider>
         </Providers>
       </body>
     </html>

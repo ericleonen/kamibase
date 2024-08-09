@@ -1,3 +1,5 @@
+"use client"
+
 import { useAtom } from "jotai";
 import { BiSearch } from "react-icons/bi";
 import { showMobileSearchBarAtom } from ".";
@@ -29,7 +31,7 @@ export default function SearchBar() {
     return (
         <>
             <div 
-                className="absolutely-centered sm:not-absolutely-centered flex opacity-0 w-0 sm:grow sm:mx-3 sm:opacity-100 p-3 overflow-hidden items-center bg-theme-light-gray rounded-full text-theme-darker-gray transition-[width,opacity,margin,flex-grow]"
+                className="absolutely-centered sm:not-absolutely-centered flex opacity-0 w-0 sm:grow sm:mx-3 sm:opacity-100 p-3 overflow-hidden items-center bg-theme-light-gray rounded-full text-theme-darker-gray transition-[width,margin,flex-grow]"
                 style={{
                     width: showMobileSearchBar ? "calc(100% - 3rem)" : undefined,
                     opacity: showMobileSearchBar ? 1 : undefined

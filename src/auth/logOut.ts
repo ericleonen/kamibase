@@ -18,22 +18,7 @@ export function useLogOut(): {
     const logOut = async () => {
         setIsLoggingOut(true);
         await signOut(auth);
-        router.push("/");
     };
 
     return { isLoggingOut, logOut };
-}
-
-/**
- * Custom hook that logs an unauthenticated user out, returning them to the KamiBase's "/" route.
- */
-export function useAutoLogOut() {
-    const router = useRouter();
-    const [authUser, authLoading, authError] = useAuthState(auth);
-
-    useEffect(() => {
-        if (!authUser && !authLoading) {
-            router.push("/");
-        }
-    }, [authUser, authLoading]);
 }

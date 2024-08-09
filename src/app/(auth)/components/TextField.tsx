@@ -12,7 +12,7 @@ export default function TextField({ text, setText, placeholder, sensitive }: Tex
             value={text}
             onChange={({target}) => setText(target.value)}
             placeholder={placeholder}
-            className="mt-3 w-64 px-3 py-2 rounded-lg bg-theme-light-gray placeholder:text-theme-dark-gray text-theme-black focus:outline-2 focus:outline-theme-yellow focus:outline"
+            className="text-sm mt-3 w-64 px-5 py-3 rounded-full bg-theme-light-gray placeholder:text-theme-dark-gray text-theme-black focus:outline-2 focus:outline-theme-black focus:outline"
         />
     )
 }
