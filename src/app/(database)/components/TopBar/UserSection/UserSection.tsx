@@ -4,9 +4,8 @@ import { User } from "@/db/user/schemas"
 import { useAtomValue } from "jotai"
 import { showMobileSearchBarAtom } from "../SearchBar"
 import CreateSection from "./CreateSection"
-import ProfileButton from "./ProfileButton"
 import NavButton from "../NavButton"
-import { userAtom } from "@/atoms/user"
+import ProfileSection from "./ProfileSection"
 
 type UserSectionProps = {
     user: User | null
@@ -14,7 +13,6 @@ type UserSectionProps = {
 
 export default function UserSection({ user }: UserSectionProps) {
     const showMobileSearchBar = useAtomValue(showMobileSearchBarAtom);
-    user = user || useAtomValue(userAtom);
 
     return (
         <div
@@ -27,7 +25,7 @@ export default function UserSection({ user }: UserSectionProps) {
                 user ? (
                     <>
                         <CreateSection />
-                        <ProfileButton user={user} />
+                        <ProfileSection user={user} />
                     </>
                 ) : (
                     <>

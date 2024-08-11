@@ -3,11 +3,11 @@ import { adminAuth } from "@/firebase/admin";
 import { cookies } from "next/headers";
 import { cache } from "react";
 
-export const getAuthenticatedUser = cache(async () => {
-    const idToken = cookies().get("authToken")?.value || "";
+export const getAuthenticatedUser = async () => {
+    const sessionCookie = cookies().get("__session")?.value || "";
 
     try {
-        const { uid } = await adminAuth.verifyIdToken(idToken);
+        const { uid } = await adminAuth.verifySessionCookie(sessionCookie);
         const user = await adminAuth.getUser(uid);
 
         return {
@@ -16,6 +16,7 @@ export const getAuthenticatedUser = cache(async () => {
             photoURL: user.photoURL || ""
         } as User;
     } catch (err) {
+        console.log("Invalid cookies");
         return null;
     }
-});
+};

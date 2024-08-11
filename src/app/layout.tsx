@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Providers from "./Providers";
-import AuthProvider from "@/auth/AuthProvider";
 import Shadow from "./components/Shadow";
 
 const inter = Montserrat({ subsets: ["latin"] });
@@ -21,10 +20,8 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Providers>
-          <AuthProvider>
-            {children}
-            <Shadow />
-          </AuthProvider>
+          {children}
+          <Shadow />
         </Providers>
       </body>
     </html>

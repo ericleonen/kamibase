@@ -5,7 +5,7 @@ import Form from "../components/Form";
 import TextField from "../components/TextField";
 import SubmitButton from "../components/SubmitButton";
 import { useSignUp } from "@/auth/signUp";
-import { useAuthenticatedReroute } from "@/auth/login";
+import { useAuthenticatedReroute } from "@/auth/session";
 
 export default function SignUp() {
     const [name, setName] = useState("");

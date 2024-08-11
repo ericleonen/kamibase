@@ -4,20 +4,17 @@ import { useState } from "react";
 import Form from "../components/Form";
 import TextField from "../components/TextField";
 import SubmitButton from "../components/SubmitButton";
-import { useAuthenticatedReroute, useLogIn } from "@/auth/login";
+import { useLogin } from "@/auth/session";
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const login = useLogin();
 
-    const { isLoggingIn, logIn } = useLogIn();
-
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        logIn(email, password);
+        login.attempt(email, password);
     }
-
-    useAuthenticatedReroute("/");
 
     return (
         <div className="h-screen w-screen flex items-center justify-center">
@@ -36,7 +33,7 @@ export default function Login() {
                     placeholder="Password"
                     sensitive
                 />
-                <SubmitButton inProgress={isLoggingIn} />
+                <SubmitButton inProgress={login.inProgress} />
             </Form>
         </div>
     )

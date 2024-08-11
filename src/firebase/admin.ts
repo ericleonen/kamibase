@@ -1,7 +1,7 @@
 import "server-only"
 import admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
-import { getStorage } from "firebase/storage";
+import { getStorage } from "firebase-admin/storage";
 import { getAuth } from "firebase-admin/auth";
 
 if (admin.apps.length === 0) {
