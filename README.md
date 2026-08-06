@@ -2,8 +2,10 @@
 
 **A home for crease patterns.** Share them, search them, fold them, simulate them.
 
-> ⚠️ **Status: pre-alpha.** This is a design-stage project. See [DESIGN.md](DESIGN.md)
-> for the full architecture, file format spec, and sitemap. Code is not yet written.
+> ⚠️ **Status: pre-alpha.** See [DESIGN.md](DESIGN.md) for the full architecture,
+> file format spec, and sitemap. Phase 0 — [`@kamibase/core`](packages/core), the
+> shared geometry/schema/validator/parser package — is implemented; there is no
+> web app yet.
 
 ---
 
@@ -103,9 +105,9 @@ workers — so the editor's rules and the server's rules can never drift apart.
 
 | Format | Ext | Status | Notes |
 |---|---|---|---|
-| FOLD | `.fold` | Planned | Validate + canonicalize |
-| ORIPA | `.opx` | Planned | XML → segment list |
-| Lang/ORIPA CP | `.cp` | Planned | `<type> <x1> <y1> <x2> <y2>`; 1=contour, 2=mountain, 3=valley |
+| FOLD | `.fold` | **Implemented** | Validate + canonicalize |
+| ORIPA | `.opx` | **Implemented** | XML → segment list |
+| Lang/ORIPA CP | `.cp` | **Implemented** | `<type> <x1> <y1> <x2> <y2>`; 1=contour, 2=mountain, 3=valley |
 | Oriedita | `.ori` | Planned | |
 | SVG | `.svg` | Planned | Color/layer heuristics + LLM fallback for odd palettes |
 | PDF / DXF | | Planned | Normalized into the SVG pipeline |
@@ -123,7 +125,7 @@ can't be published until reviewed in the editor.
 
 ## Roadmap
 
-- [ ] **Phase 0** — `@kamibase/core`: graph, schema, validator, canonicalizer, parsers
+- [x] **Phase 0** — [`@kamibase/core`](packages/core): graph, schema, validator, canonicalizer, `.fold`/`.cp`/`.opx` parsers, SVG renderer
 - [ ] **Phase 1** — Pattern pages, CP viewer, embedded simulator, ~100 seeded patterns
 - [ ] **Phase 2** — Converter + upload funnel + review flow
 - [ ] **Phase 3** — Editor
