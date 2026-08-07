@@ -43,21 +43,30 @@ nothing, which is why it is first.
 ## What the build does
 
 `apps/web/package.json` defines `vercel-build`, which Vercel prefers over
-`build`:
+`build`. It runs `scripts/vercel-build.sh`, which does three things in order:
 
-```
-bash scripts/vendor-simulator.sh; next build
-```
+1. **Builds `@kamibase/core`.** This step is not optional and is easy to miss:
+   the app imports the core workspace package, whose entry point is
+   `./dist/index.js`, and `dist/` is gitignored. Nothing builds a workspace
+   dependency implicitly — `pnpm install` does not, and the *root* `pnpm build`
+   only gets it right because `pnpm -r` happens to be topological. Vercel builds
+   from `apps/web` alone, so without this the deploy fails with
+   `Can't resolve '@kamibase/core'`. That is exactly what broke the first
+   deploy.
+2. **Vendors the simulator** — a shallow clone of Origami Simulator (MIT) into
+   `public/sim`, so the 3D fold view is served from your own origin as
+   DESIGN.md §5.2 asks. Roughly 20–30 seconds and about 12MB; the bundled 23MB
+   demo library is pruned, since the embed suppresses the demo loader anyway.
+   This step is deliberately **non-fatal**: if GitHub is unreachable mid-build
+   the deploy still succeeds, and the fold view degrades to the flat crease
+   pattern with a plain explanation, which is what §5.3 asks for.
+3. **Builds the app.**
 
-The vendoring step shallow-clones Origami Simulator (MIT) into `public/sim` so
-the 3D fold view is served from your own origin, as DESIGN.md §5.2 asks. It
-adds roughly 20–30 seconds and about 12MB to a deploy — the bundled 23MB demo
-library is pruned, since the embed suppresses the demo loader anyway.
-
-The `;` rather than `&&` is deliberate: if GitHub is unreachable during a
-build, the deploy still succeeds and the pattern pages still work. The fold
-view degrades to the flat crease pattern with a plain explanation, which is
-what §5.3 asks for.
+`.github/workflows/ci.yml` has a `deploy-build` job that reproduces exactly
+this, on a clean checkout with `packages/core/dist` deleted, and asserts the
+simulator was vendored and patched. The other CI job builds from the repo root
+and would not have caught the resolution failure — which is why the deploy path
+gets a job of its own.
 
 ## Also wired up
 

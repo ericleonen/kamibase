@@ -46,3 +46,40 @@ jobs:
             git diff --stat -- apps/web/content
             exit 1
           fi
+
+  # The job above builds from the repo root, where `pnpm -r build` happens to
+  # build @kamibase/core before apps/web. Vercel does not: it builds from
+  # apps/web alone. That difference shipped a broken deploy once — core's dist/
+  # is gitignored, so the app could not resolve it — so the deploy path gets
+  # its own job that reproduces it exactly, on a clean checkout.
+  deploy-build:
+    name: deploy build (as Vercel runs it)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Nothing is prebuilt
+        run: rm -rf packages/core/dist apps/web/.next apps/web/public/sim
+
+      - name: pnpm run vercel-build, from apps/web
+        working-directory: apps/web
+        run: pnpm run vercel-build
+
+      - name: The deploy has what it needs
+        run: |
+          test -d apps/web/.next || { echo "::error::no .next output"; exit 1; }
+          test -f apps/web/public/sim/index.html \
+            || { echo "::error::the simulator was not vendored"; exit 1; }
+          grep -q kamibase-embed.css apps/web/public/sim/index.html \
+            || { echo "::error::the simulator's chrome was not stripped"; exit 1; }
+          grep -q kamibase-gtag-noop apps/web/public/sim/index.html \
+            || { echo "::error::the analytics shim was not installed"; exit 1; }
