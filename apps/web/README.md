@@ -26,6 +26,8 @@ Then open http://localhost:3000.
 | `pnpm seed` | Regenerate `content/patterns` from the seed catalog |
 | `pnpm vendor:simulator` | Fetch Origami Simulator into `public/sim` |
 
+Deploying: see [DEPLOYING.md](DEPLOYING.md).
+
 ## Routes
 
 | Route | |
@@ -90,15 +92,28 @@ documented anywhere upstream:
    `next.config.ts`; the app's policy is scoped to exclude those paths, because
    two CSP headers on one response intersect rather than override.
 
+The vendoring script also strips the simulator's own site chrome — its navbar
+offers File, Examples and About, which navigate out of Kamibase and load other
+people's models into a page that is showing one specific pattern. That is
+DESIGN.md §5.2's "strip its UI chrome", done as a stylesheet rather than a
+fork: the elements stay in the DOM so the simulator's own code still finds
+everything it queries, and every fold control stays visible. The 23MB bundled
+demo library is pruned at the same time, since the demo loader is suppressed
+and the Examples menu is hidden — nothing in it is reachable.
+
+Upstream's JavaScript is untouched. The only edits are to `index.html`, both
+additive and both re-applied on every vendoring run, so rebasing stays cheap.
+
 What the wrapper deliberately does **not** expose: `setFoldAmount`,
 `setStrainVisible` and `exportFoldedState` from §5.2's sketch. Upstream has no
 message for any of them, and a method that silently did nothing would be worse
 than an absent one. Those need the fork — as does the headless run that
 produces the L2 badge.
 
-`public/sim` is gitignored: it is ~28MB of someone else's repository, and
-vendoring it into our history would be worse than fetching it at deploy time.
-Point `NEXT_PUBLIC_SIMULATOR_URL` at a deployed copy to serve it elsewhere.
+`public/sim` is gitignored: it is 12MB of someone else's repository after
+pruning, and vendoring it into our history would be worse than fetching it at
+build time. Point `NEXT_PUBLIC_SIMULATOR_URL` at a deployed copy to serve it
+from somewhere else instead.
 
 ## Known gaps
 

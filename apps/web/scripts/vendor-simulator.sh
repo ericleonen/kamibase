@@ -3,17 +3,19 @@
 # from our own origin — DESIGN.md §5.2: "Served from our own origin so we
 # control versioning and don't depend on someone else's uptime."
 #
-# The copy is unmodified. The embed works against stock upstream because
-# js/importer.js already listens for {op:"importFold", fold} and announces
-# itself to its parent; stripping the UI chrome is a later step, and keeping
-# this a plain copy for now keeps the rebase cost at zero.
+# Upstream's JavaScript is untouched. The embed works against stock code
+# because js/importer.js already listens for {op:"importFold", fold} and
+# announces itself to its parent. The only edits are to index.html: an
+# analytics tag swapped for a no-op shim, and a stylesheet that hides the
+# simulator's own site chrome. Both are additive and re-applied on every run,
+# so rebasing on upstream stays cheap.
 #
-# public/sim is gitignored: it is ~34MB of someone else's repository, and
-# vendoring it into our history would be worse than fetching it at deploy time.
+# public/sim is gitignored: it is ~28MB of someone else's repository, and
+# vendoring it into our history would be worse than fetching it at build time.
 set -euo pipefail
 
 REPO="https://github.com/amandaghassaei/OrigamiSimulator"
-REF="${SIMULATOR_REF:-master}"
+REF="${SIMULATOR_REF:-main}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET="$HERE/public/sim"
 
@@ -68,6 +70,46 @@ fi
 if ! grep -q "kamibase-gtag-noop.js" "$TARGET/index.html"; then
   echo "error: the gtag no-op shim was not linked into index.html" >&2
   exit 1
+fi
+
+# Strip the simulator's own site chrome — DESIGN.md §5.2, "strip its UI
+# chrome". Its navbar offers File, Examples and About, which navigate out of
+# Kamibase and load other people's models into a page that is supposed to be
+# showing one specific pattern.
+#
+# This is a stylesheet, not a fork: the elements stay in the DOM, so the
+# simulator's own code still finds everything it queries. The fold slider,
+# view mode, control mode and reset all stay visible — hiding those would
+# leave a 3D model nobody can fold.
+cat > "$TARGET/kamibase-embed.css" <<'CSS'
+/* Kamibase embed overrides for the vendored Origami Simulator.
+   Hides the host site's chrome and keeps every fold control. */
+#globalNav,      /* File / Examples / View / Pattern / Simulation / About */
+#helper,         /* "Load more origami patterns here!" tooltip */
+#basicUI {       /* "Show Advanced Options" */
+  display: none !important;
+}
+CSS
+
+if ! grep -q "kamibase-embed.css" "$TARGET/index.html"; then
+  perl -0pi -e 's{(</head>)}{    <link rel="stylesheet" href="kamibase-embed.css">\n$1}i' \
+    "$TARGET/index.html"
+fi
+
+if ! grep -q "kamibase-embed.css" "$TARGET/index.html"; then
+  echo "error: the embed stylesheet was not linked into index.html" >&2
+  exit 1
+fi
+echo "Stripped the simulator's navbar and helper chrome."
+
+# Drop the bundled demo library: 23MB of other people's models, plus the
+# documentation images. We suppress the demo loader (?model=) and hide the
+# Examples menu, so none of it is reachable — and shipping 23MB of unreachable
+# assets on every deploy is pure cost. Set SIMULATOR_KEEP_ASSETS=1 to keep them.
+if [ "${SIMULATOR_KEEP_ASSETS:-0}" != "1" ] && [ -d "$TARGET/assets" ]; then
+  before="$(du -sh "$TARGET" | cut -f1)"
+  rm -rf "$TARGET/assets" "$TARGET/CreasePatternScripts"
+  echo "Pruned the bundled demo library ($before -> $(du -sh "$TARGET" | cut -f1))."
 fi
 
 echo

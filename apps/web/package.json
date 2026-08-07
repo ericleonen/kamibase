@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "next dev --port 3000",
     "build": "next build",
+    "vercel-build": "bash scripts/vendor-simulator.sh; next build",
     "start": "next start --port 3000",
     "seed": "tsx scripts/seed-patterns.ts",
     "vendor:simulator": "bash scripts/vendor-simulator.sh",
