@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #fdfcf9;
+  --color-ink: #14110f;
+  --color-mountain: #ff0000;
+  --color-valley: #0000ff;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+}
+
+:root {
+  color-scheme: light dark;
+  --surface: #fdfcf9;
+  --surface-raised: #ffffff;
+  --border: #e6e2d8;
+  --text: #14110f;
+  --text-muted: #6b6459;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #14130f;
+    --surface-raised: #1c1a16;
+    --border: #322e27;
+    --text: #f4f1ea;
+    --text-muted: #a49c8e;
+  }
+}
+
+body {
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * Print-to-scale (DESIGN.md §8.3). The viewer sets --print-size-mm from
+ * kami:paper.recommendedSizeMm; printing then puts the crease pattern on paper
+ * at its real folded size, which is the whole point of having the scale in the
+ * metadata rather than baked into the geometry.
+ */
+@media print {
+  body {
+    background: #ffffff;
+    color: #000000;
+  }
+
+  .print-hidden {
+    display: none !important;
+  }
+
+  .print-sheet {
+    display: block !important;
+    width: var(--print-size-mm, 150mm) !important;
+    height: var(--print-size-mm, 150mm) !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .print-sheet svg {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  @page {
+    margin: 12mm;
+  }
+}

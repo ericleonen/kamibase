@@ -3,9 +3,10 @@
 **A home for crease patterns.** Share them, search them, fold them, simulate them.
 
 > ⚠️ **Status: pre-alpha.** See [DESIGN.md](DESIGN.md) for the full architecture,
-> file format spec, and sitemap. Phase 0 — [`@kamibase/core`](packages/core), the
-> shared geometry/schema/validator/parser package — is implemented; there is no
-> web app yet.
+> file format spec, and sitemap. Phase 0 ([`@kamibase/core`](packages/core) — the
+> shared geometry, schema, validator and parsers) and Phase 1
+> ([`@kamibase/web`](apps/web) — pattern pages, CP viewer, downloads and the
+> embedded 3D simulator) are implemented. Upload and conversion are not.
 
 ---
 
@@ -126,7 +127,7 @@ can't be published until reviewed in the editor.
 ## Roadmap
 
 - [x] **Phase 0** — [`@kamibase/core`](packages/core): graph, schema, validator, canonicalizer, `.fold`/`.cp`/`.opx` parsers, SVG renderer
-- [ ] **Phase 1** — Pattern pages, CP viewer, embedded simulator, ~100 seeded patterns
+- [x] **Phase 1** — [`@kamibase/web`](apps/web): pattern pages, CP viewer, embedded simulator, downloads in every format (13 seeded patterns so far, not ~100)
 - [ ] **Phase 2** — Converter + upload funnel + review flow
 - [ ] **Phase 3** — Editor
 - [ ] **Phase 4** — Social layer: accounts, folds, feed, attribution
