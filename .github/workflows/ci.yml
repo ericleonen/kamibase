@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: test · typecheck · build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm typecheck
+
+      - run: pnpm test
+
+      # Builds without vendoring the simulator: it is a 12MB clone of someone
+      # else's repository, and the app degrades to the still crease pattern
+      # without it. Vercel's build does vendor it (see apps/web/package.json's
+      # vercel-build script), so a deploy still gets the 3D fold view.
+      - run: pnpm build
+
+      # The seeded patterns are generated. If the generator and the committed
+      # files ever disagree, that is a bug we want to hear about here rather
+      # than from a visitor looking at a stale crease pattern.
+      - name: Seeded patterns are up to date
+        run: |
+          pnpm --filter @kamibase/web seed
+          if ! git diff --quiet -- apps/web/content; then
+            echo "::error::apps/web/content is stale — run 'pnpm --filter @kamibase/web seed' and commit the result"
+            git diff --stat -- apps/web/content
+            exit 1
+          fi
