@@ -13,3 +13,6 @@ Thumbs.db
 # Vendored third-party simulator (see apps/web/scripts/vendor-simulator.sh)
 apps/web/public/sim/
 next-env.d.ts
+
+# TypeScript incremental build info
+*.tsbuildinfo

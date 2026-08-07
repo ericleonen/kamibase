@@ -26,7 +26,24 @@ Then open http://localhost:3000.
 | `pnpm seed` | Regenerate `content/patterns` from the seed catalog |
 | `pnpm vendor:simulator` | Fetch Origami Simulator into `public/sim` |
 
-Deploying: see [DEPLOYING.md](DEPLOYING.md).
+Deploying: see [DEPLOYING.md](DEPLOYING.md). Accounts: see [AUTH.md](AUTH.md)
+— including exactly where the Supabase keys go.
+
+## Design
+
+`#F5CB5C` is the primary, on an off-white page with white cards. The feed is a
+Pinterest-style masonry: image-forward cards, chrome only on hover, a chip rail
+for techniques, and a search field in the sticky header.
+
+Crease colours are **not** themed. Mountain red, valley blue and boundary black
+are the Origami Simulator convention and the de facto standard across the field
+(DESIGN.md §3.3) — restyling them to match a brand would make our patterns
+misread everywhere else. The yellow is chrome; the pattern is data.
+
+Card frames vary in aspect so the masonry actually staggers — crease patterns
+are all square, and a grid of identical squares reads as a table rather than a
+feed. The pattern inside stays `object-contain`, so only the mat around it
+changes; the geometry is never distorted.
 
 ## Routes
 

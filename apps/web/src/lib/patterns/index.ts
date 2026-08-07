@@ -4,6 +4,7 @@ import type { PatternRepository } from "./types";
 
 export * from "./types";
 export { FileSystemPatternRepository, readPattern } from "./filesystem";
+export { filterPatterns, techniqueFacets, type PatternFilter } from "./search";
 
 /** Where the seeded `.kami` files live. */
 export const PATTERNS_DIRECTORY = join(process.cwd(), "content", "patterns");
