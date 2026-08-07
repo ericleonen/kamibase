@@ -1,0 +1,80 @@
+{
+  "file_spec": 1.2,
+  "file_creator": "Kamibase 0.1 (hand-written fixture)",
+  "file_author": "Eric Leonen",
+  "file_title": "Square with four spokes",
+  "file_classes": ["singleModel"],
+
+  "frame_title": "Crease pattern, unfolded",
+  "frame_classes": ["creasePattern"],
+  "frame_attributes": ["2D", "manifold", "orientable"],
+  "frame_unit": "unit",
+
+  "vertices_coords": [[0, 0], [1, 0], [1, 1], [0, 1], [0.5, 0.5]],
+  "edges_vertices": [[0, 1], [1, 2], [2, 3], [3, 0], [0, 4], [1, 4], [2, 4], [3, 4]],
+  "edges_assignment": ["B", "B", "B", "B", "M", "V", "M", "V"],
+  "edges_foldAngle": [0, 0, 0, 0, -180, 180, -180, 180],
+  "faces_vertices": [[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]],
+
+  "kami:version": "0.1",
+  "kami:id": "01J8XM4ZKQ7YV2N6R0BHTC3WFD",
+
+  "kami:paper": {
+    "shape": "square",
+    "gridSystem": "22.5",
+    "gridDivisions": 32,
+    "recommendedSizeMm": 350,
+    "recommendedPaper": "Tissue-foil, 25gsm"
+  },
+
+  "kami:difficulty": {
+    "rating": 7,
+    "communityRating": 7.4,
+    "estimatedMinutes": 180
+  },
+
+  "kami:taxonomy": {
+    "subject": ["abstract"],
+    "techniques": ["box-pleating"],
+    "tags": ["study", "fixture"]
+  },
+
+  "kami:provenance": {
+    "designer": "Eric Leonen",
+    "designedOn": "2026-06-14",
+    "derivedFrom": ["kami:01J8ABCDEFGHJKMNPQRSTVWXYZ"],
+    "originalSourceUrl": "https://kamibase.org/p/01J8XM4ZKQ7YV2N6R0BHTC3WFD",
+    "convertedFrom": {
+      "format": "svg",
+      "converter": "svg-vision@0.1",
+      "confidence": 0.93,
+      "reviewedByHuman": true
+    }
+  },
+
+  "kami:license": {
+    "spdx": "CC-BY-NC-4.0",
+    "foldingAllowed": "personal",
+    "redistribution": "with-attribution"
+  },
+
+  "kami:folding": {
+    "collapseNotes": "Collapse the central twist first, then work outward.",
+    "shapingNotes": "Wet-fold the thorax; MC the antennae.",
+    "steps": [
+      { "label": "Precrease grid", "edges": [4, 5, 6, 7] },
+      { "label": "Collapse center", "edges": [4, 5] }
+    ]
+  },
+
+  "kami:media": [
+    { "role": "folded", "src": "media/folded-front.webp", "credit": "Eric Leonen" }
+  ],
+
+  "kami:simulation": {
+    "verified": true,
+    "flatFoldable": false,
+    "maxStrain": 0.04,
+    "simulatedOn": "2026-08-01T12:00:00Z"
+  }
+}
