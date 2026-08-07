@@ -95,8 +95,8 @@ export default async function PatternPage({
         <aside className="print-hidden space-y-6">
           <Link
             href={`/p/${pattern.id}/simulate`}
-            className="block rounded-md px-4 py-2.5 text-center text-sm font-medium"
-            style={{ background: "var(--text)", color: "var(--surface)" }}
+            className="block rounded-full px-4 py-3 text-center text-sm font-bold transition hover:opacity-85"
+            style={{ background: "var(--brand)", color: "var(--ink)" }}
           >
             Fold it in 3D
           </Link>
@@ -111,7 +111,7 @@ export default async function PatternPage({
                   <a
                     href={`/p/${pattern.id}/download/${format}`}
                     title={FORMAT_HINTS[format]}
-                    className="block rounded-md border px-3 py-2 text-center font-mono text-sm hover:opacity-70"
+                    className="block rounded-xl border px-3 py-2 text-center font-mono text-sm transition hover:opacity-70"
                     style={{ borderColor: "var(--border)" }}
                     download
                   >

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PatternCard } from "@/components/PatternCard";
-import { patterns } from "@/lib/patterns";
+import { patterns, techniqueFacets } from "@/lib/patterns";
+import { getCurrentUser } from "@/lib/supabase/server";
 
 /** Bases first, then tessellations, then studies and reference grids. */
 function rank(pattern: { readonly subject: readonly string[] }): number {
@@ -9,63 +10,74 @@ function rank(pattern: { readonly subject: readonly string[] }): number {
   return 2;
 }
 
-export default async function LandingPage() {
-  const all = await patterns.list();
-  // Lead with the models rather than the studies — an accordion pleat is a
-  // fine thing to have in the library and a poor thing to open the site with.
-  const featured = [...all]
-    .sort((a, b) => rank(a) - rank(b) || b.edgeCount - a.edgeCount)
-    .slice(0, 8);
+export default async function FeedPage() {
+  const [all, user] = await Promise.all([patterns.list(), getCurrentUser()]);
+  const facets = techniqueFacets(all).slice(0, 8);
+  const feed = [...all].sort((a, b) => rank(a) - rank(b) || b.edgeCount - a.edgeCount);
 
   return (
-    <div className="space-y-12">
-      <section className="space-y-4 pt-6">
-        <h1 className="max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl">
-          A crease pattern is structured data, not a picture.
-        </h1>
-        <p className="max-w-2xl text-lg" style={{ color: "var(--text-muted)" }}>
-          Every pattern here is a validated geometric graph. Zoom it, toggle
-          mountain and valley, print it to scale, fold it in 3D in the browser,
-          and download it in whatever format your editor speaks.
-        </p>
-        <div className="flex flex-wrap gap-3 pt-2">
-          <Link
-            href="/explore"
-            className="rounded-md px-4 py-2 text-sm font-medium"
-            style={{ background: "var(--text)", color: "var(--surface)" }}
-          >
-            Browse {all.length} patterns
-          </Link>
-          <a
-            href="https://github.com/ericleonen/kamibase/blob/main/DESIGN.md"
-            className="rounded-md border px-4 py-2 text-sm font-medium"
-            style={{ borderColor: "var(--border)" }}
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            Read the design
-          </a>
-        </div>
-      </section>
+    <div className="space-y-6">
+      {!user && (
+        <section
+          className="overflow-hidden rounded-3xl px-6 py-10 sm:px-10 sm:py-14"
+          style={{ background: "var(--brand-soft)" }}
+        >
+          <h1 className="max-w-2xl text-3xl font-black tracking-tight sm:text-5xl">
+            Every crease pattern, as data you can actually fold.
+          </h1>
+          <p className="mt-3 max-w-xl text-base" style={{ color: "var(--text-muted)" }}>
+            Not screenshots. Validated geometry you can zoom, toggle mountain
+            and valley, print to scale, and collapse in 3D in your browser.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-2">
+            <Link
+              href="/signup"
+              className="rounded-full px-5 py-2.5 text-sm font-bold transition hover:opacity-85"
+              style={{ background: "var(--brand)", color: "var(--ink)" }}
+            >
+              Sign up
+            </Link>
+            <Link
+              href="/explore"
+              className="rounded-full px-5 py-2.5 text-sm font-bold transition hover:opacity-70"
+              style={{ background: "var(--surface-raised)", border: "1px solid var(--border)" }}
+            >
+              Browse {all.length} patterns
+            </Link>
+          </div>
+        </section>
+      )}
 
-      <section className="space-y-4">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-xl font-medium">Seeded patterns</h2>
-          <Link href="/explore" className="text-sm underline" style={{ color: "var(--text-muted)" }}>
-            See all
+      {/* Pinterest's chip rail: one tap to narrow the feed. */}
+      <nav
+        className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        aria-label="Browse by technique"
+      >
+        <Link
+          href="/explore"
+          className="shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition hover:opacity-70"
+          style={{ background: "var(--text)", color: "var(--surface)" }}
+        >
+          All
+        </Link>
+        {facets.map(({ technique, count }) => (
+          <Link
+            key={technique}
+            href={`/explore?technique=${encodeURIComponent(technique)}`}
+            className="shrink-0 rounded-full px-4 py-2 text-sm font-semibold capitalize transition hover:opacity-70"
+            style={{ background: "var(--surface-sunken)" }}
+          >
+            {technique.replace(/-/g, " ")}{" "}
+            <span style={{ color: "var(--text-faint)" }}>{count}</span>
           </Link>
-        </div>
-        <p className="max-w-2xl text-sm" style={{ color: "var(--text-muted)" }}>
-          Traditional bases and published mathematical patterns, generated from
-          their geometry and validated on the way in — no scanned JPEGs, no
-          guessed assignments.
-        </p>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {featured.map((pattern) => (
-            <PatternCard key={pattern.id} pattern={pattern} />
-          ))}
-        </div>
-      </section>
+        ))}
+      </nav>
+
+      <div className="masonry">
+        {feed.map((pattern) => (
+          <PatternCard key={pattern.id} pattern={pattern} />
+        ))}
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SiteHeader } from "@/components/SiteHeader";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -23,37 +24,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen">
-        <header
-          className="print-hidden sticky top-0 z-10 border-b backdrop-blur"
-          style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 85%, transparent)" }}
-        >
-          <nav className="mx-auto flex max-w-6xl items-center gap-6 px-5 py-3">
-            <Link href="/" className="text-lg font-semibold tracking-tight">
-              Kamibase
-            </Link>
-            <Link
-              href="/explore"
-              className="text-sm hover:underline"
-              style={{ color: "var(--text-muted)" }}
-            >
-              Explore
-            </Link>
-            <span
-              className="ml-auto rounded-full border px-2.5 py-0.5 text-xs"
-              style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
-            >
-              Phase 1 · viewer + simulator
-            </span>
-          </nav>
-        </header>
-        <main className="mx-auto max-w-6xl px-5 py-8">{children}</main>
+        <SiteHeader />
+        <main className="mx-auto max-w-[1600px] px-4 py-6">{children}</main>
         <footer
-          className="print-hidden mx-auto max-w-6xl px-5 py-10 text-sm"
+          className="print-hidden mx-auto max-w-[1600px] px-4 py-10 text-xs"
           style={{ color: "var(--text-muted)" }}
         >
-          <p>
-            Crease patterns are stored as{" "}
-            <code className="font-mono text-xs">.kami</code>, a strict profile of{" "}
+          <p className="max-w-3xl">
+            Patterns are stored as <code className="font-mono">.kami</code>, a
+            strict profile of{" "}
             <a
               className="underline"
               href="https://github.com/edemaine/fold"
@@ -71,7 +50,13 @@ export default function RootLayout({
             >
               Origami Simulator
             </a>{" "}
-            (MIT), Amanda Ghassaei, Erik Demaine and Neil Gershenfeld.
+            (MIT) — Amanda Ghassaei, Erik Demaine and Neil Gershenfeld. Crease
+            colours follow the Origami Simulator convention.
+          </p>
+          <p className="mt-3">
+            <Link href="/explore" className="underline">
+              Explore
+            </Link>
           </p>
         </footer>
       </body>

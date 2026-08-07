@@ -19,12 +19,17 @@ Vercel account.
 4. **Deploy.** Framework detection finds Next.js; `apps/web/vercel.json`
    supplies the install and build commands, so there is nothing to type.
 
-No environment variables are required. Two are optional:
+No environment variables are required to deploy. Four are optional:
 
 | Variable | Effect |
 |---|---|
-| `NEXT_PUBLIC_SITE_URL` | Absolute URLs in Open Graph tags. Set it to the deployed URL once you have it. |
+| `NEXT_PUBLIC_SUPABASE_URL` | Enables accounts. From Supabase → Settings → API. See [AUTH.md](AUTH.md). |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | The other half of the pair. Safe in the browser; the *service role* key is not and must never go here. |
+| `NEXT_PUBLIC_SITE_URL` | Absolute URLs in Open Graph tags, and the redirect target for confirmation emails. Set it to the deployed URL once you have it. |
 | `NEXT_PUBLIC_SIMULATOR_URL` | Point the 3D fold view at a simulator hosted elsewhere instead of the copy vendored into this deploy. |
+
+`NEXT_PUBLIC_` variables are inlined at **build** time, so adding them to an
+existing project does nothing until you redeploy.
 
 That is the whole list. Once it is connected, every push to the branch gets a
 preview URL and every PR gets a deployment comment — which is the "catch build
