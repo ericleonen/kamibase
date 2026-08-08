@@ -16,10 +16,14 @@ const ERRORS: Record<string, string> = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; next?: string }>;
 }) {
-  if (await getCurrentUser()) redirect("/");
-  const { error } = await searchParams;
+  const { error, next } = await searchParams;
+  // Only same-site paths, so a crafted link cannot bounce someone off-site
+  // through our login screen.
+  const destination = next?.startsWith("/") && !next.startsWith("//") ? next : undefined;
+
+  if (await getCurrentUser()) redirect(destination ?? "/");
 
   return (
     <div className="py-10">
@@ -37,6 +41,7 @@ export default async function LoginPage({
         action={signIn}
         configured={isSupabaseConfigured()}
         setupHint={SUPABASE_SETUP_HINT}
+        {...(destination === undefined ? {} : { next: destination })}
       />
     </div>
   );

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import type { Profile } from "@/lib/social/types";
 import type { CurrentUser } from "@/lib/supabase/server";
 
 /** Deterministic initial for the avatar. */
@@ -11,9 +12,16 @@ function initial(user: CurrentUser): string {
 
 export function UserMenu({
   user,
+  profile,
   signOutAction,
 }: {
   readonly user: CurrentUser;
+  /**
+   * Absent when the social tables have not been created yet. The menu still
+   * works; it just shows the initial rather than a picture, and hides the
+   * links that would lead nowhere.
+   */
+  readonly profile?: Profile;
   readonly signOutAction: () => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
@@ -35,6 +43,8 @@ export function UserMenu({
     };
   }, [open]);
 
+  const close = (): void => setOpen(false);
+
   return (
     <div className="relative" ref={container}>
       <button
@@ -42,11 +52,16 @@ export function UserMenu({
         onClick={() => setOpen((value) => !value)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex size-9 items-center justify-center rounded-full text-sm font-bold transition hover:opacity-85"
+        className="flex size-9 items-center justify-center overflow-hidden rounded-full text-sm font-bold transition hover:opacity-85"
         style={{ background: "var(--brand)", color: "var(--text)" }}
         title={user.email}
       >
-        {initial(user)}
+        {profile?.avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- Supabase Storage origin
+          <img src={profile.avatarUrl} alt="" className="size-full object-cover" />
+        ) : (
+          initial(user)
+        )}
       </button>
 
       {open && (
@@ -62,18 +77,47 @@ export function UserMenu({
           <div className="px-3 py-2">
             <p className="truncate font-semibold">{user.name}</p>
             <p className="truncate text-xs" style={{ color: "var(--text-muted)" }}>
-              {user.email}
+              {profile ? `@${profile.handle}` : user.email}
             </p>
           </div>
           <div className="my-1 h-px" style={{ background: "var(--border)" }} />
+
+          {profile && (
+            <Link
+              href={`/u/${profile.handle}`}
+              role="menuitem"
+              className="block rounded-xl px-3 py-2 hover:opacity-70"
+              onClick={close}
+            >
+              Your profile
+            </Link>
+          )}
+          <Link
+            href="/feed"
+            role="menuitem"
+            className="block rounded-xl px-3 py-2 hover:opacity-70"
+            onClick={close}
+          >
+            Your feed
+          </Link>
           <Link
             href="/explore"
             role="menuitem"
             className="block rounded-xl px-3 py-2 hover:opacity-70"
-            onClick={() => setOpen(false)}
+            onClick={close}
           >
             Explore patterns
           </Link>
+          <Link
+            href="/settings/profile"
+            role="menuitem"
+            className="block rounded-xl px-3 py-2 hover:opacity-70"
+            onClick={close}
+          >
+            Edit profile
+          </Link>
+
+          <div className="my-1 h-px" style={{ background: "var(--border)" }} />
           <form action={signOutAction}>
             <button
               type="submit"

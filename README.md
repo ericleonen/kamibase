@@ -3,11 +3,12 @@
 **A home for crease patterns.** Share them, search them, fold them, simulate them.
 
 > ⚠️ **Status: pre-alpha.** See [DESIGN.md](DESIGN.md) for the full architecture,
-> file format spec, and sitemap. Two phases are built so far. Phase 0 is
-> [`@kamibase/core`](packages/core): the shared geometry, schema, validator and
-> parsers. Phase 1 is [`@kamibase/web`](apps/web): pattern pages, the CP viewer,
-> downloads and the embedded 3D simulator. Upload and conversion are not built
-> yet.
+> file format spec, and sitemap. What is built: [`@kamibase/core`](packages/core),
+> the shared geometry, schema, validator and parsers; and
+> [`@kamibase/web`](apps/web), with pattern pages, the CP viewer, the embedded
+> 3D simulator, downloads in every format, the crease pattern editor, and
+> accounts with profiles, folds, comments and following. Upload and conversion
+> are not built yet, so the patterns are a hand-seeded library.
 
 ---
 
@@ -33,6 +34,11 @@ A crease pattern is **structured data**, not a picture. Kamibase treats it that 
 | 🔍 **Finds it semantically** | "Box-pleated beetle, 32 grid, medium difficulty". Or search by what the CP *looks like*, or by what it *folds into* |
 | ✏️ **Edits it** | A simple in-browser CP editor with symmetry tools and live flat-foldability checks |
 | 📱 **Connects folders** | A mobile-first, Pinterest-style feed where patterns and the folds people make from them live side by side |
+
+Patterns and folds are separate on purpose. A pattern is the design; a fold is
+somebody's execution of it, with the paper they used and how long it took. One
+pattern has many folds, which is what makes a beginner's first attempt welcome
+content rather than noise.
 
 ## The `.kami` format
 
@@ -130,8 +136,8 @@ can't be published until reviewed in the editor.
 - [x] **Phase 0.** [`@kamibase/core`](packages/core): graph, schema, validator, canonicalizer, `.fold`/`.cp`/`.opx` parsers, SVG renderer
 - [x] **Phase 1.** [`@kamibase/web`](apps/web): pattern pages, CP viewer, embedded simulator, downloads in every format (13 seeded patterns so far, not ~100)
 - [ ] **Phase 2.** Converter, upload funnel, review flow
-- [ ] **Phase 3.** Editor
-- [ ] **Phase 4.** Social layer: accounts, folds, feed, attribution
+- [x] **Phase 3.** Editor: line tool, eraser, assignment painting, grid snapping, live validation
+- [x] **Phase 4.** Social layer: accounts, profiles, folds, comments, following, feed
 - [ ] **Phase 5.** Semantic, visual, and folded-form search
 
 The order is deliberate: **content and utility before community**. A social site

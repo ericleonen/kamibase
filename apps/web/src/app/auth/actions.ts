@@ -23,6 +23,18 @@ function readCredentials(formData: FormData): {
   };
 }
 
+/**
+ * Where to land after signing in.
+ *
+ * Only same-site paths are honoured. `next` arrives in a query string, so
+ * anyone can put anything in it, and an open redirect is the classic way to
+ * make a phishing link look like it came from us.
+ */
+function safeNext(raw: string): string {
+  if (!raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\")) return "/";
+  return raw;
+}
+
 /** Where Supabase should send the user back to after a confirmation email. */
 async function siteOrigin(): Promise<string> {
   const configured = process.env["NEXT_PUBLIC_SITE_URL"];
@@ -50,7 +62,7 @@ export async function signIn(
   if (error) return { error: error.message };
 
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect(safeNext(String(formData.get("next") ?? "/")));
 }
 
 export async function signUp(
@@ -86,7 +98,7 @@ export async function signUp(
   }
 
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect(safeNext(String(formData.get("next") ?? "/")));
 }
 
 export async function signOut(): Promise<void> {

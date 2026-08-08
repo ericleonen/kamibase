@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { signOut } from "@/app/auth/actions";
+import { getCurrentProfile } from "@/lib/social";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { UserMenu } from "./UserMenu";
 
@@ -22,6 +23,9 @@ function Logo() {
 
 export async function SiteHeader({ query }: { readonly query?: string }) {
   const user = await getCurrentUser();
+  // Null when the social tables are not set up yet, which the menu handles by
+  // falling back to the initial from the account's name.
+  const profile = user ? await getCurrentProfile() : null;
 
   return (
     <header
@@ -42,6 +46,13 @@ export async function SiteHeader({ query }: { readonly query?: string }) {
           className="hidden rounded-full px-3.5 py-2 text-sm font-semibold transition hover:opacity-70 sm:block"
         >
           Explore
+        </Link>
+
+        <Link
+          href="/feed"
+          className="hidden rounded-full px-3.5 py-2 text-sm font-semibold transition hover:opacity-70 md:block"
+        >
+          Feed
         </Link>
 
         {/*
@@ -84,7 +95,11 @@ export async function SiteHeader({ query }: { readonly query?: string }) {
         </form>
 
         {user ? (
-          <UserMenu user={user} signOutAction={signOut} />
+          <UserMenu
+            user={user}
+            signOutAction={signOut}
+            {...(profile === null ? {} : { profile })}
+          />
         ) : (
           <div className="flex shrink-0 items-center gap-1.5">
             <Link

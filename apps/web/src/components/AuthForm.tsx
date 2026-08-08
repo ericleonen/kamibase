@@ -24,11 +24,18 @@ export interface AuthFormProps {
   readonly action: (state: AuthFormState, formData: FormData) => Promise<AuthFormState>;
   readonly configured: boolean;
   readonly setupHint: string;
+  /** Where to go once signed in. Set when a page sent you here to log in. */
+  readonly next?: string;
 }
 
-export function AuthForm({ mode, action, configured, setupHint }: AuthFormProps) {
+export function AuthForm({ mode, action, configured, setupHint, next }: AuthFormProps) {
   const [state, formAction] = useActionState<AuthFormState, FormData>(action, {});
   const isSignup = mode === "signup";
+  const switchHref = next
+    ? `${isSignup ? "/login" : "/signup"}?next=${encodeURIComponent(next)}`
+    : isSignup
+      ? "/login"
+      : "/signup";
 
   return (
     <div
@@ -58,6 +65,7 @@ export function AuthForm({ mode, action, configured, setupHint }: AuthFormProps)
       )}
 
       <form action={formAction} className="space-y-3">
+        {next && <input type="hidden" name="next" value={next} />}
         {isSignup && (
           <label className="block">
             <span className="mb-1 block text-xs font-medium" style={{ color: "var(--text-muted)" }}>
@@ -128,7 +136,7 @@ export function AuthForm({ mode, action, configured, setupHint }: AuthFormProps)
       <p className="mt-4 text-center text-sm" style={{ color: "var(--text-muted)" }}>
         {isSignup ? "Already folding here? " : "New here? "}
         <Link
-          href={isSignup ? "/login" : "/signup"}
+          href={switchHref}
           className="font-semibold underline"
           style={{ color: "var(--text)" }}
         >

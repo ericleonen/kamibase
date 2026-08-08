@@ -16,12 +16,45 @@ const simulatorOrigin = (() => {
   }
 })();
 
+/**
+ * Where avatars and fold photos are served from.
+ *
+ * Supabase Storage puts public objects on the project's own origin, so the
+ * site's CSP has to name it or every uploaded photo renders as a broken image.
+ * Absent (no keys on this deploy) it stays out of the policy entirely rather
+ * than widening it for nothing.
+ */
+const supabaseOrigin = (() => {
+  const configured = process.env["NEXT_PUBLIC_SUPABASE_URL"] ?? "";
+  if (configured === "") return null;
+  try {
+    return new URL(configured).origin;
+  } catch {
+    return null;
+  }
+})();
+
+const imageSources = ["'self'", "data:", "blob:", ...(supabaseOrigin ? [supabaseOrigin] : [])];
+
 const config: NextConfig = {
   reactStrictMode: true,
   outputFileTracingIncludes: {
     // The pattern store is read at request time, so it has to ship with the
     // server bundle.
     "/**": ["./content/patterns/**/*"],
+  },
+  experimental: {
+    serverActions: {
+      /**
+       * Fold photos are uploaded through a server action, and the default cap
+       * is 1MB. The browser downscales to a 1600px JPEG first, which normally
+       * lands under 500KB, so this is headroom for the cases where it cannot
+       * (a format `createImageBitmap` will not decode, a very detailed
+       * tessellation) rather than the size we expect. Storage refuses anything
+       * over 8MB regardless.
+       */
+      bodySizeLimit: "9mb",
+    },
   },
   async headers() {
     return [
@@ -60,7 +93,12 @@ const config: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "img-src 'self' data: blob:",
+              // Uploaded avatars and fold photos come from Supabase Storage.
+              `img-src ${imageSources.join(" ")}`,
+              // The browser client is only used for auth state; the writes all
+              // go through server actions, so this is the one cross-origin
+              // connection the app makes.
+              `connect-src 'self'${supabaseOrigin ? ` ${supabaseOrigin}` : ""}`,
               "style-src 'self' 'unsafe-inline'",
               // Next's bootstrap and flight payload are inline scripts. The
               // correct fix is a per-request nonce from middleware, but that

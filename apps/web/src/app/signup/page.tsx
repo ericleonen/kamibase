@@ -7,8 +7,15 @@ import { getCurrentUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Sign up" };
 
-export default async function SignupPage() {
-  if (await getCurrentUser()) redirect("/");
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
+  const destination = next?.startsWith("/") && !next.startsWith("//") ? next : undefined;
+
+  if (await getCurrentUser()) redirect(destination ?? "/");
 
   return (
     <div className="py-10">
@@ -17,6 +24,7 @@ export default async function SignupPage() {
         action={signUp}
         configured={isSupabaseConfigured()}
         setupHint={SUPABASE_SETUP_HINT}
+        {...(destination === undefined ? {} : { next: destination })}
       />
     </div>
   );
