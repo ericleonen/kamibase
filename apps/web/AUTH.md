@@ -58,7 +58,7 @@ needs it, so the safest place for it is nowhere in this repo.
 ## Without the keys
 
 Everything still works except accounts. `isSupabaseConfigured()` returns false,
-the server client returns `null` instead of throwing, the middleware no-ops,
+the server client returns `null` instead of throwing, the proxy no-ops,
 and `/login` and `/signup` render with a notice naming the two variables. The
 pattern library, viewer, downloads and simulator are all usable signed out —
 DESIGN.md §8.4: "never gate the magic behind a signup wall; gate only the
@@ -75,7 +75,7 @@ failed deploy or a 500 on every page.
 | `src/lib/supabase/server.ts` | Server client + `getCurrentUser()` |
 | `src/lib/supabase/client.ts` | Browser client |
 | `src/lib/supabase/middleware.ts` | Session refresh |
-| `src/middleware.ts` | Runs the refresh on every page request |
+| `src/proxy.ts` | Runs the refresh on every page request |
 | `src/app/auth/actions.ts` | `signIn`, `signUp`, `signOut` server actions |
 | `src/app/auth/callback/route.ts` | Exchanges the emailed code for a session |
 | `src/app/login`, `src/app/signup` | The screens |
@@ -85,9 +85,11 @@ Two details worth keeping:
 - **`getUser()`, never `getSession()`.** `getSession()` reads the cookie
   without verifying it, so a forged cookie would look like a signed-in user.
   `getUser()` checks with the auth server.
-- **The middleware must call `getUser()`.** That call is what refreshes an
+- **The proxy must call `getUser()`.** That call is what refreshes an
   expiring token and writes the new cookie. Server Components cannot set
-  cookies, so without the middleware users get silently signed out mid-session.
+  cookies, so without the proxy users get silently signed out mid-session.
+  (Next 16 renamed the `middleware` file convention to `proxy`; the helper it
+  calls is still `src/lib/supabase/middleware.ts`.)
 
 ## Not built yet
 
