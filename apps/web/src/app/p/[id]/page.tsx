@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Box } from "lucide-react";
+import { Box, PencilRuler } from "lucide-react";
 import { CreasePatternViewer } from "@/components/CreasePatternViewer";
 import { ValidationBadge } from "@/components/ValidationBadge";
 import { DOWNLOAD_FORMATS, FORMAT_HINTS, FORMAT_LABELS } from "@/lib/downloads";
@@ -101,6 +101,18 @@ export default async function PatternPage({
           >
             <Box className="size-4" aria-hidden />
             Fold it in 3D
+          </Link>
+
+          {/* The editor's second entry point: open this pattern as a working
+              copy. The library is read-only, so it opens a copy rather than
+              implying an edit that cannot be saved back. */}
+          <Link
+            href={`/p/${pattern.id}/edit`}
+            className="flex items-center justify-center gap-2 rounded-full px-4 py-3 text-center text-sm font-bold transition hover:opacity-70"
+            style={{ border: "1px solid var(--border-strong)" }}
+          >
+            <PencilRuler className="size-4" aria-hidden />
+            Open in the editor
           </Link>
 
           <section className="space-y-2">

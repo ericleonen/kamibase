@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import { signOut } from "@/app/auth/actions";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { UserMenu } from "./UserMenu";
@@ -41,6 +42,21 @@ export async function SiteHeader({ query }: { readonly query?: string }) {
           className="hidden rounded-full px-3.5 py-2 text-sm font-semibold transition hover:opacity-70 sm:block"
         >
           Explore
+        </Link>
+
+        {/*
+         * The editor's standalone entry point. Icon-only on phones, where the
+         * search field needs every pixel it can get; labelled from `sm` up.
+         */}
+        <Link
+          href="/edit"
+          title="Draw a new crease pattern"
+          className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition hover:opacity-70"
+          style={{ border: "1px solid var(--border-strong)" }}
+        >
+          <Plus className="size-4" aria-hidden />
+          <span className="hidden sm:inline">New</span>
+          <span className="sr-only sm:hidden">Draw a new crease pattern</span>
         </Link>
 
         {/* A plain GET form, so search works with JavaScript disabled. */}
