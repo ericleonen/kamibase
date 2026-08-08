@@ -73,6 +73,19 @@ simulator was vendored and patched. The other CI job builds from the repo root
 and would not have caught the resolution failure, which is why the deploy path
 gets a job of its own.
 
+## After the first deploy
+
+Two things that are not in the code and will not fix themselves:
+
+1. **Environment variables go in the Production scope.** Vercel's
+   "Development" scope is for `vercel dev` on your machine and is never read by
+   a deployed site. `NEXT_PUBLIC_*` values are inlined at build time, so adding
+   one to an existing project does nothing until you redeploy.
+2. **Supabase's Site URL starts as `http://localhost:3000`.** Leave it and every
+   confirmation email points at a machine the recipient does not have. Set it to
+   your deployed URL and add the deployed URL to the Redirect URLs allowlist.
+   [AUTH.md](AUTH.md) has the exact values.
+
 ## Also wired up
 
 `.github/workflows/ci.yml` runs `pnpm typecheck`, `pnpm test` and `pnpm build`

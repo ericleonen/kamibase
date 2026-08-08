@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
+import { metadataSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env["NEXT_PUBLIC_SITE_URL"] ?? "http://localhost:3000",
-  ),
+  metadataBase: new URL(metadataSiteUrl()),
   title: {
     default: "Kamibase: a home for crease patterns",
     template: "%s · Kamibase",
