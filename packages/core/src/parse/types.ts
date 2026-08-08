@@ -18,7 +18,7 @@ export interface ParsedMetadata {
  * The output of every parser: a graph in the source file's own coordinates,
  * plus whatever metadata came with it.
  *
- * Coordinates are deliberately *not* normalized here — `ingest()` owns
+ * Coordinates are deliberately *not* normalized here. `ingest()` owns
  * canonicalization, so a caller that wants to inspect the raw file can.
  */
 export interface ParsedPattern {

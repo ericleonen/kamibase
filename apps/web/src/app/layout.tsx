@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     process.env["NEXT_PUBLIC_SITE_URL"] ?? "http://localhost:3000",
   ),
   title: {
-    default: "Kamibase — a home for crease patterns",
+    default: "Kamibase: a home for crease patterns",
     template: "%s · Kamibase",
   },
   description:
@@ -53,8 +53,8 @@ export default function RootLayout({
             >
               Origami Simulator
             </a>{" "}
-            (MIT) — Amanda Ghassaei, Erik Demaine and Neil Gershenfeld. Crease
-            colours follow the Origami Simulator convention.
+            (MIT), by Amanda Ghassaei, Erik Demaine and Neil Gershenfeld.
+            Crease colours follow the Origami Simulator convention.
           </p>
           <p className="mt-3">
             <Link href="/explore" className="underline">

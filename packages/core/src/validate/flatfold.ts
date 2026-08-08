@@ -60,9 +60,9 @@ export interface FlatFoldOptions {
  * patterns the other two accept. §2.6 is explicit that L3 says "this is
  * locally consistent", not "this is good".
  *
- * These are necessary local conditions, not sufficient global ones — a pattern
- * can pass at every vertex and still not fold flat globally (layer ordering is
- * NP-hard). That is what the L2 simulator run is for.
+ * These are necessary local conditions, not sufficient global ones. A pattern
+ * can pass at every vertex and still not fold flat globally, since layer
+ * ordering is NP-hard. That is what the L2 simulator run is for.
  */
 export function checkFlatFoldability(
   graph: CreaseGraph,

@@ -3,13 +3,13 @@
 /*
  * Kamibase brand: yellow-amber on white.
  *
- * #F5B72E is the primary — it carries buttons, active chips and the logo mark.
+ * #F5B72E is the primary. It carries buttons, active chips and the logo mark.
  * It is a saturated amber, bright enough that only dark text survives on top
  * of it (11.25:1 against --ink), and far too light to be legible *as* text on
  * a pale page (1.8:1 on white). So the pair is split by job:
  *
- *   --brand         fills   — backgrounds, never text
- *   --brand-strong  strokes — amber text, links, focus rings (4.8:1 on white)
+ *   --brand         fills:   backgrounds, never text
+ *   --brand-strong  strokes: amber text, links, focus rings (4.8:1 on white)
  *
  * Using --brand where --brand-strong belongs is the easy mistake here; it
  * looks fine to anyone with sharp eyes on a good monitor and is unreadable to
@@ -17,8 +17,8 @@
  *
  * The crease colours (mountain red, valley blue, boundary black) are
  * deliberately NOT themed. They are the Origami Simulator convention and the
- * de facto standard across the whole field (DESIGN.md §3.3) — restyling them
- * to match a brand would make our patterns misread everywhere else.
+ * de facto standard across the whole field (DESIGN.md §3.3). Restyling them to
+ * match a brand would make our patterns misread everywhere else.
  */
 @theme {
   --color-brand: #f5b72e;
@@ -36,8 +36,8 @@
   --brand-soft: #fef4e0;
   /*
    * Text that sits *on* the brand amber. Stays dark in both themes, because
-   * the amber does not darken in dark mode — a light-on-amber label would be
-   * unreadable either way.
+   * the amber does not darken in dark mode, and a light-on-amber label would
+   * be unreadable either way.
    */
   --ink: #1b1a17;
 
@@ -55,8 +55,8 @@
   --text-faint: #97948d;
 
   --radius-card: 1rem;
-  /* Cards are white on a white page, so the shadow carries a hairline ring —
-   * without it the card edge disappears entirely in light mode. */
+  /* Cards are white on a white page, so the shadow carries a hairline ring.
+   * Without it the card edge disappears entirely in light mode. */
   --shadow-card: 0 0 0 1px rgb(27 26 23 / 0.06), 0 1px 2px rgb(27 26 23 / 0.04);
   --shadow-card-hover: 0 0 0 1px rgb(27 26 23 / 0.08), 0 12px 28px -8px rgb(27 26 23 / 0.18);
 }
@@ -65,13 +65,12 @@
  * There is deliberately no `prefers-color-scheme: dark` block.
  *
  * Kamibase is a light-only surface: amber on white, dark text. `color-scheme:
- * light` above is what tells the browser so — without it, a visitor whose OS
- * is set to dark gets dark-tinted form controls and scrollbars on our white
- * page.
+ * light` above is what tells the browser so. Without it, a visitor whose OS is
+ * set to dark gets dark-tinted form controls and scrollbars on our white page.
  *
  * Crease patterns are the reason. They render as red/blue/black strokes on
  * white paper (the Origami Simulator convention, DESIGN.md §3.3) and cannot be
- * recoloured without making them misread everywhere else — so a dark theme
+ * recoloured without making them misread everywhere else, so a dark theme
  * would leave every card as a white rectangle punched out of a dark page.
  */
 
@@ -92,9 +91,9 @@ body {
 /*
  * The fold slider in the 3D simulator.
  *
- * A range input is the right control — it is draggable, arrow-key operable and
- * announced properly — but its default chrome is the OS accent colour, which
- * is the one blue thing on an otherwise amber page. So the track and thumb are
+ * A range input is the right control. It is draggable, arrow-key operable and
+ * announced properly. But its default chrome is the OS accent colour, which is
+ * the one blue thing on an otherwise amber page. So the track and thumb are
  * restyled by hand. The vendor prefixes are not optional: `::-webkit-*` and
  * `::-moz-*` cannot be combined into one rule, since either engine drops a
  * selector list it does not fully understand.
@@ -154,7 +153,7 @@ body {
  * server-rendered content, so there is nothing to measure, and columns reflow
  * for free at every breakpoint.
  *
- * The trade is reading order — columns fill top-to-bottom, so the visual order
+ * The trade is reading order: columns fill top-to-bottom, so the visual order
  * is not the DOM order. That is fine for a browsing surface where nothing is
  * ranked, and it is what Pinterest does too.
  */

@@ -13,8 +13,8 @@ Vercel account.
 
 3. **Set Root Directory to `apps/web`.** This is the only setting that is not
    the default, and the deploy fails without it. Leave "Include files outside
-   of the Root Directory" **on** — the build needs `packages/core` and the
-   workspace lockfile.
+   of the Root Directory" **on**, because the build needs `packages/core` and
+   the workspace lockfile.
 
 4. **Deploy.** Framework detection finds Next.js; `apps/web/vercel.json`
    supplies the install and build commands, so there is nothing to type.
@@ -32,7 +32,7 @@ No environment variables are required to deploy. Four are optional:
 existing project does nothing until you redeploy.
 
 That is the whole list. Once it is connected, every push to the branch gets a
-preview URL and every PR gets a deployment comment — which is the "catch build
+preview URL and every PR gets a deployment comment, which is the "catch build
 errors early" you were after.
 
 ## If you would rather I drove it
@@ -53,12 +53,12 @@ nothing, which is why it is first.
 1. **Builds `@kamibase/core`.** This step is not optional and is easy to miss:
    the app imports the core workspace package, whose entry point is
    `./dist/index.js`, and `dist/` is gitignored. Nothing builds a workspace
-   dependency implicitly — `pnpm install` does not, and the *root* `pnpm build`
+   dependency implicitly. `pnpm install` does not, and the *root* `pnpm build`
    only gets it right because `pnpm -r` happens to be topological. Vercel builds
    from `apps/web` alone, so without this the deploy fails with
    `Can't resolve '@kamibase/core'`. That is exactly what broke the first
    deploy.
-2. **Vendors the simulator** — a shallow clone of Origami Simulator (MIT) into
+2. **Vendors the simulator.** A shallow clone of Origami Simulator (MIT) into
    `public/sim`, so the 3D fold view is served from your own origin as
    DESIGN.md §5.2 asks. Roughly 20–30 seconds and about 12MB; the bundled 23MB
    demo library is pruned, since the embed suppresses the demo loader anyway.
@@ -70,7 +70,7 @@ nothing, which is why it is first.
 `.github/workflows/ci.yml` has a `deploy-build` job that reproduces exactly
 this, on a clean checkout with `packages/core/dist` deleted, and asserts the
 simulator was vendored and patched. The other CI job builds from the repo root
-and would not have caught the resolution failure — which is why the deploy path
+and would not have caught the resolution failure, which is why the deploy path
 gets a job of its own.
 
 ## Also wired up

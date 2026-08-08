@@ -3,10 +3,11 @@
 **A home for crease patterns.** Share them, search them, fold them, simulate them.
 
 > ⚠️ **Status: pre-alpha.** See [DESIGN.md](DESIGN.md) for the full architecture,
-> file format spec, and sitemap. Phase 0 ([`@kamibase/core`](packages/core) — the
-> shared geometry, schema, validator and parsers) and Phase 1
-> ([`@kamibase/web`](apps/web) — pattern pages, CP viewer, downloads and the
-> embedded 3D simulator) are implemented. Upload and conversion are not.
+> file format spec, and sitemap. Two phases are built so far. Phase 0 is
+> [`@kamibase/core`](packages/core): the shared geometry, schema, validator and
+> parsers. Phase 1 is [`@kamibase/web`](apps/web): pattern pages, the CP viewer,
+> downloads and the embedded 3D simulator. Upload and conversion are not built
+> yet.
 
 ---
 
@@ -17,7 +18,7 @@ in every way that matters:
 
 - You can't tell mountain from valley without squinting
 - You can't simulate the fold
-- You can't search by structure — only by whatever the poster typed in the caption
+- You can't search by structure, only by whatever the poster typed in the caption
 - You can't diff two versions, or scale one to different paper
 - Attribution gets lost the moment the image is reposted
 
@@ -27,21 +28,21 @@ A crease pattern is **structured data**, not a picture. Kamibase treats it that 
 
 | | |
 |---|---|
-| 📥 **Converts anything** | Upload a `.fold`, `.cp`, `.opx`, SVG, or even a photo of a sketch — get a clean, validated `.kami` file |
+| 📥 **Converts anything** | Upload a `.fold`, `.cp`, `.opx`, SVG, or even a photo of a sketch, and get back a clean, validated `.kami` file |
 | 🧊 **Folds it in 3D** | Every pattern is collapsible in the browser via an embedded [Origami Simulator](https://origamisimulator.org/) |
-| 🔍 **Finds it semantically** | "Box-pleated beetle, 32 grid, medium difficulty" — or search by what the CP *looks like*, or by what it *folds into* |
+| 🔍 **Finds it semantically** | "Box-pleated beetle, 32 grid, medium difficulty". Or search by what the CP *looks like*, or by what it *folds into* |
 | ✏️ **Edits it** | A simple in-browser CP editor with symmetry tools and live flat-foldability checks |
 | 📱 **Connects folders** | A mobile-first, Pinterest-style feed where patterns and the folds people make from them live side by side |
 
 ## The `.kami` format
 
 `.kami` is **a strict profile of [FOLD](https://github.com/edemaine/fold)**, the
-JSON-based origami interchange format by Demaine, Ku, Lang, and Tachi — not a
-competing standard.
+JSON-based origami interchange format by Demaine, Ku, Lang, and Tachi. It is not
+a competing standard.
 
 - Every `.kami` file **is a valid FOLD file.** Existing tools can open it.
 - It *requires* what FOLD leaves optional, so files are reliably usable rather
-  than merely parseable — normalized coordinates, no crossing creases without a
+  than merely parseable: normalized coordinates, no crossing creases without a
   vertex, a closed boundary, no unassigned nulls.
 - It adds a spec-legal `kami:` namespace for what FOLD has no opinion on:
   difficulty, grid system, provenance, licensing, folding notes, simulation
@@ -74,11 +75,11 @@ path in:
 | Level | Meaning |
 |---|---|
 | `L0 Parsed` | Valid FOLD, geometry present |
-| `L1 Clean` | Structurally sound — renders and exports correctly |
+| `L1 Clean` | Structurally sound, so it renders and exports correctly |
 | `L2 Simulatable` | Reaches a stable folded state in a headless simulator run |
 | `L3 Verified` | Locally flat-foldable (Maekawa, Kawasaki, Big-Little-Big) |
 
-`L3` is informational, not a quality judgment — plenty of excellent CPs aren't
+`L3` is informational, not a quality judgment. Plenty of excellent CPs aren't
 flat-foldable.
 
 ## Architecture at a glance
@@ -100,7 +101,7 @@ Next.js + React + TypeScript
 
 Geometry, validation, canonicalization, and all format parsers live in one shared
 package (`@kamibase/core`) that runs in the browser, on the server, and in
-workers — so the editor's rules and the server's rules can never drift apart.
+workers, so the editor's rules and the server's rules can never drift apart.
 
 ## Supported inputs
 
@@ -113,7 +114,7 @@ workers — so the editor's rules and the server's rules can never drift apart.
 | SVG | `.svg` | Planned | Color/layer heuristics + LLM fallback for odd palettes |
 | PDF / DXF | | Planned | Normalized into the SVG pipeline |
 | Raster image | `.png` `.jpg` | Experimental | Vision model + line detection; human review required |
-| Photo of paper | `.jpg` | Experimental | Dewarp → enhance → raster pipeline |
+| Photo of paper | `.jpg` | Experimental | Dewarp, enhance, then the raster pipeline |
 
 SVG import follows the Origami Simulator color convention, which is the de facto
 standard: red `#ff0000` mountain · blue `#0000ff` valley · black `#000000`
@@ -126,16 +127,16 @@ can't be published until reviewed in the editor.
 
 ## Roadmap
 
-- [x] **Phase 0** — [`@kamibase/core`](packages/core): graph, schema, validator, canonicalizer, `.fold`/`.cp`/`.opx` parsers, SVG renderer
-- [x] **Phase 1** — [`@kamibase/web`](apps/web): pattern pages, CP viewer, embedded simulator, downloads in every format (13 seeded patterns so far, not ~100)
-- [ ] **Phase 2** — Converter + upload funnel + review flow
-- [ ] **Phase 3** — Editor
-- [ ] **Phase 4** — Social layer: accounts, folds, feed, attribution
-- [ ] **Phase 5** — Semantic, visual, and folded-form search
+- [x] **Phase 0.** [`@kamibase/core`](packages/core): graph, schema, validator, canonicalizer, `.fold`/`.cp`/`.opx` parsers, SVG renderer
+- [x] **Phase 1.** [`@kamibase/web`](apps/web): pattern pages, CP viewer, embedded simulator, downloads in every format (13 seeded patterns so far, not ~100)
+- [ ] **Phase 2.** Converter, upload funnel, review flow
+- [ ] **Phase 3.** Editor
+- [ ] **Phase 4.** Social layer: accounts, folds, feed, attribution
+- [ ] **Phase 5.** Semantic, visual, and folded-form search
 
-Deliberately ordered **content and utility before community** — a social site
-with no patterns is empty and dies, while a good viewer/simulator with 100 seeded
-patterns is useful on day one.
+The order is deliberate: **content and utility before community**. A social site
+with no patterns is empty and dies, while a good viewer and simulator with 100
+seeded patterns is useful on day one.
 
 ## Attribution
 
@@ -149,15 +150,15 @@ takedowns.
 
 Kamibase stands on a lot of existing work:
 
-- [**FOLD**](https://github.com/edemaine/fold) — Erik Demaine, Jason Ku, Robert Lang, Tomohiro Tachi et al. The interchange format `.kami` extends.
-- [**Origami Simulator**](https://github.com/amandaghassaei/OrigamiSimulator) — Amanda Ghassaei, Erik Demaine, Neil Gershenfeld. MIT licensed; vendored for the 3D fold view. ([paper](https://erikdemaine.org/papers/OrigamiSimulator_Origami7/))
-- [**ORIPA**](https://mitani.cs.tsukuba.ac.jp/oripa/) — Jun Mitani. Origin of the `.opx` and `.cp` formats.
-- [**Oriedita**](https://github.com/oriedita/oriedita) — modern CP editor.
-- [**TreeMaker**](https://langorigami.com/article/treemaker/) — Robert J. Lang.
+- [**FOLD**](https://github.com/edemaine/fold), by Erik Demaine, Jason Ku, Robert Lang, Tomohiro Tachi et al. The interchange format `.kami` extends.
+- [**Origami Simulator**](https://github.com/amandaghassaei/OrigamiSimulator), by Amanda Ghassaei, Erik Demaine, and Neil Gershenfeld. MIT licensed, and vendored here for the 3D fold view. ([paper](https://erikdemaine.org/papers/OrigamiSimulator_Origami7/))
+- [**ORIPA**](https://mitani.cs.tsukuba.ac.jp/oripa/), by Jun Mitani. Origin of the `.opx` and `.cp` formats.
+- [**Oriedita**](https://github.com/oriedita/oriedita), a modern CP editor.
+- [**TreeMaker**](https://langorigami.com/article/treemaker/), by Robert J. Lang.
 
 ## Contributing
 
-Not yet open for contributions — the design is still settling. If you're an
+Not open for contributions yet, since the design is still settling. If you're an
 origami designer and want to shape how your work is represented, attributed, and
 licensed here, that input is especially welcome at this stage.
 

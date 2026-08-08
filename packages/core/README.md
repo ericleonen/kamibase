@@ -13,9 +13,9 @@ Headless, dependency-light, no UI. Phase 0 of the build order in §10.
 |---|---|
 | `CreaseGraph` | vertices, edges, assignments, optional fold angles and faces |
 | `.kami` schema | JSON Schema (draft 2020-12) + a matching zod validator, kept honest by a conformance test |
-| Canonicalizer | §2.5 — normalize, round, sort, re-index, `kami:contentHash` |
-| Validator | §2.4 — a typed defect list, never an exception |
-| Grading | §2.6 — L0 Parsed / L1 Clean / L2 Simulatable / L3 Verified |
+| Canonicalizer | §2.5: normalize, round, sort, re-index, `kami:contentHash` |
+| Validator | §2.4: a typed defect list, never an exception |
+| Grading | §2.6: L0 Parsed / L1 Clean / L2 Simulatable / L3 Verified |
 | Flat-foldability | Maekawa, Kawasaki and Big-Little-Big at every interior vertex |
 | Parsers | `.fold`, `.kami`, `.cp`, `.opx` |
 | Topology | planarization (split crossings) and planar face-finding |
@@ -51,8 +51,8 @@ toFoldJson(result.document);              // plain .fold for other tools
 `ingest()` is the `CLEAN → TOPOLOGY → VALIDATE` tail of the §3.2 pipeline: it
 normalizes to `[0,1]²`, resolves crossings into vertices, computes
 `faces_vertices` by planar face-finding, stamps `kami:contentHash` and grades
-the result. It does **not** snap to an inferred grid or repair assignments —
-those are converter concerns, and doing them silently would make the L1 grade
+the result. It does **not** snap to an inferred grid or repair assignments.
+Those are converter concerns, and doing them silently would make the L1 grade
 mean "we guessed and it worked out".
 
 Every piece is usable on its own:
@@ -68,7 +68,7 @@ for (const defect of validateGraph(graph).defects) {
 ## Validation
 
 `validateStructure(doc)` and `validateGraph(graph)` return a
-`ValidationReport` — `{ ok, defects, errors, warnings }` — and never throw.
+`ValidationReport` of `{ ok, defects, errors, warnings }`, and never throw.
 Each defect carries the DESIGN.md rule it comes from, the vertex/edge/face
 indices involved, and an `at` coordinate for the editor to zoom to.
 
@@ -87,7 +87,7 @@ dangling-edge               §2.4     isolated-vertex             §2.4  (warnin
 ```
 
 Parsers are the exception to "never throw": `ParseError` means "there is no
-crease pattern here" — unparseable JSON, XML that isn't an ORIPA file, a `.cp`
+crease pattern here": unparseable JSON, XML that isn't an ORIPA file, a `.cp`
 with no usable lines. Everything recoverable comes back as a warning on the
 parse result or as a defect from the validator.
 
@@ -112,9 +112,9 @@ Places where DESIGN.md left room, and what this package does:
   every vertex check but does not gate the grade.
 - **`F` creases** are creased but unfolded, so the flat-foldability checks
   drop them and merge the sectors they separate. `U`, `C` and `J` at an
-  interior vertex make the checks *indeterminate* rather than failed — §3.4:
-  a CP that admits it doesn't know is more useful than one that's confidently
-  wrong.
+  interior vertex make the checks *indeterminate* rather than failed. That is
+  §3.4: a CP that admits it doesn't know is more useful than one that's
+  confidently wrong.
 - **`invalid` grade.** Not in the §2.6 table, which starts at L0 and assumes
   geometry exists. Files with no readable geometry at all grade `invalid`.
 - **Multi-loop boundaries.** §2.4.4 rejects "a hole in the border … unless

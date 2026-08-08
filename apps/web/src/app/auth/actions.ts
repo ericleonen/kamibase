@@ -45,7 +45,7 @@ export async function signIn(
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   // Supabase deliberately does not distinguish "no such user" from "wrong
-  // password", and neither do we — telling an attacker which emails have
+  // password", and neither do we. Telling an attacker which emails have
   // accounts is an enumeration gift.
   if (error) return { error: error.message };
 
@@ -81,7 +81,7 @@ export async function signUp(
     return {
       notice:
         `Check ${email} for a confirmation link. You can browse and fold ` +
-        "everything in the meantime — an account is only needed to save.",
+        "everything in the meantime. An account is only needed to save.",
     };
   }
 

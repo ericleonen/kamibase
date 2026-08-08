@@ -98,8 +98,8 @@ export default async function ExplorePage({
         >
           <p className="font-semibold">Nothing matches that yet.</p>
           <p className="mx-auto mt-1 max-w-md text-sm" style={{ color: "var(--text-muted)" }}>
-            The library is 13 seeded patterns so far — traditional bases and
-            published tessellations. Search matches titles, designers, tags and
+            The library is 13 seeded patterns so far: traditional bases and
+            published tessellations. Search looks at titles, designers, tags and
             techniques.
           </p>
           <Link href="/explore" className="mt-4 inline-block text-sm font-semibold underline">

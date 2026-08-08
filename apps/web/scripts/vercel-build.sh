@@ -5,7 +5,7 @@
 # apps/web depends on the @kamibase/core workspace package, whose entry point is
 # ./dist/index.js, and dist/ is gitignored. A fresh clone therefore has no core
 # build, and `next build` fails with "Can't resolve '@kamibase/core'". Nothing
-# builds a workspace dependency implicitly — pnpm install does not, and the root
+# builds a workspace dependency implicitly. pnpm install does not, and the root
 # `pnpm build` only gets the order right because `pnpm -r` is topological.
 #
 # So: build the dependency, vendor the simulator, then build the app.

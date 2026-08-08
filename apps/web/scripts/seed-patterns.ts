@@ -1,8 +1,8 @@
 /**
  * Generate the seeded pattern library into `content/patterns/*.kami`.
  *
- * Every seed goes through the real ingest path — parse `.cp`, planarize,
- * compute faces, canonicalize, validate, grade — so a seeded pattern is
+ * Every seed goes through the real ingest path: parse `.cp`, planarize,
+ * compute faces, canonicalize, validate, grade. So a seeded pattern is
  * indistinguishable from an uploaded one, and the committed files are
  * canonical bytes with a real `kami:contentHash`.
  *

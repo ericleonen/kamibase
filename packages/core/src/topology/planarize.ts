@@ -16,8 +16,9 @@ export interface PlanarizeOptions {
 }
 
 /**
- * Resolve every crossing into a vertex — DESIGN.md §2.4.6, "the single most
- * common defect in converted files and the main thing that breaks simulation".
+ * Resolve every crossing into a vertex. DESIGN.md §2.4.6 calls this "the
+ * single most common defect in converted files and the main thing that breaks
+ * simulation".
  *
  * Splits edges at
  *  - proper crossings with other edges,

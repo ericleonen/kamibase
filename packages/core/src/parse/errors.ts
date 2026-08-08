@@ -1,5 +1,5 @@
 /**
- * Thrown when input is not the format at all — unparseable JSON, an XML
+ * Thrown when input is not the format at all: unparseable JSON, an XML
  * document that is not an ORIPA file, a `.cp` with no usable lines.
  *
  * Everything *recoverable* comes back as a warning on the parse result or as a

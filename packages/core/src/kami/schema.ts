@@ -4,9 +4,9 @@ import { EDGE_ASSIGNMENTS } from "../graph/types.js";
 /**
  * Zod schemas for FOLD and for the `.kami` profile of it (DESIGN.md §2.3).
  *
- * These describe *document shape* only. The geometric rules of §2.4 — mutually
+ * These describe *document shape* only. The geometric rules of §2.4 (mutually
  * consistent array lengths, a closed `B` boundary, no crossings without a
- * vertex — live in `validateStructure`, because no JSON Schema can express
+ * vertex) live in `validateStructure`, because no JSON Schema can express
  * them. A document can therefore satisfy `kamiDocumentSchema` and still be
  * graded L0.
  *

@@ -1,7 +1,7 @@
 /**
  * Generators for the seeded crease patterns.
  *
- * Each returns `.cp` text — the same ASCII format the converter accepts — so a
+ * Each returns `.cp` text, the same ASCII format the converter accepts, so a
  * seed is human-readable, reviewable, and goes through exactly the parser an
  * upload would. Nothing here hand-writes a `.kami` file.
  *
@@ -45,7 +45,7 @@ export function unitSquareBorder(): CpLine[] {
 }
 
 /**
- * Bird base — the base the traditional crane is folded from.
+ * Bird base: the base the traditional crane is folded from.
  *
  * Both diagonals, both book folds, and the eight 22.5 degree petal-fold
  * creases from the corners. `r = (sqrt(2) - 1) / 2` is where a 22.5 degree
@@ -90,7 +90,7 @@ export function birdBase(): CpLine[] {
 }
 
 /**
- * Waterbomb base — the eight-crease pattern as it is normally drawn: both
+ * Waterbomb base: the eight-crease pattern as it is normally drawn, with both
  * diagonals valley, both book folds mountain.
  *
  * As drawn this is structurally clean but not locally flat-foldable: the
@@ -107,7 +107,7 @@ export function waterbombBase(): CpLine[] {
 }
 
 /**
- * Blintz base — the four corners folded to the centre. The crease pattern is
+ * Blintz base: the four corners folded to the centre. The crease pattern is
  * the square joining the four edge midpoints; every vertex is on the paper
  * edge, so there is no interior vertex to check.
  */
@@ -122,7 +122,7 @@ export function blintzBase(): CpLine[] {
 }
 
 /**
- * Kite base — one diagonal, with the two edges next to it folded in to meet
+ * Kite base: one diagonal, with the two edges next to it folded in to meet
  * it. The two 22.5 degree creases run from a corner to the opposite edges.
  */
 export function kiteBase(): CpLine[] {
@@ -140,7 +140,7 @@ export function kiteBase(): CpLine[] {
  *
  * Straight vertical creases; horizontal creases zigzag, sitting `offset`
  * higher on odd columns. Each zigzag line keeps one assignment along its whole
- * length and every vertical crease switches type where it crosses one — which
+ * length and every vertical crease switches type where it crosses one. That
  * is what puts three of one and one of the other at each interior vertex.
  */
 export function miuraOri(columns: number, bands: number, offset = 0.25): CpLine[] {
@@ -187,8 +187,8 @@ export function accordion(folds: number, vertical = false): CpLine[] {
 /**
  * Diagonal (harlequin) pleat: an accordion in each direction. The crossings
  * are resolved into vertices at ingest, giving a grid of degree-4 interior
- * vertices — a reference grid rather than a foldable model, so its creases are
- * a mix that the flat-foldability checks will have opinions about.
+ * vertices. It is a reference grid rather than a foldable model, so its
+ * creases are a mix the flat-foldability checks will have opinions about.
  */
 export function gridPleat(divisions: number): CpLine[] {
   const lines: CpLine[] = [...unitSquareBorder()];

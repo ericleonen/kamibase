@@ -14,7 +14,7 @@ export function renderThumbnail(graph: CreaseGraph, title: string): string {
     padding: 12,
     strokeWidth: 1.2,
     background: null,
-    title: `${title} — crease pattern`,
+    title: `${title} crease pattern`,
     xmlDeclaration: true,
   });
 }
@@ -26,6 +26,6 @@ export function renderViewerSvg(graph: CreaseGraph, title: string): string {
     padding: 8,
     strokeWidth: 1.6,
     background: null,
-    title: `${title} — crease pattern`,
+    title: `${title} crease pattern`,
   });
 }

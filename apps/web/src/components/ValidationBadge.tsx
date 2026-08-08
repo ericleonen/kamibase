@@ -3,7 +3,7 @@ import type { ValidationLevel } from "@kamibase/core";
 const LEVELS: Record<ValidationLevel, { label: string; hint: string; tone: string }> = {
   invalid: {
     label: "Unreadable",
-    hint: "No usable geometry — this file could not be read as a crease pattern.",
+    hint: "No usable geometry. This file could not be read as a crease pattern.",
     tone: "#b4261f",
   },
   L0: {
@@ -48,7 +48,7 @@ export function ValidationBadge({
       <span
         title={
           flatFoldable
-            ? "Maekawa and Kawasaki hold at every interior vertex. This is a local check — it does not prove the whole pattern folds flat."
+            ? "Maekawa and Kawasaki hold at every interior vertex. This is a local check, so it does not prove the whole pattern folds flat."
             : "At least one interior vertex fails Maekawa or Kawasaki. Plenty of excellent crease patterns are not flat-foldable; this is information, not a verdict on quality."
         }
         className="rounded-full border px-2.5 py-0.5 text-xs"

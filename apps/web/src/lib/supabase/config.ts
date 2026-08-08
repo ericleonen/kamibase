@@ -2,7 +2,7 @@
  * Supabase configuration.
  *
  * Auth is *optional*. If the environment variables are absent the site still
- * builds, deploys and serves every pattern — the sign-in UI just explains that
+ * builds, deploys and serves every pattern. The sign-in UI just explains that
  * accounts are not configured yet. That is deliberate: a demo deploy should
  * never 500 because a key is missing, and the pattern library does not need an
  * account to be useful (DESIGN.md §8.4: "never gate the magic behind a signup

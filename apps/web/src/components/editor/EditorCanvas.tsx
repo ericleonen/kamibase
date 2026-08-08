@@ -44,7 +44,7 @@ const MAX_SCALE = 12;
  * drawing on. Panning covers the rest.
  *
  * Every screen<->paper conversion needs this factor. Leaving it out silently
- * scales each stroke by the span and lands creases in mid-air — which is
+ * scales each stroke by the span and lands creases in mid-air, which is
  * exactly what it did before the first browser run caught it.
  */
 const VIEW_SPAN = 1.3;
@@ -59,7 +59,7 @@ const VIEW_MIN = -0.15;
  *
  * All pointer handling goes through Pointer Events rather than separate mouse
  * and touch paths, so a finger, a stylus and a mouse take exactly one code
- * path — which is most of what makes this usable on a phone.
+ * path. That is most of what makes this usable on a phone.
  */
 export function EditorCanvas({
   doc,

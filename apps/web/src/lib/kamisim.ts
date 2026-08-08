@@ -1,8 +1,8 @@
 import type { FoldDocument } from "@kamibase/core";
 
 /**
- * A thin wrapper around Origami Simulator (MIT — Amanda Ghassaei, Erik Demaine,
- * Neil Gershenfeld).
+ * A thin wrapper around Origami Simulator (MIT, by Amanda Ghassaei, Erik
+ * Demaine, and Neil Gershenfeld).
  *
  * DESIGN.md §5.2 assumes there is "no documented public embed API" and plans a
  * vendored fork as Phase 1. That is right about the *documentation*, but the
@@ -16,20 +16,20 @@ import type { FoldDocument } from "@kamibase/core";
  * document (as many times as you like), and drive the fold amount, view mode,
  * run/pause, and camera.
  *
- * Those last four are *not* in the message API — upstream has no message for
- * any of them. They work because the simulator declares its state object with
- * a bare `globals = {}` (js/main.js:5, no `var`), which makes it a property of
+ * Those last four are *not* in the message API. Upstream has no message for any
+ * of them. They work because the simulator declares its state object with a
+ * bare `globals = {}` (js/main.js:5, no `var`), which makes it a property of
  * the frame's `window`. We serve the simulator from our own origin (§5.2), so
  * the parent can reach it directly. Every control below is therefore a
  * same-origin property poke, and each one degrades to a no-op when the frame
- * is cross-origin or has not booted — hence `controllable` on the handle, so
- * the UI can hide controls it cannot actually drive rather than showing dead
- * ones.
+ * is cross-origin or has not booted. That is what `controllable` on the handle
+ * is for: the UI can hide controls it cannot actually drive rather than showing
+ * dead ones.
  *
  * This is the cheap two-thirds of §5.2's `KamiSim` sketch, without the fork.
  * `exportFoldedState` still needs one, as does the headless run behind the L2
- * badge (§5.2 Phase 2) — a method that silently did nothing would be worse
- * than an absent one.
+ * badge (§5.2 Phase 2). A method that silently did nothing would be worse than
+ * an absent one.
  */
 
 /** Where the simulator is served from. Own-origin by default, per §5.2. */
@@ -37,8 +37,8 @@ export const SIMULATOR_BASE_URL =
   process.env["NEXT_PUBLIC_SIMULATOR_URL"] ?? "/sim/index.html";
 
 /**
- * On boot the simulator loads a demo model of its own, which races — and beats
- * — the pattern we import, leaving the wrong model on screen. Its `?model=`
+ * On boot the simulator loads a demo model of its own, which races the pattern
+ * we import and wins, leaving the wrong model on screen. Its `?model=`
  * parameter selects the demo by CSS attribute match (`.demo[data-url='…']`),
  * so a value that matches no element suppresses the demo load entirely. That
  * is upstream's own switch, not a patch, and it keeps the vendored copy
@@ -129,7 +129,7 @@ export interface AttachOptions {
   /**
    * Milliseconds to wait for the ready handshake. Default 8000.
    *
-   * This is a deadline for the simulator's *boot*, not for its solve — the
+   * This is a deadline for the simulator's *boot*, not for its solve: the
    * handshake fires before any pattern is imported. Booting is a local script
    * load, so 8s is already generous, and the number is really a bet about how
    * long someone will stare at a spinner before deciding the page is broken.
@@ -158,16 +158,16 @@ export function simulatorOrigin(url: string = SIMULATOR_URL): string {
  * a handle for loading patterns into it.
  *
  * Resolves once the simulator can accept a pattern, so a caller that gets a
- * handle can load one — and a caller that gets a `timeout` can fall back to a
+ * handle can load one, and a caller that gets a `timeout` can fall back to a
  * still image instead of showing an empty frame forever (§5.3: "failure is
  * reported as 'this pattern didn't converge', never as a silent hang").
  *
  * The handshake is a *one-shot* message fired during the simulator's own init.
- * Anything that attaches a listener after that moment — a slow hydration, an
- * effect that re-runs — would wait for an announcement that already happened
- * and hang forever. So the iframe's `load` event plus a grace period is
- * treated as equivalent evidence: by then the simulator's DOM-ready handler
- * has run, and importing is idempotent anyway.
+ * Anything that attaches a listener after that moment, like a slow hydration or
+ * an effect that re-runs, would wait for an announcement that already happened
+ * and hang forever. So the iframe's `load` event plus a grace period is treated
+ * as equivalent evidence: by then the simulator's DOM-ready handler has run,
+ * and importing is idempotent anyway.
  */
 export function attachSimulator(
   iframe: HTMLIFrameElement,
@@ -215,8 +215,8 @@ export function attachSimulator(
     };
 
     /**
-     * The frame could not be fetched at all — no copy vendored, a bad
-     * NEXT_PUBLIC_SIMULATOR_URL, an offline visitor.
+     * The frame could not be fetched at all: no copy vendored, a bad
+     * NEXT_PUBLIC_SIMULATOR_URL, or an offline visitor.
      *
      * Without this the failure is indistinguishable from a slow boot and the
      * visitor watches a spinner for the whole `timeoutMs` before the fallback
@@ -246,7 +246,7 @@ export function attachSimulator(
  * Reach the simulator's state object, or null if we cannot.
  *
  * Cross-origin access throws a SecurityError rather than returning undefined,
- * so the try/catch is the actual same-origin test — there is no way to ask
+ * so the try/catch is the actual same-origin test. There is no way to ask
  * politely first.
  */
 function readGlobals(iframe: HTMLIFrameElement): SimulatorGlobals | null {
@@ -298,7 +298,7 @@ function createHandle(iframe: HTMLIFrameElement, targetOrigin: string): KamiSimH
       withGlobals((globals) => {
         globals.creasePercent = clamped;
         // The solver reads creasePercent once per frame, but only when this
-        // flag is set — assigning the value alone changes nothing on screen.
+        // flag is set. Assigning the value alone changes nothing on screen.
         globals.shouldChangeCreasePercent = true;
         // Keeps the simulator's own (hidden) slider in step, so its readout
         // does not drift from ours if it is ever unhidden.
@@ -332,7 +332,7 @@ function createHandle(iframe: HTMLIFrameElement, targetOrigin: string): KamiSimH
         const three = globals.threeView;
         if (!three) return;
         // resetModel undoes rotation applied by dragging the model itself,
-        // which the camera presets do not touch — without it, "Front" lands
+        // which the camera presets do not touch. Without it, "Front" lands
         // somewhere other than the front once the user has dragged.
         three.resetModel?.();
         if (view === "x") three.setCameraX?.(1);

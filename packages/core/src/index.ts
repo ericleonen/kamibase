@@ -1,5 +1,5 @@
 /**
- * `@kamibase/core` — the shared crease-pattern core described in DESIGN.md §9.
+ * `@kamibase/core`: the shared crease-pattern core described in DESIGN.md §9.
  *
  * One implementation of the geometry graph, the `.kami` schema, the
  * canonicalizer, the validator and the format parsers, running in the browser

@@ -29,8 +29,8 @@ const NUMERIC_TAGS = new Set(["int", "double", "float", "long", "short", "byte"]
  *
  * ORIPA `.opx` files are Java bean serializations (DESIGN.md §3.1: "XML
  * (`XMLDecoder`) → line list → graph"). We decode the object graph generically
- * — `<object>`/`<void property>`/`<array>`/`<int>`/`<double>`/`<string>` — so
- * the `.opx` parser can just read properties off the result and stays
+ * (`<object>`, `<void property>`, `<array>`, `<int>`, `<double>`, `<string>`)
+ * so the `.opx` parser can just read properties off the result and stays
  * indifferent to which ORIPA version wrote the file.
  */
 export function decodeXmlDecoder(xml: string): JavaValue {

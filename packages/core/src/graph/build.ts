@@ -93,8 +93,8 @@ export class VertexIndex {
 }
 
 /**
- * Turn a flat list of typed segments — the normalized intermediate every
- * parser produces (DESIGN.md §3.2) — into a {@link CreaseGraph}.
+ * Turn a flat list of typed segments, the normalized intermediate every
+ * parser produces (DESIGN.md §3.2), into a {@link CreaseGraph}.
  *
  * Deduplicates vertices within epsilon, drops zero-length segments and merges
  * duplicate edges. It deliberately does *not* split crossings; that is

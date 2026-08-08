@@ -28,7 +28,7 @@ export type Edge = readonly [number, number];
  * The in-memory crease pattern.
  *
  * This is the one geometry type shared by the parsers, the canonicalizer, the
- * validator, the renderer and (later) the editor — DESIGN.md §9 calls out that
+ * validator, the renderer and (later) the editor. DESIGN.md §9 calls out that
  * a second implementation of this graph is the thing most likely to drift.
  *
  * `faces` is optional because most sources do not supply it; ingest computes

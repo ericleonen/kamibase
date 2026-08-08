@@ -7,9 +7,9 @@ import type { ParsedPattern } from "./types.js";
  * ORIPA / Lang `.cp` line types (DESIGN.md §3.1: "1=contour/border,
  * 2=mountain, 3=valley").
  *
- * 0 and 4 are not in that list but are written by ORIPA and Oriedita —
- * 0 for an undeclared line and 4 for an auxiliary construction line — so we
- * accept them rather than reject files that are otherwise perfectly good.
+ * 0 and 4 are not in that list but are written by ORIPA and Oriedita: 0 for an
+ * undeclared line, 4 for an auxiliary construction line. We accept them rather
+ * than reject files that are otherwise perfectly good.
  */
 export const CP_LINE_TYPES: Readonly<Record<number, EdgeAssignment>> = {
   0: "U",
@@ -21,7 +21,7 @@ export const CP_LINE_TYPES: Readonly<Record<number, EdgeAssignment>> = {
 
 export interface ParseCpOptions {
   /**
-   * Assignment for unrecognized line types. Default `"U"` — DESIGN.md §3.4:
+   * Assignment for unrecognized line types. Default `"U"`, per DESIGN.md §3.4:
    * "ambiguous edges are marked U rather than guessed silently".
    */
   readonly unknownTypeAssignment?: EdgeAssignment;
@@ -32,8 +32,8 @@ export interface ParseCpOptions {
  *
  * Blank lines, `#` comments and `//` comments are skipped. Fields may be
  * separated by any run of whitespace, commas or tabs. Trailing fields beyond
- * the fifth are ignored with a warning — some editors append colour or layer
- * data there.
+ * the fifth are ignored with a warning, since some editors append colour or
+ * layer data there.
  */
 export function parseCp(text: string, options: ParseCpOptions = {}): ParsedPattern {
   const unknownAssignment = options.unknownTypeAssignment ?? "U";

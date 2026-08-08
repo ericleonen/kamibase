@@ -7,7 +7,7 @@ import type {
 
 /** Enough of a pattern to render a card, without loading its geometry. */
 export interface PatternSummary {
-  /** Route id — the file slug, e.g. `bird-base`. */
+  /** Route id: the file slug, e.g. `bird-base`. */
   readonly id: string;
   /** `kami:id` (ULID), when the document carries one. */
   readonly kamiId?: string;
@@ -47,7 +47,7 @@ export interface Pattern extends PatternSummary {
  * Where patterns come from.
  *
  * DESIGN.md §9 puts patterns in Postgres, but Phase 1 has no accounts and no
- * uploads — it is ~100 hand-seeded files (§10). A filesystem store behind this
+ * uploads. It is ~100 hand-seeded files (§10), and a filesystem store behind this
  * interface makes the app runnable with zero infrastructure and leaves exactly
  * one seam to replace when Phase 4 needs a database.
  */

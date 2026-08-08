@@ -1,4 +1,4 @@
-# Waterbomb base — the eight-crease precrease pattern as it is normally drawn:
+# Waterbomb base: the eight-crease precrease pattern as it is normally drawn,
 # both diagonals valley, both book folds mountain, on the unit square.
 #
 # Hand-written, and deliberately written as full lines rather than rays: the
