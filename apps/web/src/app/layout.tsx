@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   description:
     "Share, search, fold and simulate crease patterns. A crease pattern is " +
     "structured data, not a picture.",
+  /* Light-only, so a visitor whose OS is dark still gets light form controls
+   * and scrollbars. See the note in globals.css. */
+  other: { "color-scheme": "light" },
 };
 
 export default function RootLayout({

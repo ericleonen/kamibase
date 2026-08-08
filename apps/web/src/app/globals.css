@@ -61,28 +61,19 @@
   --shadow-card-hover: 0 0 0 1px rgb(27 26 23 / 0.08), 0 12px 28px -8px rgb(27 26 23 / 0.18);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --surface: #141310;
-    --surface-raised: #1e1c18;
-    --surface-sunken: #0e0d0b;
-    --border: #302c24;
-    --border-strong: #454036;
-    --text: #f7f5f0;
-    --text-muted: #a8a298;
-    --text-faint: #78736a;
-    /*
-     * On dark surfaces the light/dark roles swap: the deep amber that carried
-     * text on white is now invisible, so --brand-strong brightens past --brand
-     * rather than darkening below it.
-     */
-    --brand-strong: #ffcf5c;
-    --brand-soft: #2e2410;
-    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-card-hover: 0 12px 28px -8px rgb(0 0 0 / 0.6);
-  }
-}
+/*
+ * There is deliberately no `prefers-color-scheme: dark` block.
+ *
+ * Kamibase is a light-only surface: amber on white, dark text. `color-scheme:
+ * light` above is what tells the browser so — without it, a visitor whose OS
+ * is set to dark gets dark-tinted form controls and scrollbars on our white
+ * page.
+ *
+ * Crease patterns are the reason. They render as red/blue/black strokes on
+ * white paper (the Origami Simulator convention, DESIGN.md §3.3) and cannot be
+ * recoloured without making them misread everywhere else — so a dark theme
+ * would leave every card as a white rectangle punched out of a dark page.
+ */
 
 body {
   background: var(--surface);
