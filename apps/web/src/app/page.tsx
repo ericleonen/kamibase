@@ -3,7 +3,7 @@ import Link from "next/link";
 import { patterns, techniqueFacets } from "@/lib/patterns";
 
 export const metadata: Metadata = {
-  title: "Kamibase — every crease pattern, as data you can actually fold",
+  title: "Kamibase: every crease pattern, as data you can actually fold",
   description:
     "A library of origami crease patterns stored as validated geometry, not " +
     "screenshots. Fold them in 3D, print them to scale, and download them in " +
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
  * page until now, which meant the pitch only ever reached signed-out visitors
  * and competed with the masonry for the fold.
  *
- * Every image slot here is deliberately empty — there is no photography yet,
+ * Every image slot here is deliberately empty. There is no photography yet,
  * and a placeholder that *looks* like a missing asset is worse than one that
  * reads as a considered blank. See `Frame` below.
  */
@@ -63,7 +63,7 @@ const STEPS = [
   {
     n: "03",
     title: "Fold it, then print it",
-    body: "Collapse the pattern in 3D in the browser, then print it at the paper size the designer intended — the scale travels with the file.",
+    body: "Collapse the pattern in 3D in the browser, then print it at the paper size the designer intended. The scale travels with the file.",
   },
 ] as const;
 
@@ -77,7 +77,7 @@ export default async function HomePage() {
     /* The layout is 1600px wide for the masonry feed; prose needs to be
      * narrower than that to stay readable, so the landing page caps itself. */
     <div className="mx-auto max-w-6xl space-y-16 pb-8 sm:space-y-24">
-      {/* Hero. Copy left, empty art right — the art is the thing you'll fill in. */}
+      {/* Hero. Copy left, empty art right. The art is the thing you'll fill in. */}
       <section className="grid items-center gap-8 pt-4 sm:pt-8 lg:grid-cols-[1.05fr_1fr] lg:gap-12">
         <div>
           <span
@@ -93,7 +93,7 @@ export default async function HomePage() {
             className="mt-4 max-w-xl text-base leading-relaxed text-pretty sm:text-lg"
             style={{ color: "var(--text-muted)" }}
           >
-            Most crease patterns online are screenshots — you cannot zoom them,
+            Most crease patterns online are screenshots. You can't zoom them,
             scale them, or check whether they close. Kamibase stores the
             geometry instead: validated, foldable in your browser, and printable
             at the size the designer meant.
@@ -204,11 +204,11 @@ export default async function HomePage() {
             >
               FOLD
             </a>
-            , the interchange format by Demaine, Ku, Lang and Tachi — not a
-            competing standard. Anything that reads FOLD reads ours. What we add
-            is the context a crease pattern usually loses: who designed it, what
-            paper it wants, how it was validated, and the licence it travels
-            under.
+            , the interchange format by Demaine, Ku, Lang and Tachi. It's not a
+            competing standard: anything that reads FOLD reads ours. What we add
+            is the context a crease pattern usually loses, like who designed it,
+            what paper it wants, how it was validated, and the licence it
+            travels under.
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
             {["FOLD", ".cp", ".opx", "SVG", "PDF"].map((format) => (
@@ -224,12 +224,12 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Techniques — real facets, so this doubles as navigation. */}
+      {/* Techniques. Real facets, so this doubles as navigation. */}
       {techniques.length > 0 && (
         <section>
           <h2 className="text-2xl font-black tracking-tight sm:text-3xl">Start somewhere.</h2>
           <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-            The library leans traditional right now — bases, classic
+            The library leans traditional right now: bases, classic
             tessellations, and the reference grids everything else is built on.
           </p>
           <div className="mt-6 flex flex-wrap gap-2">

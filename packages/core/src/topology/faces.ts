@@ -46,14 +46,14 @@ export function buildRotationSystem(graph: CreaseGraph): RotationSystem {
 export interface FaceFindingResult {
   /** Interior faces as counter-clockwise vertex loops. */
   readonly faces: number[][];
-  /** The clockwise outer loop(s) — one per connected component. */
+  /** The clockwise outer loop(s), one per connected component. */
   readonly outerLoops: number[][];
 }
 
 /**
  * Planar face-finding.
  *
- * DESIGN.md §2.4 requires this: "Faces are not required on upload — we compute
+ * DESIGN.md §2.4 requires this: "Faces are not required on upload. We compute
  * them via planar face-finding during ingest, because most sources don't
  * provide them."
  *
@@ -62,7 +62,7 @@ export interface FaceFindingResult {
  * that traversal encloses interior faces counter-clockwise (positive signed
  * area) and outer boundaries clockwise, which is how the two are told apart.
  *
- * The graph must already be planar — run {@link planarize} first, or the faces
+ * The graph must already be planar. Run {@link planarize} first, or the faces
  * will be nonsense in the neighbourhood of any unresolved crossing.
  */
 export function findFaces(graph: CreaseGraph): FaceFindingResult {

@@ -15,7 +15,7 @@ import { EDGE_ASSIGNMENTS } from "../graph/types.js";
  * It is hand-written rather than generated so the published artefact reads
  * well and carries documentation. `test/json-schema.test.ts` runs this schema
  * and `kamiDocumentSchema` (zod) over the same corpus and asserts they agree
- * on every document — that conformance test is what makes "matching" a fact
+ * on every document. That conformance test is what makes "matching" a fact
  * rather than a claim.
  *
  * Enumerated `frame_classes` / `frame_attributes` / `file_classes` values are

@@ -9,7 +9,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/";
-  // Only ever redirect within this site — an open redirect here would let a
+  // Only ever redirect within this site. An open redirect here would let a
   // crafted confirmation link bounce a freshly-authenticated user anywhere.
   const destination = next.startsWith("/") && !next.startsWith("//") ? next : "/";
 

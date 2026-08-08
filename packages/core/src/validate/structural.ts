@@ -43,7 +43,7 @@ export interface ValidateOptions {
  * consistency) against a {@link CreaseGraph}.
  *
  * Returns a typed defect list; it never throws on bad geometry. Crossing
- * detection is O(E²) — fine into the tens of thousands of edges, and a
+ * detection is O(E²), which is fine into the tens of thousands of edges. A
  * sweepline is the upgrade path for dense tessellations.
  */
 export function validateGraph(

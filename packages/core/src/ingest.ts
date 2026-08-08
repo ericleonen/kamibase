@@ -10,8 +10,8 @@ import { grade, type GradeOptions, type GradeResult } from "./validate/grade.js"
 export interface IngestOptions extends GradeOptions {
   /**
    * Split crossings into vertices before validating (DESIGN.md §2.4.6).
-   * Default `true` — most sources have unresolved crossings and face-finding
-   * is meaningless without this.
+   * Default `true`, because most sources have unresolved crossings and
+   * face-finding is meaningless without it.
    */
   readonly planarize?: boolean;
   /** Run planar face-finding and populate `faces_vertices`. Default `true`. */
@@ -38,7 +38,7 @@ export interface IngestResult {
  *
  * Normalizes and canonicalizes, resolves crossings into vertices, computes
  * faces by planar face-finding, stamps `kami:contentHash`, then grades the
- * result. It does *not* snap to an inferred grid or repair assignments — those
+ * result. It does *not* snap to an inferred grid or repair assignments. Those
  * are converter concerns, and doing them silently here would make the L1 grade
  * mean "we guessed and it worked out".
  */

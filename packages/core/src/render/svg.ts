@@ -41,7 +41,7 @@ export interface RenderSvgOptions {
    * down. Default `true`, so patterns render the way they were drawn.
    */
   readonly flipY?: boolean;
-  /** Draw a dot at every vertex — handy in the editor's repair view. */
+  /** Draw a dot at every vertex. Handy in the editor's repair view. */
   readonly showVertices?: boolean;
   /** Fill computed faces with this colour (debugging face-finding). */
   readonly faceFill?: string;
@@ -54,8 +54,9 @@ export interface RenderSvgOptions {
 }
 
 /**
- * Render a crease pattern to a standalone SVG string — the `kami-render`
- * component of DESIGN.md §9, and the thing that produces thumbnails at ingest.
+ * Render a crease pattern to a standalone SVG string. This is the
+ * `kami-render` component of DESIGN.md §9, and what produces thumbnails at
+ * ingest.
  *
  * Output is a single `<path>` per assignment rather than one element per edge,
  * which keeps dense tessellations (tens of thousands of creases) to a handful

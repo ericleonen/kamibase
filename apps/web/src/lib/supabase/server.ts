@@ -30,7 +30,7 @@ export async function createClient(): Promise<SupabaseClient | null> {
           }
         } catch {
           // Server Components cannot set cookies. The middleware refreshes the
-          // session on every request, so this is safe to swallow — it is the
+          // session on every request, so this is safe to swallow. It is the
           // pattern Supabase's own Next.js guide uses.
         }
       },

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Vendor Origami Simulator (MIT) into public/sim so the 3D fold view is served
-# from our own origin — DESIGN.md §5.2: "Served from our own origin so we
+# from our own origin. DESIGN.md §5.2: "Served from our own origin so we
 # control versioning and don't depend on someone else's uptime."
 #
 # Upstream's JavaScript is untouched. The embed works against stock code
@@ -49,8 +49,8 @@ cp "$TARGET/LICENSE" "$TARGET/LICENSE.txt" 2>/dev/null || true
 NOOP="$TARGET/kamibase-gtag-noop.js"
 cat > "$NOOP" <<'JS'
 // Replaces Google Analytics in the vendored Origami Simulator.
-// The simulator calls gtag() on its import path, so the symbol has to exist —
-// this makes those calls do nothing instead of phoning home.
+// The simulator calls gtag() on its import path, so the symbol has to exist.
+// This makes those calls do nothing instead of phoning home.
 window.dataLayer = window.dataLayer || [];
 window.gtag = function gtag() {};
 JS
@@ -72,7 +72,7 @@ if ! grep -q "kamibase-gtag-noop.js" "$TARGET/index.html"; then
   exit 1
 fi
 
-# Strip the simulator's own site chrome — DESIGN.md §5.2, "strip its UI
+# Strip the simulator's own site chrome. DESIGN.md §5.2, "strip its UI
 # chrome". Its navbar offers File, Examples and About, which navigate out of
 # Kamibase and load other people's models into a page that is supposed to be
 # showing one specific pattern.
@@ -85,7 +85,7 @@ fi
 # renders its own fold slider, view mode, camera and run/pause controls in
 # React (src/components/Simulator.tsx) and drives them through the same-origin
 # `globals` object, so leaving upstream's bar visible would mean two sets of
-# controls for the same state — and upstream's set is the broken one: its
+# controls for the same state, and upstream's set is the broken one: its
 # toggles are <img> tags pointing into assets/, which we prune below, so they
 # render as broken-image icons.
 cat > "$TARGET/kamibase-embed.css" <<'CSS'
@@ -109,7 +109,7 @@ html, body {
  * Silence the font 404s.
  *
  * flat-ui.min.css declares @font-face for Lato and its icon font, but the repo
- * ships neither the fonts/lato directory nor the .woff icons — upstream's own
+ * ships neither the fonts/lato directory nor the .woff icons. Upstream's own
  * site 404s on them too, and its visible text falls back to a system font. The
  * only elements that referenced them here are the chrome we hide above, so the
  * download is pure cost: ~8 failed requests per load, and a console full of
@@ -137,7 +137,7 @@ echo "Stripped the simulator's navbar and helper chrome."
 
 # Drop the bundled demo library: 23MB of other people's models, plus the
 # documentation images. We suppress the demo loader (?model=) and hide the
-# Examples menu, so none of it is reachable — and shipping 23MB of unreachable
+# Examples menu, so none of it is reachable. Shipping 23MB of unreachable
 # assets on every deploy is pure cost. Set SIMULATOR_KEEP_ASSETS=1 to keep them.
 if [ "${SIMULATOR_KEEP_ASSETS:-0}" != "1" ] && [ -d "$TARGET/assets" ]; then
   before="$(du -sh "$TARGET" | cut -f1)"
@@ -148,7 +148,7 @@ fi
 # Neutralize <img> tags pointing into the pruned assets/ directory.
 #
 # Every one of them lives in chrome we hide (the About modal, the logo, the
-# view/control toggles), but `display:none` does not stop a fetch — the browser
+# view/control toggles), but `display:none` does not stop a fetch. The browser
 # still requests each file and logs a 404. Blanking the src is what actually
 # stops it: ~11 failed requests per load, and a console clean enough that a
 # real error stands out. The tags stay in the DOM for the simulator's own

@@ -27,7 +27,7 @@ export interface CanonicalizeOptions {
  * - every edge stored with `v0 < v1`; the edge list sorted lexicographically
  * - faces rotated to start at their lowest vertex index, then sorted
  *
- * Scaling is *uniform* — the larger bounding-box side maps to `[0,1]` and the
+ * Scaling is *uniform*: the larger bounding-box side maps to `[0,1]` and the
  * other keeps its aspect ratio. §2.5 says "normalized to `[0,1]²`" while §2.4.3
  * says "the paper's bounding box for non-square paper"; stretching each axis
  * independently would deform non-square paper and silently change the pattern's
@@ -159,7 +159,7 @@ export function canonicalGeometryPayload(graph: CreaseGraph): string {
 }
 
 /**
- * `kami:contentHash` — SHA-256 over the canonical geometry arrays only, so the
+ * `kami:contentHash`: SHA-256 over the canonical geometry arrays only, so the
  * same pattern uploaded with different tags is recognized as the same pattern
  * (DESIGN.md §2.5).
  */
@@ -203,7 +203,7 @@ function orderedKeys(object: Record<string, unknown>): string[] {
 /**
  * Serialize with keys in a fixed order and no insignificant whitespace
  * (DESIGN.md §2.5). Keys the spec names come first in spec order; anything
- * else — including other tools' `prefix:name` extensions — follows in
+ * else, including other tools' `prefix:name` extensions, follows in
  * alphabetical order so unknown data still round-trips deterministically.
  */
 export function serializeCanonical(value: unknown): string {

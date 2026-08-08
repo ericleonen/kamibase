@@ -14,9 +14,9 @@ import {
  * undo/redo", and a segment list gives exactly that: every edit returns a new
  * array, undo is keeping the old one, and nothing has to re-index.
  *
- * The graph is *derived* — `graphFromSegments` is the same function the
- * parsers use, so what the editor holds and what an imported `.cp` produces
- * are the same thing by construction rather than by agreement.
+ * The graph is *derived*. `graphFromSegments` is the same function the parsers
+ * use, so what the editor holds and what an imported `.cp` produces are the
+ * same thing by construction rather than by agreement.
  *
  * Coordinates are the unit square, matching `.kami`'s normalized space
  * (DESIGN.md §2.4.3), so nothing needs rescaling on the way out.
@@ -79,9 +79,9 @@ export function isDrawable(segment: EditorSegment): boolean {
  * Add a crease.
  *
  * A segment covering the same pair of endpoints replaces the old one rather
- * than stacking on it — otherwise drawing over a crease to change its
+ * than stacking on it. Otherwise drawing over a crease to change its
  * assignment would silently leave a duplicate edge behind, which is a §2.4.5
- * defect the user never asked for.
+ * defect nobody asked for.
  */
 export function addSegment(doc: EditorDoc, segment: EditorSegment): EditorDoc {
   if (!isDrawable(segment)) return doc;

@@ -67,7 +67,7 @@ export interface CreasePatternEditorProps {
  * The bar it aims at is the one the design sets: "fix a converted file and make
  * a Miura-ori," not "design a competition-level insect." So there is a line
  * tool, an eraser, assignment painting, grid snapping, undo, live validation
- * and export — and there is no polygon tool, no symmetry engine and no layer
+ * and export. There is no polygon tool, no symmetry engine and no layer
  * ordering.
  *
  * Every check on screen is `@kamibase/core` running in the browser, which is
@@ -92,7 +92,7 @@ export function CreasePatternEditor({
   const [saved, setSaved] = useState<string | null>(null);
   /*
    * On a phone the control panel is pinned to the bottom of the viewport, so
-   * every row it grows costs drawing surface — enough of them and the toolbar
+   * every row it grows costs drawing surface. Enough of them and the toolbar
    * covers the canvas outright, which is exactly what it did before this was
    * collapsed by default. Wide screens have a real sidebar and no such
    * conflict, so everything stays open there.
@@ -110,7 +110,7 @@ export function CreasePatternEditor({
 
   /*
    * Analysis runs against a deferred copy of the document, so a fast drag
-   * never waits on the O(E²) planarize pass — React keeps painting the stroke
+   * never waits on the O(E²) planarize pass. React keeps painting the stroke
    * and the checks catch up a frame later.
    */
   const deferredDoc = useDeferredValue(doc);
@@ -259,7 +259,7 @@ export function CreasePatternEditor({
 
         {/*
          * The controls. On phones this is a sticky bar pinned to the bottom of
-         * the viewport — thumbs live there, and a toolbar above a canvas on a
+         * the viewport, where thumbs live. A toolbar above a canvas on a
          * small screen means reaching across your own drawing.
          */}
         <aside
@@ -413,7 +413,7 @@ export function CreasePatternEditor({
                 </h2>
                 {analysis.skipped ? (
                   <p style={{ color: "var(--text-muted)" }}>
-                    Paused above {LIVE_ANALYSIS_EDGE_LIMIT} creases — the crossing
+                    Paused above {LIVE_ANALYSIS_EDGE_LIMIT} creases. The crossing
                     check is O(n²) and would stall the canvas.
                   </p>
                 ) : (

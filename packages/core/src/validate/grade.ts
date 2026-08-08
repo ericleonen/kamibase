@@ -27,9 +27,9 @@ export interface SimulationEvidence {
 export interface GradeOptions extends ValidateOptions, FlatFoldOptions {
   /**
    * Result of a headless simulator run. `@kamibase/core` is headless and does
-   * not simulate, so L2 evidence has to come from the caller — the worker
-   * queue at ingest, or `kami:simulation` on a document that has already been
-   * through it. Without evidence a document is capped at L1.
+   * not simulate, so L2 evidence has to come from the caller: the worker queue
+   * at ingest, or `kami:simulation` on a document that has already been through
+   * it. Without evidence a document is capped at L1.
    */
   readonly simulation?: SimulationEvidence;
   /** Skip the flat-foldability pass (it is O(V log V) but not free). */

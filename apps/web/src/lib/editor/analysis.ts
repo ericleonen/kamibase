@@ -19,7 +19,7 @@ export interface VertexMark {
 }
 
 export interface EditorAnalysis {
-  /** The cleaned graph — crossings split, faces computed. */
+  /** The cleaned graph, with crossings split and faces computed. */
   readonly graph: CreaseGraph;
   readonly defects: readonly Defect[];
   readonly errorCount: number;
@@ -57,7 +57,7 @@ const EMPTY: EditorAnalysis = {
  * Run the real validator over the editor's current state.
  *
  * This is DESIGN.md §9's whole argument made concrete: the editor's rules are
- * not a reimplementation, they are `@kamibase/core` running in the browser —
+ * not a reimplementation, they are `@kamibase/core` running in the browser:
  * the same planarize, the same §2.4 checks, the same Maekawa and Kawasaki as
  * the server applies on ingest. There is nothing to drift.
  */
@@ -91,7 +91,7 @@ export function analyse(doc: EditorDoc): EditorAnalysis {
           at,
           ok: false,
           reason:
-            `Maekawa: ${vertex.mountains}M / ${vertex.valleys}V — a flat-foldable ` +
+            `Maekawa: ${vertex.mountains}M / ${vertex.valleys}V. A flat-foldable ` +
             "vertex needs the counts to differ by exactly 2",
         };
       }
@@ -106,7 +106,7 @@ export function analyse(doc: EditorDoc): EditorAnalysis {
         return {
           at,
           ok: false,
-          reason: vertex.note ?? "Undecidable — some creases here are unassigned",
+          reason: vertex.note ?? "Undecidable, because some creases here are unassigned",
         };
       }
       return { at, ok: true, reason: "Maekawa and Kawasaki both hold here" };

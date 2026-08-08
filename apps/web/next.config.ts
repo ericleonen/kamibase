@@ -29,8 +29,8 @@ const config: NextConfig = {
         // The vendored simulator is third-party MIT code with its own needs:
         // it evaluates shader and matrix code at runtime, so it cannot live
         // under the app's CSP. It is same-origin, sandboxed by being framed
-        // only by us, and handles no user input — but it does get its own,
-        // looser policy rather than loosening the whole site's.
+        // only by us, and handles no user input. It still gets its own looser
+        // policy rather than loosening the whole site's.
         source: "/sim/:path*",
         headers: [
           {
@@ -66,8 +66,8 @@ const config: NextConfig = {
               // correct fix is a per-request nonce from middleware, but that
               // forces dynamic rendering and would give up the prerendered
               // pattern pages. Phase 1 serves no user-supplied content, so the
-              // trade is defensible — but uploads (Phase 2) must move to
-              // nonces before anyone else's markup reaches this origin.
+              // trade is defensible. Uploads (Phase 2) must move to nonces
+              // before anyone else's markup reaches this origin.
               "script-src 'self' 'unsafe-inline'",
               // The simulator iframe runs third-party (MIT) code; it is
               // sandboxed at the element and confined to its own origin here.

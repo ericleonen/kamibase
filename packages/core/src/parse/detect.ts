@@ -7,8 +7,8 @@ import type { ParsedPattern, SourceFormat } from "./types.js";
 const CP_LINE = /^\s*-?\d+(?:\.\d+)?(?:[\s,]+[-+0-9.eE]+){4}\s*$/;
 
 /**
- * Sniff the format of an uploaded file — the `DETECT` stage of DESIGN.md §3.2,
- * "sniff magic bytes / extension / XML root".
+ * Sniff the format of an uploaded file. This is the `DETECT` stage of
+ * DESIGN.md §3.2, "sniff magic bytes / extension / XML root".
  *
  * The filename is a hint, not the answer: people rename files, and a `.cp`
  * that is really a FOLD document should still import.

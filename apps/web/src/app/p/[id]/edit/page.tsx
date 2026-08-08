@@ -17,10 +17,10 @@ export async function generateMetadata({
 /**
  * Edit an existing pattern.
  *
- * The seeded library is read-only — patterns live as files on disk, and
- * saving back needs the accounts and storage of Phase 4. So this opens a
- * working copy: draw on it, check it, export it, and it is yours. The original
- * is untouched, which is also the honest behaviour for someone else's design.
+ * The seeded library is read-only. Patterns live as files on disk, and saving
+ * back needs the accounts and storage of Phase 4. So this opens a working
+ * copy: draw on it, check it, export it, and it is yours. The original is left
+ * alone, which is also the honest thing to do with someone else's design.
  */
 export default async function EditPatternPage({
   params,

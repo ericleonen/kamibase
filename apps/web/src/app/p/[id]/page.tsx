@@ -25,7 +25,7 @@ export async function generateMetadata({
     title: pattern.title,
     description:
       pattern.description ??
-      `${pattern.title} by ${pattern.designer} — ${pattern.edgeCount} creases.`,
+      `${pattern.title} by ${pattern.designer}, ${pattern.edgeCount} creases.`,
     openGraph: { images: [{ url: `/p/${pattern.id}/thumbnail` }] },
   };
 }
@@ -185,7 +185,7 @@ export default async function PatternPage({
               Folds
             </h2>
             <p style={{ color: "var(--text-muted)" }}>
-              Nobody has posted a fold of this pattern yet — folds arrive with
+              Nobody has posted a fold of this pattern yet. Folds arrive with
               the social layer in Phase 4.
             </p>
           </section>

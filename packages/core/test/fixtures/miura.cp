@@ -1,4 +1,4 @@
-# Miura-ori — 4 columns x 3 bands on a unit square.
+# Miura-ori: 4 columns x 3 bands on a unit square.
 #
 # Hand-written. Straight vertical creases at x = 0.25, 0.5, 0.75; two zigzag
 # horizontal creases whose vertices sit 0.08 higher on odd columns.

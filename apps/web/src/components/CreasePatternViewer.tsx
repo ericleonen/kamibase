@@ -28,8 +28,8 @@ export interface CreasePatternViewerProps {
  * The crease pattern viewer from DESIGN.md §8.3: zoom, layer toggles for
  * M/V/B, and print-to-scale.
  *
- * The SVG itself is rendered on the server by `@kamibase/core` — the same
- * renderer that makes thumbnails at ingest — and this component only handles
+ * The SVG itself is rendered on the server by `@kamibase/core`, the same
+ * renderer that makes thumbnails at ingest. This component only handles
  * interaction. Layer toggling works because the renderer tags one `<path>` per
  * assignment with `data-assignment`, so hiding a layer is one CSS rule rather
  * than a re-render.
@@ -184,7 +184,7 @@ export function CreasePatternViewer({
             style={{ borderColor: "var(--border)" }}
             title={
               printSizeMm
-                ? `Prints at ${printSizeMm}mm — the designer's recommended size`
+                ? `Prints at ${printSizeMm}mm, the designer's recommended size`
                 : "Print the crease pattern"
             }
           >

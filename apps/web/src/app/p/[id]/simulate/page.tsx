@@ -27,8 +27,8 @@ export default async function SimulatePage({
   const pattern = await patterns.get(id);
   if (!pattern) notFound();
 
-  // The simulator speaks FOLD, so the kami: block comes off on the way in —
-  // the same key-filter the .fold download uses.
+  // The simulator speaks FOLD, so the kami: block comes off on the way in.
+  // Same key-filter the .fold download uses.
   const fold = toFold(pattern.document);
 
   return (

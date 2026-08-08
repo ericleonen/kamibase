@@ -221,7 +221,7 @@ describe("which vertices are checked", () => {
     expect(vertex.kawasaki).toBe("pass");
   });
 
-  it("is indeterminate — not failing — when a crease is unassigned", () => {
+  it("is indeterminate rather than failing when a crease is unassigned", () => {
     const report = checkFlatFoldability(star(["M", "M", "M", "U"]));
     expect(centre(report).maekawa).toBe("indeterminate");
     expect(centre(report).note).toMatch(/not M or V/);

@@ -2,7 +2,7 @@
   "name": "kamibase",
   "version": "0.0.0",
   "private": true,
-  "description": "Kamibase monorepo — a home for crease patterns.",
+  "description": "Kamibase monorepo: a home for crease patterns.",
   "license": "MIT",
   "packageManager": "pnpm@10.33.0",
   "engines": {

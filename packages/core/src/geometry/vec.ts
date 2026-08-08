@@ -8,7 +8,7 @@
 export type Vec2 = readonly [number, number];
 
 /**
- * Coordinate epsilon from DESIGN.md §2.4.5 — vertices closer than this in
+ * Coordinate epsilon from DESIGN.md §2.4.5. Vertices closer than this in
  * normalized units are the same vertex.
  */
 export const COORD_EPSILON = 1e-9;
@@ -74,7 +74,7 @@ export function normalizeAngle(theta: number): number {
   return t < 0 ? t + twoPi : t;
 }
 
-/** Lexicographic (x, then y) comparison — the canonical vertex order. */
+/** Lexicographic (x, then y) comparison: the canonical vertex order. */
 export function compareLex(a: Vec2, b: Vec2): number {
   if (a[0] !== b[0]) return a[0] < b[0] ? -1 : 1;
   if (a[1] !== b[1]) return a[1] < b[1] ? -1 : 1;

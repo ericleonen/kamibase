@@ -222,7 +222,7 @@ describe("history", () => {
 
   it("bounds the past so a long session cannot grow without limit", () => {
     let history = initHistory(emptyPaper());
-    // Offset off y=0 so none of these lands on the boundary — an overlapping
+    // Offset off y=0 so none of these lands on the boundary. An overlapping
     // crease is replaced rather than appended, which would confuse the count
     // this test is actually about.
     for (let i = 1; i <= 150; i += 1) {

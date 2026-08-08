@@ -15,7 +15,7 @@ import {
  * public-domain/CC patterns by hand").
  *
  * Everything here is either a traditional origami base or a published
- * mathematical/engineering pattern — geometry that is genuinely public, not
+ * mathematical/engineering pattern: geometry that is genuinely public, not
  * anyone's competition model. Growing this to ~100 means the designer outreach
  * §11 Q1 describes, not more code: we are not going to invent crease patterns
  * and attribute them to people.
@@ -67,7 +67,7 @@ function miuraSeed(columns: number, bands: number, rating: number): Seed {
     title: `Miura-ori ${columns}×${bands}`,
     designer: "Kōryō Miura",
     description:
-      `A ${columns}×${bands} Miura fold — the rigid-foldable parallelogram ` +
+      `A ${columns}×${bands} Miura fold, the rigid-foldable parallelogram ` +
       "tessellation used for deployable solar arrays and folding maps. Every " +
       "interior vertex carries three creases of one kind and one of the other.",
     lines: miuraOri(columns, bands),
@@ -90,8 +90,8 @@ function miuraSeed(columns: number, bands: number, rating: number): Seed {
     license: PUBLIC_DOMAIN,
     sourceUrl: "https://en.wikipedia.org/wiki/Miura_fold",
     collapseNotes:
-      "Pre-crease every zigzag line first, then collapse column by column — " +
-      "the vertical creases change direction at each zigzag, which is what " +
+      "Pre-crease every zigzag line first, then collapse column by column. " +
+      "The vertical creases change direction at each zigzag, which is what " +
       "makes the fold rigid.",
   };
 }
@@ -157,7 +157,7 @@ export const SEEDS: readonly Seed[] = [
     description:
       "Both diagonals and both book folds, drawn the way every book draws them. " +
       "Structurally clean, but the centre carries four mountains and four " +
-      "valleys — which Maekawa's theorem says cannot fold flat as drawn.",
+      "valleys, which Maekawa's theorem says cannot fold flat as drawn.",
     lines: waterbombBase(),
     header:
       "Waterbomb base, the eight-crease pattern as normally drawn.\n" +
@@ -227,7 +227,7 @@ export const SEEDS: readonly Seed[] = [
     title: "8×8 reference grid",
     designer: "Traditional",
     description:
-      "A square grid of pre-creases — the scaffolding box-pleated designs are " +
+      "A square grid of pre-creases, the scaffolding box-pleated designs are " +
       "built on. It is a reference grid, not a model: crossing pleats put four " +
       "creases of two kinds at every intersection, so it does not fold flat and " +
       "is not meant to.",

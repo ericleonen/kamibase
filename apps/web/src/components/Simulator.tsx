@@ -40,7 +40,7 @@ export interface SimulatorProps {
   readonly title: string;
   /** Rendered in place of the simulator when it cannot run. */
   readonly fallback: React.ReactNode;
-  /** Warn that the solver may not settle — shown inside the frame, in context. */
+  /** Warn that the solver may not settle. Shown inside the frame, in context. */
   readonly flatFoldable?: boolean;
 }
 
@@ -56,7 +56,7 @@ export interface SimulatorProps {
  * one control that matters most, which makes it the one worth owning.
  *
  * §5.3 is explicit that simulation will not work for every pattern and that
- * the UI must say so rather than spin forever — hence the WebGL2 check, the
+ * the UI must say so rather than spin forever. Hence the WebGL2 check, the
  * handshake timeout, and a fallback that shows the flat crease pattern with a
  * plain explanation instead of an empty frame.
  */
@@ -122,12 +122,12 @@ export function Simulator({
         if (cancelled) return;
         setStatus("unavailable");
         // Two audiences, two messages. The visitor gets something actionable
-        // for them — reload, or use the flat pattern below — because the fix
+        // for them (reload, or use the flat pattern below) because the fix
         // ("vendor the simulator") is not theirs to make and the raw timeout
         // reads as a bug on their end. The operator gets the real cause and
         // the command, in the console where they are already looking.
         setDetail(
-          "The 3D simulator didn't load. Reloading the page usually sorts it — the flat crease pattern is below either way.",
+          "The 3D simulator didn't load. Reloading the page usually sorts it, and the flat crease pattern is below either way.",
         );
         console.warn(
           "[kamibase] the simulator did not start:",
@@ -279,7 +279,8 @@ export function Simulator({
 
       {/*
         The control bar. Hidden entirely when the simulator is not reachable
-        from this origin, because every control in it would be inert — §5.3's
+        from this origin, because every control in it would be inert. That is
+        §5.3's
         rule about not pretending, applied to the chrome as well as the solve.
       */}
       {controllable && (
@@ -381,7 +382,7 @@ export function Simulator({
           >
             Drag to rotate · scroll to zoom
             {!flatFoldable &&
-              " · this pattern fails a local flat-foldability check, so the solver may not settle — normal for 3D designs"}
+              " · this pattern fails a local flat-foldability check, so the solver may not settle, which is normal for 3D designs"}
           </p>
         </div>
       )}

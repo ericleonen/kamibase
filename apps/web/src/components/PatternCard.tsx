@@ -7,7 +7,7 @@ import type { PatternSummary } from "@/lib/patterns";
  *
  * The frame height varies per card so the masonry actually staggers. Crease
  * patterns are all square, and a grid of identical squares reads as a table
- * rather than a feed — so the *frame* changes aspect while the pattern inside
+ * rather than a feed. So the *frame* changes aspect while the pattern inside
  * stays `object-contain`. The geometry is never distorted; only the amount of
  * mat around it changes.
  */

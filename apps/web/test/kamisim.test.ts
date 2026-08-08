@@ -256,7 +256,7 @@ describe("the control surface", () => {
     handle.setFoldAmount(0.25);
     expect(globals.creasePercent).toBe(0.25);
     // Without this flag the solver never reads the new value and the model
-    // sits there unchanged — the whole control silently does nothing.
+    // sits there unchanged, so the whole control silently does nothing.
     expect(globals.shouldChangeCreasePercent).toBe(true);
     expect(globals.controls.updateCreasePercent).toHaveBeenCalled();
   });

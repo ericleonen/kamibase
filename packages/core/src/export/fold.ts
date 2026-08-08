@@ -17,7 +17,7 @@ export interface ToFoldOptions {
 /**
  * Export a `.kami` document as plain `.fold`.
  *
- * "Export to `.fold` is a key-filter" (DESIGN.md §2.1) — and that is all this
+ * "Export to `.fold` is a key-filter" (DESIGN.md §2.1), and that is all this
  * is. The geometry is already FOLD; the only thing that leaves is the `kami:`
  * namespace, recursively, including inside `file_frames`.
  */

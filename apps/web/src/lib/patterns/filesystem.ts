@@ -18,8 +18,8 @@ export interface FileSystemPatternRepositoryOptions {
  * Reads `.kami` files off disk, one pattern per file, id taken from the
  * filename.
  *
- * Every file goes through the same `@kamibase/core` path an upload would —
- * parse, extract, grade — so a seeded pattern gets exactly the badge an
+ * Every file goes through the same `@kamibase/core` path an upload would:
+ * parse, extract, grade. So a seeded pattern gets exactly the badge an
  * uploaded one would, and a malformed seed shows up as a defect rather than a
  * crash. Results are cached for the process lifetime; the seeds are static.
  */

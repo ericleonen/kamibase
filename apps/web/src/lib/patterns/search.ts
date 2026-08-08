@@ -12,9 +12,9 @@ export interface PatternFilter {
  *
  * Deliberately not clever: DESIGN.md §6 puts semantic and visual search in
  * Phase 5, where it needs embeddings and a corpus worth embedding. With a
- * couple of dozen patterns, matching words is both sufficient and honest — it
- * is better to have a search box that plainly matches text than one that
- * implies an understanding it does not have.
+ * couple of dozen patterns, matching words is both sufficient and honest. A
+ * search box that plainly matches text beats one implying an understanding it
+ * does not have.
  */
 export function filterPatterns(
   patterns: readonly PatternSummary[],
