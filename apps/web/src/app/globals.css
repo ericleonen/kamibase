@@ -90,6 +90,66 @@ body {
 }
 
 /*
+ * The fold slider in the 3D simulator.
+ *
+ * A range input is the right control — it is draggable, arrow-key operable and
+ * announced properly — but its default chrome is the OS accent colour, which
+ * is the one blue thing on an otherwise amber page. So the track and thumb are
+ * restyled by hand. The vendor prefixes are not optional: `::-webkit-*` and
+ * `::-moz-*` cannot be combined into one rule, since either engine drops a
+ * selector list it does not fully understand.
+ */
+.kami-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 1.25rem;
+  background: transparent;
+  cursor: pointer;
+}
+
+.kami-slider::-webkit-slider-runnable-track {
+  height: 0.375rem;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+}
+
+.kami-slider::-moz-range-track {
+  height: 0.375rem;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+}
+
+/* Firefox can fill the track behind the thumb; WebKit cannot, so the amber
+   progress fill is a Firefox-only nicety rather than a layout the design
+   depends on. */
+.kami-slider::-moz-range-progress {
+  height: 0.375rem;
+  border-radius: 999px;
+  background: var(--brand);
+}
+
+.kami-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: -0.375rem; /* centres the thumb on the track */
+  border-radius: 999px;
+  background: var(--brand);
+  border: 2px solid var(--surface);
+  box-shadow: 0 1px 3px rgb(27 26 23 / 0.25);
+}
+
+.kami-slider::-moz-range-thumb {
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 999px;
+  background: var(--brand);
+  border: 2px solid var(--surface);
+  box-shadow: 0 1px 3px rgb(27 26 23 / 0.25);
+}
+
+/*
  * Masonry. CSS columns rather than a JS layout pass: the cards are static
  * server-rendered content, so there is nothing to measure, and columns reflow
  * for free at every breakpoint.

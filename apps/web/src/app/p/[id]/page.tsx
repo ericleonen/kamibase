@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Box } from "lucide-react";
 import { CreasePatternViewer } from "@/components/CreasePatternViewer";
 import { ValidationBadge } from "@/components/ValidationBadge";
 import { DOWNLOAD_FORMATS, FORMAT_HINTS, FORMAT_LABELS } from "@/lib/downloads";
@@ -95,9 +96,10 @@ export default async function PatternPage({
         <aside className="print-hidden space-y-6">
           <Link
             href={`/p/${pattern.id}/simulate`}
-            className="block rounded-full px-4 py-3 text-center text-sm font-bold transition hover:opacity-85"
+            className="flex items-center justify-center gap-2 rounded-full px-4 py-3 text-center text-sm font-bold transition hover:opacity-85"
             style={{ background: "var(--brand)", color: "var(--ink)" }}
           >
+            <Box className="size-4" aria-hidden />
             Fold it in 3D
           </Link>
 

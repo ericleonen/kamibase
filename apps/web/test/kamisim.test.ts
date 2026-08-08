@@ -98,6 +98,37 @@ describe("attachSimulator", () => {
     });
   });
 
+  it("fails immediately when the frame cannot be fetched", async () => {
+    // No vendored copy, or a bad NEXT_PUBLIC_SIMULATOR_URL. Waiting out the
+    // full timeout here would leave a spinner on screen for the whole of it,
+    // when we already know the frame is never arriving.
+    const { iframe } = fakeIframe();
+    const pending = attachSimulator(iframe, { timeoutMs: 30_000 });
+    iframe.dispatchEvent(new Event("error"));
+    await expect(pending).rejects.toMatchObject({ reason: "timeout" });
+  });
+
+  it("waits seconds, not tens of seconds, by default", async () => {
+    // The handshake covers the simulator's boot, not its solve, so the default
+    // is a bet on how long someone will watch a spinner. Asserted with fake
+    // timers because the honest version of this test would sit here for the
+    // whole timeout to prove it.
+    vi.useFakeTimers();
+    try {
+      const { iframe } = fakeIframe();
+      const pending = attachSimulator(iframe);
+      const settled = vi.fn();
+      void pending.catch(settled);
+
+      await vi.advanceTimersByTimeAsync(7_000);
+      expect(settled).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(2_000);
+      expect(settled).toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("proceeds on the iframe's load event when the handshake is missed", async () => {
     // The ready message is fired once, during the simulator's own init. If we
     // attach after that moment we would otherwise wait for an announcement
@@ -158,5 +189,141 @@ describe("attachSimulator", () => {
     handle.dispose();
     handle.loadFold({ vertices_coords: [], edges_vertices: [], edges_assignment: [] });
     expect(contentWindow.postMessage).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * A stand-in for the simulator's own state object.
+ *
+ * The shape mirrors the real one closely enough that these tests would notice
+ * an upstream rename of the properties we poke: `creasePercent` plus the
+ * `shouldChangeCreasePercent` flag that makes the solver read it, and the
+ * `threeView` / `model` methods behind run, reset and the camera.
+ */
+function fakeGlobals() {
+  return {
+    creasePercent: 0.6,
+    shouldChangeCreasePercent: false,
+    colorMode: "color",
+    threeView: {
+      startSimulation: vi.fn(),
+      pauseSimulation: vi.fn(),
+      resetModel: vi.fn(),
+      setCameraIso: vi.fn(),
+      setCameraX: vi.fn(),
+      setCameraY: vi.fn(),
+      setCameraZ: vi.fn(),
+    },
+    model: { reset: vi.fn() },
+    controls: { updateCreasePercent: vi.fn() },
+  };
+}
+
+/** Attach to a frame whose `globals` we control, as a same-origin embed has. */
+async function attachedTo(globals: unknown) {
+  const contentWindow = { postMessage: vi.fn(), globals };
+  const iframe = document.createElement("iframe");
+  Object.defineProperty(iframe, "src", { value: "/sim/index.html" });
+  Object.defineProperty(iframe, "contentWindow", { value: contentWindow });
+
+  const pending = attachSimulator(iframe, { timeoutMs: 1000 });
+  sendMessage(contentWindow, { from: "OrigamiSimulator", status: "ready" });
+  return pending;
+}
+
+describe("the control surface", () => {
+  it("reports itself controllable for a same-origin frame", async () => {
+    const handle = await attachedTo(fakeGlobals());
+    expect(handle.controllable).toBe(true);
+  });
+
+  it("is not controllable when the frame exposes no globals", async () => {
+    // A cross-origin embed via NEXT_PUBLIC_SIMULATOR_URL looks like this. The
+    // UI hides its controls rather than offering inert ones.
+    const handle = await attachedTo(undefined);
+    expect(handle.controllable).toBe(false);
+  });
+
+  it("is not controllable after dispose", async () => {
+    const handle = await attachedTo(fakeGlobals());
+    handle.dispose();
+    expect(handle.controllable).toBe(false);
+  });
+
+  it("sets the fold amount and flags it for the solver", async () => {
+    const globals = fakeGlobals();
+    const handle = await attachedTo(globals);
+    handle.setFoldAmount(0.25);
+    expect(globals.creasePercent).toBe(0.25);
+    // Without this flag the solver never reads the new value and the model
+    // sits there unchanged — the whole control silently does nothing.
+    expect(globals.shouldChangeCreasePercent).toBe(true);
+    expect(globals.controls.updateCreasePercent).toHaveBeenCalled();
+  });
+
+  it("clamps the fold amount to 0..1", async () => {
+    const globals = fakeGlobals();
+    const handle = await attachedTo(globals);
+    handle.setFoldAmount(4);
+    expect(globals.creasePercent).toBe(1);
+    handle.setFoldAmount(-2);
+    expect(globals.creasePercent).toBe(0);
+  });
+
+  it("runs and pauses through threeView, not by assigning the flag", async () => {
+    const globals = fakeGlobals();
+    const handle = await attachedTo(globals);
+    handle.setRunning(false);
+    expect(globals.threeView.pauseSimulation).toHaveBeenCalled();
+    handle.setRunning(true);
+    expect(globals.threeView.startSimulation).toHaveBeenCalled();
+  });
+
+  it("switches colour mode", async () => {
+    const globals = fakeGlobals();
+    const handle = await attachedTo(globals);
+    handle.setColorMode("axialStrain");
+    expect(globals.colorMode).toBe("axialStrain");
+  });
+
+  it("resets the solve", async () => {
+    const globals = fakeGlobals();
+    const handle = await attachedTo(globals);
+    handle.resetSimulation();
+    expect(globals.model.reset).toHaveBeenCalled();
+  });
+
+  it("undoes model rotation when picking a camera preset", async () => {
+    // Dragging rotates the model, not the camera, so a preset that only moved
+    // the camera would land somewhere other than the face it names.
+    const globals = fakeGlobals();
+    const handle = await attachedTo(globals);
+    handle.setCameraView("z");
+    expect(globals.threeView.resetModel).toHaveBeenCalled();
+    expect(globals.threeView.setCameraZ).toHaveBeenCalledWith(1);
+    handle.setCameraView("iso");
+    expect(globals.threeView.setCameraIso).toHaveBeenCalled();
+  });
+
+  it("does nothing after dispose", async () => {
+    const globals = fakeGlobals();
+    const handle = await attachedTo(globals);
+    handle.dispose();
+    handle.setFoldAmount(0.1);
+    handle.setRunning(false);
+    expect(globals.creasePercent).toBe(0.6);
+    expect(globals.threeView.pauseSimulation).not.toHaveBeenCalled();
+  });
+
+  it("survives a simulator whose internals moved", async () => {
+    // Upstream is vendored at a moving ref, so a rename is a question of when.
+    // A control that throws here would take the whole page down with it.
+    const handle = await attachedTo({});
+    expect(() => {
+      handle.setFoldAmount(0.5);
+      handle.setRunning(true);
+      handle.resetSimulation();
+      handle.setCameraView("iso");
+    }).not.toThrow();
   });
 });

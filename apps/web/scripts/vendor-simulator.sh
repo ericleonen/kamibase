@@ -78,17 +78,50 @@ fi
 # showing one specific pattern.
 #
 # This is a stylesheet, not a fork: the elements stay in the DOM, so the
-# simulator's own code still finds everything it queries. The fold slider,
-# view mode, control mode and reset all stay visible — hiding those would
-# leave a 3D model nobody can fold.
+# simulator's own code still finds everything it queries, and every control
+# keeps working when driven from the parent frame.
+#
+# The bottom control bar goes too, which it did not used to. Kamibase now
+# renders its own fold slider, view mode, camera and run/pause controls in
+# React (src/components/Simulator.tsx) and drives them through the same-origin
+# `globals` object, so leaving upstream's bar visible would mean two sets of
+# controls for the same state — and upstream's set is the broken one: its
+# toggles are <img> tags pointing into assets/, which we prune below, so they
+# render as broken-image icons.
 cat > "$TARGET/kamibase-embed.css" <<'CSS'
 /* Kamibase embed overrides for the vendored Origami Simulator.
-   Hides the host site's chrome and keeps every fold control. */
-#globalNav,      /* File / Examples / View / Pattern / Simulation / About */
-#helper,         /* "Load more origami patterns here!" tooltip */
-#basicUI {       /* "Show Advanced Options" */
+   Hides the host site's chrome; Kamibase renders the fold controls itself and
+   drives them through the same-origin `globals` object. */
+#globalNav,       /* File / Examples / View / Pattern / Simulation / About */
+#helper,          /* "Load more origami patterns here!" tooltip */
+#basicUI,         /* "Show Advanced Options" */
+#controlsBottom { /* fold slider, view mode, control mode, reset */
   display: none !important;
 }
+
+/* The canvas is the whole embed now, so let it have the whole frame. */
+html, body {
+  background: #ffffff !important;
+  overflow: hidden !important;
+}
+
+/*
+ * Silence the font 404s.
+ *
+ * flat-ui.min.css declares @font-face for Lato and its icon font, but the repo
+ * ships neither the fonts/lato directory nor the .woff icons — upstream's own
+ * site 404s on them too, and its visible text falls back to a system font. The
+ * only elements that referenced them here are the chrome we hide above, so the
+ * download is pure cost: ~8 failed requests per load, and a console full of
+ * 404s that makes a real failure harder to spot.
+ *
+ * Redeclaring the families with a local() source satisfies the lookup without
+ * a network request. The names must match flat-ui's exactly to override them.
+ */
+@font-face { font-family: "Lato"; src: local("Segoe UI"), local("Helvetica Neue"), local("Arial"); font-weight: 400; }
+@font-face { font-family: "Lato"; src: local("Segoe UI Bold"), local("Helvetica Neue Bold"), local("Arial Bold"); font-weight: 700; }
+@font-face { font-family: "Lato"; src: local("Segoe UI Black"), local("Arial Black"); font-weight: 900; }
+@font-face { font-family: "Flat-UI-Icons"; src: url("fonts/glyphicons/flat-ui-icons-regular.ttf") format("truetype"); }
 CSS
 
 if ! grep -q "kamibase-embed.css" "$TARGET/index.html"; then
@@ -110,6 +143,23 @@ if [ "${SIMULATOR_KEEP_ASSETS:-0}" != "1" ] && [ -d "$TARGET/assets" ]; then
   before="$(du -sh "$TARGET" | cut -f1)"
   rm -rf "$TARGET/assets" "$TARGET/CreasePatternScripts"
   echo "Pruned the bundled demo library ($before -> $(du -sh "$TARGET" | cut -f1))."
+fi
+
+# Neutralize <img> tags pointing into the pruned assets/ directory.
+#
+# Every one of them lives in chrome we hide (the About modal, the logo, the
+# view/control toggles), but `display:none` does not stop a fetch — the browser
+# still requests each file and logs a 404. Blanking the src is what actually
+# stops it: ~11 failed requests per load, and a console clean enough that a
+# real error stands out. The tags stay in the DOM for the simulator's own
+# selectors, and this is skipped when the assets are kept.
+if [ "${SIMULATOR_KEEP_ASSETS:-0}" != "1" ]; then
+  perl -0pi -e 's{(<img[^>]*?)\ssrc="assets/[^"]*"}{$1}gs' "$TARGET/index.html"
+  if grep -q '<img[^>]*src="assets/' "$TARGET/index.html"; then
+    echo "error: <img> tags still reference the pruned assets/ directory" >&2
+    exit 1
+  fi
+  echo "Blanked <img> references to the pruned demo assets."
 fi
 
 echo

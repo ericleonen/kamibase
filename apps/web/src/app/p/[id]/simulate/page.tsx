@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
 import { toFold } from "@kamibase/core";
 import { CreasePatternViewer } from "@/components/CreasePatternViewer";
 import { Simulator } from "@/components/Simulator";
@@ -31,24 +32,30 @@ export default async function SimulatePage({
   const fold = toFold(pattern.document);
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-baseline justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{pattern.title}</h1>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            Folding in 3D · drag to rotate, and use the simulator&apos;s own
-            fold slider to collapse it
-          </p>
+    <div className="space-y-5">
+      <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <div className="min-w-0">
+          <Link
+            href={`/p/${pattern.id}`}
+            className="inline-flex items-center gap-1 text-sm font-semibold transition hover:opacity-70"
+            style={{ color: "var(--text-muted)" }}
+          >
+            <ChevronLeft className="size-4" aria-hidden />
+            {pattern.title}
+          </Link>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight">Folding in 3D</h1>
         </div>
-        <Link href={`/p/${pattern.id}`} className="text-sm underline">
-          Back to the pattern
-        </Link>
+
+        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+          Designed by <span style={{ color: "var(--text)" }}>{pattern.designer}</span>
+        </p>
       </header>
 
       <Simulator
         fold={fold}
         patternId={pattern.id}
         title={pattern.title}
+        flatFoldable={pattern.flatFoldable}
         fallback={
           <CreasePatternViewer
             svg={renderViewerSvg(pattern.graph, pattern.title)}
@@ -60,14 +67,6 @@ export default async function SimulatePage({
           />
         }
       />
-
-      {!pattern.flatFoldable && (
-        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          Heads up: this pattern fails a local flat-foldability check, so the
-          solver may not settle into anything sensible. That is normal for 3D
-          and non-flat-foldable designs.
-        </p>
-      )}
     </div>
   );
 }
