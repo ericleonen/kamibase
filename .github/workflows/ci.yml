@@ -63,6 +63,36 @@ jobs:
             exit 1
           fi
 
+  # The social schema is the one part of the app TypeScript cannot check, and
+  # row-level security is the part of it worth checking hardest: a policy that
+  # is a little too permissive looks exactly like a correct one right up until
+  # somebody writes a row they should not be able to.
+  migration:
+    name: social migration (against real Postgres)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply the migration and assert what it does
+        working-directory: apps/web
+        env:
+          PGHOST: localhost
+          PGPORT: "5432"
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: bash scripts/test-migration.sh
+
   # The job above builds from the repo root, where `pnpm -r build` happens to
   # build @kamibase/core before apps/web. Vercel does not: it builds from
   # apps/web alone. That difference shipped a broken deploy once: core's dist/

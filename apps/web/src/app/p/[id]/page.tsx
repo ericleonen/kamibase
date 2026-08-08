@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Box, PencilRuler } from "lucide-react";
+import { Box, Camera, PencilRuler } from "lucide-react";
 import { CreasePatternViewer } from "@/components/CreasePatternViewer";
 import { ValidationBadge } from "@/components/ValidationBadge";
+import { CommentThread } from "@/components/social/CommentThread";
+import { FoldGrid } from "@/components/social/FoldCard";
+import { SocialNotice } from "@/components/social/SocialNotice";
 import { DOWNLOAD_FORMATS, FORMAT_HINTS, FORMAT_LABELS } from "@/lib/downloads";
 import { patterns } from "@/lib/patterns";
 import { presentAssignments, renderViewerSvg } from "@/lib/render";
+import { listFoldsForPattern } from "@/lib/social";
 
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   const all = await patterns.list();
@@ -180,17 +184,71 @@ export default async function PatternPage({
             </section>
           )}
 
-          <section className="space-y-2 text-sm">
-            <h2 className="text-sm font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-              Folds
-            </h2>
-            <p style={{ color: "var(--text-muted)" }}>
-              Nobody has posted a fold of this pattern yet. Folds arrive with
-              the social layer in Phase 4.
-            </p>
-          </section>
         </aside>
       </div>
+
+      {/*
+       * The pattern is the design; a fold is somebody's execution of it. One
+       * pattern has many folds, and putting them on the same page as the
+       * geometry is what makes this a place rather than an archive
+       * (DESIGN.md §7).
+       */}
+      <PatternFolds patternId={pattern.id} title={pattern.title} />
+
+      <div className="max-w-2xl">
+        <CommentThread target={{ kind: "pattern", patternId: pattern.id }} />
+      </div>
     </div>
+  );
+}
+
+async function PatternFolds({
+  patternId,
+  title,
+}: {
+  readonly patternId: string;
+  readonly title: string;
+}) {
+  const folds = await listFoldsForPattern(patternId, 8);
+
+  return (
+    <section className="print-hidden space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold tracking-tight">
+          Folds of {title}
+          {folds.ok && folds.data.length > 0 && (
+            <span className="ml-2 text-sm font-normal" style={{ color: "var(--text-muted)" }}>
+              {folds.data.length}
+            </span>
+          )}
+        </h2>
+        <div className="flex items-center gap-3">
+          {folds.ok && folds.data.length >= 8 && (
+            <Link href={`/p/${patternId}/folds`} className="text-sm underline hover:opacity-70">
+              See all
+            </Link>
+          )}
+          <Link
+            href={`/p/${patternId}/fold`}
+            className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition hover:opacity-85"
+            style={{ background: "var(--brand)", color: "var(--ink)" }}
+          >
+            <Camera className="size-4" aria-hidden />
+            Share your fold
+          </Link>
+        </div>
+      </div>
+
+      {!folds.ok ? (
+        <SocialNotice reason={folds.reason} message={folds.message} />
+      ) : folds.data.length === 0 ? (
+        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+          Nobody has posted a fold of this one yet. Yours would be the first,
+          and a first attempt counts.
+        </p>
+      ) : (
+        <FoldGrid folds={folds.data} showPattern={false} />
+      )}
+    </section>
   );
 }

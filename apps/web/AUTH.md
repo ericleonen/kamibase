@@ -91,9 +91,10 @@ Two details worth keeping:
   (Next 16 renamed the `middleware` file convention to `proxy`; the helper it
   calls is still `src/lib/supabase/middleware.ts`.)
 
-## Not built yet
+## What an account gets you
 
-Accounts exist; there is nothing to *do* with one yet. Saving patterns,
-collections, posting folds and profiles are the Phase 4 social layer
-(DESIGN.md §7). This is the auth foundation those sit on, landed early because
-it was asked for. The roadmap puts it after the converter and editor.
+Profiles, folds, comments and following, all built on this. They need one more
+setup step: the SQL in `supabase/migrations/0001_social.sql`. See
+[SOCIAL.md](SOCIAL.md).
+
+Collections, saving patterns and uploading your own are still ahead.

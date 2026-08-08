@@ -27,7 +27,8 @@ Then open http://localhost:3000.
 | `pnpm vendor:simulator` | Fetch Origami Simulator into `public/sim` |
 
 Deploying: see [DEPLOYING.md](DEPLOYING.md). Accounts: see [AUTH.md](AUTH.md),
-which says exactly where the Supabase keys go.
+which says exactly where the Supabase keys go. Profiles, folds, comments and
+following: see [SOCIAL.md](SOCIAL.md), which has the one SQL file to run.
 
 ## Design
 
@@ -54,12 +55,18 @@ changes; the geometry is never distorted.
 |---|---|
 | `/` | Landing page, with bases and tessellations first |
 | `/explore` | Every pattern, grouped by technique |
-| `/p/:id` | Pattern page: viewer, metadata, validation badge, downloads |
+| `/p/:id` | Pattern page: viewer, metadata, validation badge, downloads, folds, comments |
 | `/p/:id/simulate` | Full-screen 3D fold |
+| `/p/:id/folds` | Every fold of one pattern |
+| `/p/:id/fold` | Post your fold of it |
 | `/edit` | The editor, on a fresh square of paper |
 | `/p/:id/edit` | The editor, opened on a working copy of a pattern |
 | `/p/:id/download/:format` | `.kami` · `.fold` · `.cp` · `.svg` |
 | `/p/:id/thumbnail` | SVG thumbnail, straight from the core renderer |
+| `/f/:id` | One fold: photo, notes, the pattern it came from, comments |
+| `/feed` | Folds from people you follow, with a Discover tab |
+| `/u/:handle` | Profile, with followers and following beside it |
+| `/settings/profile` | Edit your own |
 
 ## The editor
 
@@ -106,6 +113,36 @@ Known limits: analysis pauses above 600 creases (crossing detection is O(n²)
 and would stall the canvas); autosave is localStorage rather than the IndexedDB
 §4 asks for, which is the right size of tool for one small document; and there
 is no repair panel with one-click fixes yet, so defects are listed, not fixed.
+
+## The social layer
+
+Profiles, folds, comments and following, on top of the Supabase accounts. Full
+setup and design notes in [SOCIAL.md](SOCIAL.md); the short version is that it
+needs one SQL file run in your Supabase project and no new environment
+variables.
+
+The distinction it turns on is a pattern versus a fold. A pattern is the
+design, a fold is somebody's execution of it: a photo, the paper, how long it
+took, how hard it felt. One pattern has many folds, and putting them on the
+same page as the geometry is what makes this a place rather than an archive.
+
+Two things about it that are load-bearing rather than incidental:
+
+- **Reads never throw.** They return a typed result, and two of its failure
+  reasons are setup states rather than faults: no Supabase keys, and keys with
+  no migration run. Both render a note saying which step is missing while the
+  rest of the page carries on. A pattern page on a deploy with no database is
+  still a pattern page.
+- **Photo uploads go through a server action.** The browser resizes to 1600px
+  first, and the action re-checks type and size before anything reaches
+  storage. The page never opens a connection to another origin, so the
+  Content-Security-Policy stays as tight as it was.
+
+Deliberately absent: likes, notifications, and any kind of ranking. Following
+is your follow graph newest-first and Discover is everyone, newest-first.
+DESIGN.md §7 wants a blend of follows, tag affinity and recency; with thirteen
+patterns there is nothing to rank yet, and a fake algorithm reads worse than an
+honest list.
 
 ## The pattern store
 
