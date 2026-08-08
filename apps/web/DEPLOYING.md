@@ -23,8 +23,8 @@ No environment variables are required to deploy. Four are optional:
 
 | Variable | Effect |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Enables accounts. From Supabase → Settings → API. See [AUTH.md](AUTH.md). |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | The other half of the pair. Safe in the browser; the *service role* key is not and must never go here. |
+| `NEXT_PUBLIC_SUPABASE_URL` | Enables accounts. From Supabase → Settings → API Keys. See [AUTH.md](AUTH.md). |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | The other half of the pair (`sb_publishable_…`). Safe in the browser; the *secret* key is not and must never go here. |
 | `NEXT_PUBLIC_SITE_URL` | Absolute URLs in Open Graph tags, and the redirect target for confirmation emails. Set it to the deployed URL once you have it. |
 | `NEXT_PUBLIC_SIMULATOR_URL` | Point the 3D fold view at a simulator hosted elsewhere instead of the copy vendored into this deploy. |
 

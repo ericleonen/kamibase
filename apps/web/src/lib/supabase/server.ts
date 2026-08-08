@@ -1,7 +1,11 @@
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { isSupabaseConfigured, SUPABASE_ANON_KEY, SUPABASE_URL } from "./config";
+import {
+  isSupabaseConfigured,
+  SUPABASE_PUBLISHABLE_KEY,
+  SUPABASE_URL,
+} from "./config";
 
 /**
  * A Supabase client for Server Components, route handlers and server actions.
@@ -14,7 +18,7 @@ export async function createClient(): Promise<SupabaseClient | null> {
 
   const cookieStore = await cookies();
 
-  return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  return createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     cookies: {
       getAll() {
         return cookieStore.getAll();

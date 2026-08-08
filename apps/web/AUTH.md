@@ -13,18 +13,19 @@ Two variables, both from your Supabase project's **Settings → API**:
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT-REF.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR-ANON-OR-PUBLISHABLE-KEY
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ```
 
-Newer Supabase projects call the second one a *publishable* key
-(`sb_publishable_…`) rather than an *anon* key. Either works — the app also
-accepts `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+Current Supabase projects issue a *publishable* key (`sb_publishable_…`).
+Older projects issued an *anon* key (a JWT) instead; that name is legacy but
+still works — the app falls back to `NEXT_PUBLIC_SUPABASE_ANON_KEY` when the
+publishable one is absent.
 
 ## Setting it up, start to finish
 
 1. Create a project at [supabase.com](https://supabase.com). Any region; the
    free tier is plenty.
-2. **Settings → API**: copy the *Project URL* and the *anon/publishable* key.
+2. **Settings → API Keys**: copy the *Project URL* and the *publishable* key.
 3. Locally: `cp apps/web/.env.example apps/web/.env.local` and paste them in.
    Restart `pnpm dev` — Next only reads env files at startup.
 4. On Vercel: Project → Settings → Environment Variables, add both, tick all
@@ -46,13 +47,13 @@ until the link is clicked. To skip that while demoing, turn off
 
 ## Safe to expose, and what is not
 
-The anon/publishable key is designed to sit in the browser: it grants only what
-your row-level security policies allow. That is why it is a `NEXT_PUBLIC_`
-variable.
+The publishable key is designed to sit in the browser: it grants only what your
+row-level security policies allow. That is why it is a `NEXT_PUBLIC_` variable.
 
-The **service role** key is the opposite — it bypasses row-level security
-entirely. It must never appear in `.env.example`, in any `NEXT_PUBLIC_`
-variable, or in client code. Nothing here needs it.
+The **secret** key (`sb_secret_…`, formerly the *service role* key) is the
+opposite — it bypasses row-level security entirely. It must never appear in
+`.env.example`, in any `NEXT_PUBLIC_` variable, or in client code. Nothing here
+needs it, so the safest place for it is nowhere in this repo.
 
 ## Without the keys
 

@@ -15,21 +15,22 @@
 export const SUPABASE_URL = process.env["NEXT_PUBLIC_SUPABASE_URL"] ?? "";
 
 /**
- * Supabase calls this the "anon" key, and newer projects call the same thing a
- * "publishable" key. Either name works here. It is safe in the browser: it
- * only grants what row-level security allows.
+ * The browser-safe key. Current Supabase projects issue a *publishable* key
+ * (`sb_publishable_…`); older ones issued an *anon* key (a JWT). Both are
+ * accepted, publishable first, because the anon key is the legacy name. Either
+ * is safe in the browser: it only grants what row-level security allows.
  */
-export const SUPABASE_ANON_KEY =
-  process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"] ??
+export const SUPABASE_PUBLISHABLE_KEY =
   process.env["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"] ??
+  process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"] ??
   "";
 
 export function isSupabaseConfigured(): boolean {
-  return SUPABASE_URL !== "" && SUPABASE_ANON_KEY !== "";
+  return SUPABASE_URL !== "" && SUPABASE_PUBLISHABLE_KEY !== "";
 }
 
 /** Shown wherever auth would be, when it has not been set up. */
 export const SUPABASE_SETUP_HINT =
-  "Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in " +
+  "Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in " +
   "apps/web/.env.local (or in the Vercel project's environment variables) " +
   "to enable accounts.";

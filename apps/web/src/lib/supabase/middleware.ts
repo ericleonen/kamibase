@@ -1,6 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { isSupabaseConfigured, SUPABASE_ANON_KEY, SUPABASE_URL } from "./config";
+import {
+  isSupabaseConfigured,
+  SUPABASE_PUBLISHABLE_KEY,
+  SUPABASE_URL,
+} from "./config";
 
 /**
  * Refresh the auth session on every request.
@@ -15,7 +19,7 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
 
   if (!isSupabaseConfigured()) return response;
 
-  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  const supabase = createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     cookies: {
       getAll() {
         return request.cookies.getAll();

@@ -59,38 +59,41 @@ describe("isSupabaseConfigured", () => {
     expect(keyOnly.isSupabaseConfigured()).toBe(false);
   });
 
-  it("is true with a URL and an anon key", async () => {
-    const config = await loadConfig({
-      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon-key",
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: undefined,
-    });
-    expect(config.isSupabaseConfigured()).toBe(true);
-  });
-
-  it("accepts the newer publishable-key name too", async () => {
+  it("is true with a URL and a publishable key", async () => {
     const config = await loadConfig({
       NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
       NEXT_PUBLIC_SUPABASE_ANON_KEY: undefined,
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_abc",
     });
     expect(config.isSupabaseConfigured()).toBe(true);
-    expect(config.SUPABASE_ANON_KEY).toBe("sb_publishable_abc");
+    expect(config.SUPABASE_PUBLISHABLE_KEY).toBe("sb_publishable_abc");
   });
 
-  it("prefers the anon key when both are set", async () => {
+  it("still accepts the legacy anon-key name", async () => {
+    const config = await loadConfig({
+      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon-key",
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: undefined,
+    });
+    expect(config.isSupabaseConfigured()).toBe(true);
+    expect(config.SUPABASE_PUBLISHABLE_KEY).toBe("anon-key");
+  });
+
+  it("prefers the publishable key when both are set", async () => {
     const config = await loadConfig({
       NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
       NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon-key",
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_abc",
     });
-    expect(config.SUPABASE_ANON_KEY).toBe("anon-key");
+    expect(config.SUPABASE_PUBLISHABLE_KEY).toBe("sb_publishable_abc");
   });
 
   it("names both variables in the setup hint, so the UI can just print it", async () => {
     const config = await loadConfig({});
     expect(config.SUPABASE_SETUP_HINT).toContain("NEXT_PUBLIC_SUPABASE_URL");
-    expect(config.SUPABASE_SETUP_HINT).toContain("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+    expect(config.SUPABASE_SETUP_HINT).toContain(
+      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+    );
   });
 });
 
