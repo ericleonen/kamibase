@@ -32,18 +32,59 @@ publishable one is absent.
    three environments (Production, Preview, Development), then redeploy.
    `NEXT_PUBLIC_` variables are inlined at **build** time, so an existing
    deployment will not pick them up until it rebuilds.
-5. **Authentication → URL Configuration** in Supabase:
-   - *Site URL*: your deployed URL (e.g. `https://kamibase.vercel.app`)
-   - *Redirect URLs*: add `https://YOUR-DEPLOY/auth/callback` and
-     `http://localhost:3000/auth/callback`
-
-   Without this, confirmation links bounce users to the wrong place.
-6. Optional: set `NEXT_PUBLIC_SITE_URL` to your deployed URL so confirmation
-   emails link back to the right origin even behind a proxy.
+5. **Authentication → URL Configuration** in Supabase. This step is the one
+   everybody skips, and skipping it is why confirmation emails point at
+   localhost. See the next section.
 
 By default Supabase requires email confirmation, so a new account cannot log in
 until the link is clicked. To skip that while demoing, turn off
 **Authentication → Sign In / Providers → Email → Confirm email**.
+
+## Confirmation emails that point at localhost
+
+A brand new Supabase project has its *Site URL* set to `http://localhost:3000`,
+and it stays there until you change it. That single default causes almost every
+report of this.
+
+The app does send Supabase the right address. What it cannot do is make Supabase
+honour it: **Supabase substitutes the project's Site URL for any redirect target
+that is not on the allowlist, and does not report an error.** So an address that
+is correct but unlisted looks exactly like one that was never sent.
+
+Fix it in **Authentication → URL Configuration**:
+
+- *Site URL*: `https://kamibase-web.vercel.app` (your deployed URL, no trailing
+  slash). This is the fallback for everything, so it should be production.
+- *Redirect URLs*: add both, wildcards included:
+
+  ```
+  https://kamibase-web.vercel.app/**
+  http://localhost:3000/**
+  ```
+
+  The `/**` matters. Without it, `…/auth/callback?next=/feed` is not a match and
+  you are back to the Site URL.
+
+Emails already sent keep their old link. Send yourself a fresh one to test.
+
+If you deploy previews and want their confirmations to come back to the preview
+rather than to production, add `https://*-your-team.vercel.app/**` as well.
+
+### Which address the app sends
+
+`src/lib/site-url.ts`, in order:
+
+1. `NEXT_PUBLIC_SITE_URL`, if you set it. Needed for a custom domain.
+2. On a Vercel **production** deployment, the project's production domain, which
+   Vercel exposes as a system variable. So production links point at
+   `kamibase-web.vercel.app` rather than at whichever deployment-specific
+   hostname the request arrived on, and they still work after the next deploy.
+3. Otherwise the request's own host, which is right for previews and for
+   `localhost` in development.
+
+You should not need `NEXT_PUBLIC_SITE_URL` on a plain Vercel setup. Set it if
+you move to a custom domain, host somewhere else, or see a link you cannot
+explain.
 
 ## Safe to expose, and what is not
 

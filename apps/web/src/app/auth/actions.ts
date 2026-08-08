@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { requestSiteUrl } from "@/lib/site-url";
 import { SUPABASE_SETUP_HINT } from "@/lib/supabase/config";
 
 export interface AuthFormState {
@@ -35,14 +36,16 @@ function safeNext(raw: string): string {
   return raw;
 }
 
-/** Where Supabase should send the user back to after a confirmation email. */
+/**
+ * Where Supabase should send the user back to after a confirmation email.
+ *
+ * This has to be an origin somebody can click in their inbox, so it must not be
+ * `localhost` on a deployed site. See `@/lib/site-url` for how it is chosen, and
+ * note that Supabase substitutes the project's Site URL for any redirect target
+ * that is not on its allowlist rather than reporting an error.
+ */
 async function siteOrigin(): Promise<string> {
-  const configured = process.env["NEXT_PUBLIC_SITE_URL"];
-  if (configured) return configured.replace(/\/$/, "");
-  const headerList = await headers();
-  const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
-  const protocol = headerList.get("x-forwarded-proto") ?? "https";
-  return host ? `${protocol}://${host}` : "http://localhost:3000";
+  return requestSiteUrl(await headers());
 }
 
 export async function signIn(
