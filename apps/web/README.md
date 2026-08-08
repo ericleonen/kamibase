@@ -56,8 +56,56 @@ changes; the geometry is never distorted.
 | `/explore` | Every pattern, grouped by technique |
 | `/p/:id` | Pattern page: viewer, metadata, validation badge, downloads |
 | `/p/:id/simulate` | Full-screen 3D fold |
+| `/edit` | The editor, on a fresh square of paper |
+| `/p/:id/edit` | The editor, opened on a working copy of a pattern |
 | `/p/:id/download/:format` | `.kami` · `.fold` · `.cp` · `.svg` |
 | `/p/:id/thumbnail` | SVG thumbnail, straight from the core renderer |
+
+## The editor
+
+DESIGN.md §4, at the bar the design sets: "fix a converted file and make a
+Miura-ori," not "design a competition-level insect." A line tool, an eraser,
+assignment painting, grid snapping, undo/redo, live validation and export —
+and deliberately no polygon tool, no symmetry engine and no layer ordering.
+
+Two ways in, per what it is for:
+
+- **`/edit`** — the **+ New** button in the header. A fresh square of paper.
+- **`/p/:id/edit`** — **Open in the editor** on any pattern page. The seeded
+  library is read-only, so this opens a *working copy*: draw on it, check it,
+  export it. The original is untouched, which is also the honest behaviour for
+  someone else's design. Saving back needs the accounts and storage of Phase 4.
+
+Neither needs an account (§8.4).
+
+**Every check on screen is `@kamibase/core` running in the browser** — the same
+planarize, the same §2.4 rules, the same Maekawa and Kawasaki the server
+applies on ingest. That is §9's argument made concrete: the editor's rules and
+the server's rules cannot drift, because they are one implementation. Draw two
+crossing creases and the crossing becomes a vertex; leave one dangling and it
+is a warning; build a degree-8 vertex with four mountains and four valleys and
+a red ring appears on it with the reason in its tooltip.
+
+The document is a flat list of segments, not a vertex-indexed graph. §4 asks
+for "immutable geometry snapshots with structural sharing → free undo/redo",
+and a segment list gives exactly that: every edit returns a new array, undo is
+keeping the old one, and the graph is derived through `graphFromSegments` —
+the same function the parsers use.
+
+Mobile-first, and specifically:
+
+- One Pointer Events path for finger, stylus and mouse; two fingers pinch-zoom
+  in any tool.
+- The control panel is pinned to the bottom of the viewport on phones, where
+  thumbs are — and collapsed to two rows by default, because an expanded one
+  is tall enough to cover the canvas outright.
+- The canvas is bounded to the viewport height, so it never runs off the
+  bottom of a wide desktop window.
+
+Known limits: analysis pauses above 600 creases (crossing detection is O(n²)
+and would stall the canvas); autosave is localStorage rather than the IndexedDB
+§4 asks for, which is the right size of tool for one small document; and there
+is no repair panel with one-click fixes yet — defects are listed, not fixed.
 
 ## The pattern store
 
