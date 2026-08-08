@@ -1,12 +1,19 @@
 @import "tailwindcss";
 
 /*
- * Kamibase brand.
+ * Kamibase brand: yellow-amber on white.
  *
- * #F5CB5C is the primary — it carries buttons, focus rings, active chips and
- * the logo mark. It is a mid-tone yellow, so it fails contrast against white
- * as a text colour: anything sitting *on* the yellow uses --ink, and yellow is
- * never used for body text.
+ * #F5B72E is the primary — it carries buttons, active chips and the logo mark.
+ * It is a saturated amber, bright enough that only dark text survives on top
+ * of it (11.25:1 against --ink), and far too light to be legible *as* text on
+ * a pale page (1.8:1 on white). So the pair is split by job:
+ *
+ *   --brand         fills   — backgrounds, never text
+ *   --brand-strong  strokes — amber text, links, focus rings (4.8:1 on white)
+ *
+ * Using --brand where --brand-strong belongs is the easy mistake here; it
+ * looks fine to anyone with sharp eyes on a good monitor and is unreadable to
+ * everyone else.
  *
  * The crease colours (mountain red, valley blue, boundary black) are
  * deliberately NOT themed. They are the Origami Simulator convention and the
@@ -14,9 +21,9 @@
  * to match a brand would make our patterns misread everywhere else.
  */
 @theme {
-  --color-brand: #f5cb5c;
-  --color-brand-strong: #e0b23f;
-  --color-brand-soft: #fdf3d9;
+  --color-brand: #f5b72e;
+  --color-brand-strong: #9c6206;
+  --color-brand-soft: #fef4e0;
   --color-ink: #1b1a17;
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
@@ -24,45 +31,54 @@
 
 :root {
   color-scheme: light;
-  --brand: #f5cb5c;
-  --brand-strong: #e0b23f;
-  --brand-soft: #fdf3d9;
+  --brand: #f5b72e;
+  --brand-strong: #9c6206;
+  --brand-soft: #fef4e0;
   /*
-   * Text that sits *on* the brand yellow. Stays dark in both themes, because
-   * the yellow does not darken in dark mode — a light-on-yellow label would be
+   * Text that sits *on* the brand amber. Stays dark in both themes, because
+   * the amber does not darken in dark mode — a light-on-amber label would be
    * unreadable either way.
    */
   --ink: #1b1a17;
 
-  /* Off-white page, pure white cards — the Pinterest depth cue. */
-  --surface: #faf9f6;
+  /* White page, white cards; the depth cue is the border and shadow, not a
+   * tint. Neutral greys throughout, so the only colour on the page is amber. */
+  --surface: #ffffff;
   --surface-raised: #ffffff;
-  --surface-sunken: #f1efe9;
+  --surface-sunken: #f6f6f4;
 
-  --border: #e7e3d9;
-  --border-strong: #d5d0c2;
+  --border: #e6e5e1;
+  --border-strong: #d2d0ca;
 
   --text: #1b1a17;
-  --text-muted: #6f6961;
-  --text-faint: #9a938a;
+  --text-muted: #6b6862;
+  --text-faint: #97948d;
 
   --radius-card: 1rem;
-  --shadow-card: 0 1px 2px rgb(27 26 23 / 0.04);
-  --shadow-card-hover: 0 12px 28px -8px rgb(27 26 23 / 0.18);
+  /* Cards are white on a white page, so the shadow carries a hairline ring —
+   * without it the card edge disappears entirely in light mode. */
+  --shadow-card: 0 0 0 1px rgb(27 26 23 / 0.06), 0 1px 2px rgb(27 26 23 / 0.04);
+  --shadow-card-hover: 0 0 0 1px rgb(27 26 23 / 0.08), 0 12px 28px -8px rgb(27 26 23 / 0.18);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --surface: #16150f;
-    --surface-raised: #201e17;
-    --surface-sunken: #100f0a;
-    --border: #34301f;
-    --border-strong: #4a4530;
-    --text: #f7f4ea;
-    --text-muted: #ada58f;
-    --text-faint: #7d7666;
-    --brand-soft: #33290f;
+    --surface: #141310;
+    --surface-raised: #1e1c18;
+    --surface-sunken: #0e0d0b;
+    --border: #302c24;
+    --border-strong: #454036;
+    --text: #f7f5f0;
+    --text-muted: #a8a298;
+    --text-faint: #78736a;
+    /*
+     * On dark surfaces the light/dark roles swap: the deep amber that carried
+     * text on white is now invisible, so --brand-strong brightens past --brand
+     * rather than darkening below it.
+     */
+    --brand-strong: #ffcf5c;
+    --brand-soft: #2e2410;
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
     --shadow-card-hover: 0 12px 28px -8px rgb(0 0 0 / 0.6);
   }

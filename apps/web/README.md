@@ -31,9 +31,12 @@ Deploying: see [DEPLOYING.md](DEPLOYING.md). Accounts: see [AUTH.md](AUTH.md)
 
 ## Design
 
-`#F5CB5C` is the primary, on an off-white page with white cards. The feed is a
-Pinterest-style masonry: image-forward cards, chrome only on hover, a chip rail
-for techniques, and a search field in the sticky header.
+`#F5B72E` (yellow-amber) is the primary, on a white page with white cards. It
+fills backgrounds only; `--brand-strong` (`#9C6206`) is the text-grade amber for
+links and focus rings, because the primary itself is 1.8:1 on white. `/` is the
+landing page; the Pinterest-style masonry feed lives at `/explore` — image-
+forward cards, chrome only on hover, a chip rail for techniques, and a search
+field in the sticky header.
 
 Crease colours are **not** themed. Mountain red, valley blue and boundary black
 are the Origami Simulator convention and the de facto standard across the field
