@@ -1,7 +1,7 @@
 import type { CreaseGraph } from "../graph/types.js";
 import type { FoldDocument } from "../kami/schema.js";
 
-export const SOURCE_FORMATS = ["kami", "fold", "cp", "opx"] as const;
+export const SOURCE_FORMATS = ["kami", "fold", "cp", "opx", "svg"] as const;
 
 export type SourceFormat = (typeof SOURCE_FORMATS)[number];
 
@@ -29,4 +29,10 @@ export interface ParsedPattern {
   readonly metadata: ParsedMetadata;
   /** Recoverable problems: unknown line types, dropped duplicates, and so on. */
   readonly warnings: string[];
+  /**
+   * 0-1 confidence in the assignments (DESIGN.md §3.4), for formats that had
+   * to infer them. Absent when the file states them outright, which is every
+   * format but SVG: a `.cp` line type is a fact, a stroke colour is evidence.
+   */
+  readonly confidence?: number;
 }

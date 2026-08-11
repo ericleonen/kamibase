@@ -17,13 +17,16 @@ Headless, dependency-light, no UI. Phase 0 of the build order in §10.
 | Validator | §2.4: a typed defect list, never an exception |
 | Grading | §2.6: L0 Parsed / L1 Clean / L2 Simulatable / L3 Verified |
 | Flat-foldability | Maekawa, Kawasaki and Big-Little-Big at every interior vertex |
-| Parsers | `.fold`, `.kami`, `.cp`, `.opx` |
+| Parsers | `.fold`, `.kami`, `.cp`, `.opx`, `.svg` |
 | Topology | planarization (split crossings) and planar face-finding |
 | Exporter | `.fold`, as a key-filter over `.kami` |
 | Renderer | CP → SVG in the Origami Simulator palette (§3.3) |
 
-Not here, deliberately: the SVG/raster **converter** (§3.3), the simulator
-(§5), and anything with a DOM.
+Not here, deliberately: the raster and photo pipelines (§3.3), the vision-model
+fallback for odd SVG palettes, the simulator (§5), and anything with a DOM. The
+SVG converter *is* here, minus the network: `parseSvg` classifies by colour,
+layer name and stroke style, and exposes the style table a model or a person
+would correct through.
 
 ## Install
 
@@ -54,6 +57,26 @@ normalizes to `[0,1]²`, resolves crossings into vertices, computes
 the result. It does **not** snap to an inferred grid or repair assignments.
 Those are converter concerns, and doing them silently would make the L1 grade
 mean "we guessed and it worked out".
+
+## Reading an SVG
+
+An SVG does not state its assignments, it implies them, so `parseSvg` reports
+what it read them from and how sure it is. The style table is the review UI
+(§3.4) and the hook for the vision-model fallback (§3.3): correct a row, pass
+the map back, and the file is read again.
+
+```ts
+import { parseSvg } from "@kamibase/core";
+
+const parsed = parseSvg(await file.text());
+parsed.confidence;   // 0.93, length-weighted over the creases
+parsed.styles;       // [{ key: "#e8112d|solid|layer 2", stroke: "#e8112d",
+                     //    assignment: "M", confidence: 0.9, method: "color",
+                     //    reason: "…is within 3° of the M palette colour", … }]
+
+// A person (or a model) says the reddish strokes really are mountains:
+parseSvg(text, { assignments: { "#e8112d|solid|layer 2": "M" } });
+```
 
 Every piece is usable on its own:
 
@@ -87,9 +110,10 @@ dangling-edge               §2.4     isolated-vertex             §2.4  (warnin
 ```
 
 Parsers are the exception to "never throw": `ParseError` means "there is no
-crease pattern here": unparseable JSON, XML that isn't an ORIPA file, a `.cp`
-with no usable lines. Everything recoverable comes back as a warning on the
-parse result or as a defect from the validator.
+crease pattern here": unparseable JSON, XML that isn't an ORIPA file or an SVG,
+a `.cp` with no usable lines, an SVG with no stroked geometry. Everything
+recoverable comes back as a warning on the parse result or as a defect from the
+validator.
 
 ## Interpretation notes
 
@@ -120,6 +144,17 @@ Places where DESIGN.md left room, and what this package does:
 - **Multi-loop boundaries.** §2.4.4 rejects "a hole in the border … unless
   `frame_attributes` declares it intentional"; the attribute we look for is
   `"multiBoundary"`.
+- **SVG has no standard** (§3.3), so `parseSvg` runs the strategies in the
+  order the design gives, with one refinement: black is treated as the default
+  ink rather than as a claim, so a layer name or a dash pattern outranks it. A
+  chromatic stroke outranks everything. A style no strategy can read becomes
+  `U` at confidence 0, never a guessed `M` or `V`.
+- **SVG confidence** is the length-weighted mean over creases, which puts a
+  file with a certain paper edge and guessed creases in the middle of the §3.4
+  range, where a review is exactly what it needs.
+- **Cyan in an SVG** reads as `J`, at a lower score than the six standard
+  colours: no other tool means anything by it, but Kamibase's own renderer
+  emits it, so reading it back is a round trip rather than a guess.
 - **`.cp` line types.** DESIGN.md §3.1 lists 1/2/3. ORIPA and Oriedita also
   write 0 (undeclared) and 4 (auxiliary), which we read as `U` and `F`.
   Anything else becomes `U` with a warning.

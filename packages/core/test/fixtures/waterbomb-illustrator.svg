@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 27.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!--
+  A waterbomb base as Illustrator writes one: the colours live in a <style>
+  block of class rules, there is a white background rectangle with no stroke,
+  the creases sit inside transformed groups, and the geometry is spread over
+  <line>, <polyline> and <path>. Same eight creases as waterbomb.cp.
+-->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+	 viewBox="0 0 400 400" style="enable-background:new 0 0 400 400;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;stroke:#000000;stroke-width:4;}
+	.st1{fill:none;stroke:#FF0000;stroke-width:2;}
+	.st2{fill:none;stroke:#0000FF;stroke-width:2;}
+	.st3{fill:#FFFFFF;}
+	@media print{.st1{stroke-width:1;}}
+</style>
+<rect class="st3" width="400" height="400"/>
+<rect class="st0" x="0" y="0" width="400" height="400"/>
+<g id="mountains" transform="scale(2)">
+	<line class="st1" x1="0" y1="100" x2="200" y2="100"/>
+	<line class="st1" x1="100" y1="0" x2="100" y2="200"/>
+</g>
+<g id="valleys">
+	<polyline class="st2" points="0,0 400,400"/>
+	<path class="st2" d="M400,0L0,400"/>
+</g>
+</svg>

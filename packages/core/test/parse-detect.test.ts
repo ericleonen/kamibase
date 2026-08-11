@@ -33,8 +33,13 @@ describe("detectFormat", () => {
     expect(detectFormat("", "empty.cp")).toBe("cp");
   });
 
-  it("returns null for XML that is not ORIPA", () => {
-    expect(detectFormat('<svg xmlns="http://www.w3.org/2000/svg"></svg>')).toBeNull();
+  it("recognizes SVG by its root element", () => {
+    expect(detectFormat('<svg xmlns="http://www.w3.org/2000/svg"></svg>')).toBe("svg");
+    expect(detectFormat(fixture("square-x.svg"))).toBe("svg");
+  });
+
+  it("returns null for XML that is neither ORIPA nor SVG", () => {
+    expect(detectFormat("<html><body>a page about origami</body></html>")).toBeNull();
   });
 
   it("returns null for prose", () => {
@@ -52,6 +57,7 @@ describe("parse", () => {
     expect(parse(fixture("square-x.opx")).format).toBe("opx");
     expect(parse(fixture("square-x.fold")).format).toBe("fold");
     expect(parse(fixture("square-spokes.kami")).format).toBe("kami");
+    expect(parse(fixture("square-x.svg")).format).toBe("svg");
   });
 
   it("can be forced to a format", () => {

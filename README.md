@@ -6,9 +6,10 @@
 > file format spec, and sitemap. What is built: [`@kamibase/core`](packages/core),
 > the shared geometry, schema, validator and parsers; and
 > [`@kamibase/web`](apps/web), with pattern pages, the CP viewer, the embedded
-> 3D simulator, downloads in every format, the crease pattern editor, and
-> accounts with profiles, folds, comments and following. Upload and conversion
-> are not built yet, so the patterns are a hand-seeded library.
+> 3D simulator, downloads in every format, the crease pattern editor, the
+> in-browser converter at `/upload`, and accounts with profiles, folds, comments
+> and following. Publishing a converted pattern to the library still needs the
+> upload backend, so the library itself is hand-seeded.
 
 ---
 
@@ -117,7 +118,7 @@ workers, so the editor's rules and the server's rules can never drift apart.
 | ORIPA | `.opx` | **Implemented** | XML → segment list |
 | Lang/ORIPA CP | `.cp` | **Implemented** | `<type> <x1> <y1> <x2> <y2>`; 1=contour, 2=mountain, 3=valley |
 | Oriedita | `.ori` | Planned | |
-| SVG | `.svg` | Planned | Color/layer heuristics + LLM fallback for odd palettes |
+| SVG | `.svg` | **Implemented** | Color/layer/dash heuristics; LLM fallback for odd palettes is planned |
 | PDF / DXF | | Planned | Normalized into the SVG pipeline |
 | Raster image | `.png` `.jpg` | Experimental | Vision model + line detection; human review required |
 | Photo of paper | `.jpg` | Experimental | Dewarp, enhance, then the raster pipeline |
@@ -133,9 +134,12 @@ can't be published until reviewed in the editor.
 
 ## Roadmap
 
-- [x] **Phase 0.** [`@kamibase/core`](packages/core): graph, schema, validator, canonicalizer, `.fold`/`.cp`/`.opx` parsers, SVG renderer
+- [x] **Phase 0.** [`@kamibase/core`](packages/core): graph, schema, validator, canonicalizer, `.fold`/`.cp`/`.opx`/`.svg` parsers, SVG renderer
 - [x] **Phase 1.** [`@kamibase/web`](apps/web): pattern pages, CP viewer, embedded simulator, downloads in every format (13 seeded patterns so far, not ~100)
-- [ ] **Phase 2.** Converter, upload funnel, review flow
+- [ ] **Phase 2, half done.** The converter and its review flow are built: SVG
+  import with a style table, confidence scoring, and the §3.4 publishing gate,
+  all running client-side at `/upload`. Still to come: the upload backend, the
+  job queue, and actually publishing to the library
 - [x] **Phase 3.** Editor: line tool, eraser, assignment painting, grid snapping, live validation
 - [x] **Phase 4.** Social layer: accounts, profiles, folds, comments, following, feed
 - [ ] **Phase 5.** Semantic, visual, and folded-form search
