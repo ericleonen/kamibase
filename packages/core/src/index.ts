@@ -83,6 +83,22 @@ export { parseFold, type ParseFoldOptions } from "./parse/fold.js";
 export { parseCp, toCp, CP_LINE_TYPES, type ParseCpOptions } from "./parse/cp.js";
 export { parseOpx, type ParseOpxOptions } from "./parse/opx.js";
 export {
+  parseSvg,
+  type ParsedSvg,
+  type ParseSvgOptions,
+  type SvgStyleSummary,
+} from "./parse/svg/index.js";
+export {
+  classifyColor,
+  classifyLayer,
+  classifyStyle,
+  styleKey,
+  type Classification,
+  type ClassifyMethod,
+  type ClassifyOptions,
+  type StyleFacts,
+} from "./parse/svg/classify.js";
+export {
   decodeXmlDecoder,
   javaNumber,
   CLASS_KEY,

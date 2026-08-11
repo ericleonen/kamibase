@@ -2,6 +2,7 @@ import { ParseError } from "./errors.js";
 import { parseCp, type ParseCpOptions } from "./cp.js";
 import { parseFold, type ParseFoldOptions } from "./fold.js";
 import { parseOpx, type ParseOpxOptions } from "./opx.js";
+import { parseSvg, type ParseSvgOptions } from "./svg/index.js";
 import type { ParsedPattern, SourceFormat } from "./types.js";
 
 const CP_LINE = /^\s*-?\d+(?:\.\d+)?(?:[\s,]+[-+0-9.eE]+){4}\s*$/;
@@ -20,13 +21,26 @@ export function detectFormat(text: string, filename?: string): SourceFormat | nu
     return /"kami:[a-zA-Z]/.test(body) ? "kami" : "fold";
   }
   if (body.startsWith("<")) {
-    return /<java[\s>]/.test(body) || /XMLDecoder/.test(body) ? "opx" : null;
+    if (/<java[\s>]/.test(body) || /XMLDecoder/.test(body)) return "opx";
+    // The root element, not merely the string "svg": an ORIPA file that names
+    // an SVG in its metadata is still an ORIPA file.
+    return /<(?:[a-zA-Z0-9_-]+:)?svg[\s>]/.test(body) ? "svg" : null;
   }
 
   const extension = filename?.toLowerCase().match(/\.([a-z0-9]+)$/)?.[1];
-  if (extension === "cp" || extension === "opx" || extension === "fold") {
-    if (extension === "cp") return "cp";
-    return extension === "opx" ? "opx" : "fold";
+  switch (extension) {
+    case "cp":
+      return "cp";
+    case "opx":
+      return "opx";
+    case "fold":
+      return "fold";
+    case "kami":
+      return "kami";
+    case "svg":
+      return "svg";
+    default:
+      break;
   }
 
   const lines = body
@@ -38,7 +52,11 @@ export function detectFormat(text: string, filename?: string): SourceFormat | nu
   return null;
 }
 
-export interface ParseOptions extends ParseFoldOptions, ParseCpOptions, ParseOpxOptions {
+export interface ParseOptions
+  extends ParseFoldOptions,
+    ParseCpOptions,
+    ParseOpxOptions,
+    ParseSvgOptions {
   /** Skip detection and parse as this format. */
   readonly format?: SourceFormat;
   /** Filename, used as a detection hint. */
@@ -56,10 +74,12 @@ export function parse(text: string, options: ParseOptions = {}): ParsedPattern {
       return parseCp(text, options);
     case "opx":
       return parseOpx(text, options);
+    case "svg":
+      return parseSvg(text, options);
     default:
       throw new ParseError(
         "unknown",
-        "could not detect the file format; supported inputs are .fold, .kami, .cp and .opx",
+        "could not detect the file format; supported inputs are .fold, .kami, .cp, .opx and .svg",
       );
   }
 }
