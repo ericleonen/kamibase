@@ -59,7 +59,9 @@ changes; the geometry is never distorted.
 | `/p/:id/simulate` | Full-screen 3D fold |
 | `/p/:id/folds` | Every fold of one pattern |
 | `/p/:id/fold` | Post your fold of it |
+| `/upload` | Convert a `.fold` · `.kami` · `.cp` · `.opx` · `.svg` file, in the browser |
 | `/edit` | The editor, on a fresh square of paper |
+| `/edit/import` | The editor, opened on the pattern `/upload` just converted |
 | `/p/:id/edit` | The editor, opened on a working copy of a pattern |
 | `/p/:id/download/:format` | `.kami` · `.fold` · `.cp` · `.svg` |
 | `/p/:id/thumbnail` | SVG thumbnail, straight from the core renderer |
@@ -75,9 +77,11 @@ Miura-ori," not "design a competition-level insect." A line tool, an eraser,
 assignment painting, grid snapping, undo/redo, live validation and export.
 Deliberately no polygon tool, no symmetry engine and no layer ordering.
 
-Two ways in, one for each thing people actually want to do:
+Three ways in, one for each thing people actually want to do:
 
-- **`/edit`**, the **+ New** button in the header. A fresh square of paper.
+- **`/edit`**, from **+ New → Draw from scratch**. A fresh square of paper.
+- **`/edit/import`**, from **Open in the editor** on `/upload`. The pattern a
+  file was just converted into, ready to be checked and repaired.
 - **`/p/:id/edit`**, **Open in the editor** on any pattern page. The seeded
   library is read-only, so this opens a *working copy*: draw on it, check it,
   export it. The original is untouched, which is also the honest behaviour for
@@ -113,6 +117,29 @@ Known limits: analysis pauses above 600 creases (crossing detection is O(n²)
 and would stall the canvas); autosave is localStorage rather than the IndexedDB
 §4 asks for, which is the right size of tool for one small document; and there
 is no repair panel with one-click fixes yet, so defects are listed, not fixed.
+
+## The converter
+
+`/upload` is the front of the funnel in DESIGN.md §8.2: drop a `.fold`,
+`.kami`, `.cp`, `.opx` or `.svg` file and get back a validated `.kami`.
+
+**It runs in the browser.** No upload, no job queue, no waiting, and the grade
+on screen is the grade the server would give the same file, because it is the
+same `@kamibase/core` code (§9). Publishing to the library is the part that
+still needs Phase 2's backend; converting, checking, editing and downloading
+all work today, with no account.
+
+SVG gets a **style table**: one row per distinct stroke colour, dash style and
+layer the file draws in, with the assignment it was read as, the confidence and
+the reason. Change a row and the file is read again. That is the review step of
+§3.3 and §3.4 made concrete, and it is why the converter never has to guess:
+a style it cannot identify becomes `U`, and a person answers four questions
+rather than four hundred.
+
+Conversions are gated on the §3.4 thresholds: ≥0.95 confidence is publishable,
+0.7–0.95 asks for a look, below that (or any structural defect) is blocked from
+publishing until it is repaired in the editor. Nothing about the gate is
+hidden: the reasons are listed next to the badge.
 
 ## The social layer
 

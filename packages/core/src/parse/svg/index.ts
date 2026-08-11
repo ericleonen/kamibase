@@ -51,7 +51,14 @@ export interface ParsedSvg extends ParsedPattern {
    * map back through `options.assignments` re-reads the file.
    */
   readonly styles: readonly SvgStyleSummary[];
-  /** Length-weighted mean confidence, in the sense of §3.4. */
+  /**
+   * Length-weighted mean confidence, in the sense of §3.4.
+   *
+   * Weighting by length rather than by crease count is what puts a file whose
+   * paper edge is certain and whose creases are guesswork in the middle of the
+   * range rather than at either end, which is where it belongs: a review is
+   * exactly what such a file needs.
+   */
   readonly confidence: number;
 }
 

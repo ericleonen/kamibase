@@ -228,14 +228,20 @@ export function classifyColor(hex: string): ColorClassification | null {
     // Near-white on a white page is either an invisible line or a highlight;
     // either way it is not a claim about the crease.
     if (v > 0.85) return null;
-    const confidence = v < 0.3 ? 0.9 : 0.6;
+    // Black is in the palette and means boundary. Grey is not, and reading it
+    // as one is a guess that has to score like a guess.
+    if (v < 0.08) {
+      return {
+        assignment: "B",
+        confidence: 0.95,
+        reason: `${hex} is black, the palette colour for B`,
+        achromatic: true,
+      };
+    }
     return {
       assignment: "B",
-      confidence,
-      reason:
-        v < 0.3
-          ? `${hex} is black, the boundary colour`
-          : `${hex} is grey; read as a boundary, but greys are not part of the palette`,
+      confidence: v < 0.35 ? 0.85 : 0.6,
+      reason: `${hex} is grey; read as a boundary, but grey is not part of the palette`,
       achromatic: true,
     };
   }
