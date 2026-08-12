@@ -1,19 +1,17 @@
 import type { Metadata } from "next";
-import { UploadConverter } from "@/components/upload/UploadConverter";
+import { ImportStudio } from "@/components/import/ImportStudio";
 
 export const metadata: Metadata = {
-  title: "Convert a crease pattern",
+  title: "Add a crease pattern",
   description:
-    "Turn a .fold, .cp, .opx or SVG crease pattern into a clean, validated .kami file, in your browser.",
+    "Convert a .fold, .cp, .opx or SVG, or photograph the creased paper itself. " +
+    "Everything runs in your browser.",
 };
 
 /**
- * The upload funnel's front door (DESIGN.md §8.2).
- *
- * No account required, and nothing leaves the browser: the conversion is
- * `@kamibase/core` running client-side. Publishing to the library is what
- * still needs Phase 2's backend.
+ * The one way in (DESIGN.md §8.2). Files and photographs are the same problem
+ * from the outside, so they share a page, a review panel and a handoff.
  */
-export default function UploadPage() {
-  return <UploadConverter />;
+export default function AddPatternPage() {
+  return <ImportStudio />;
 }

@@ -81,7 +81,6 @@ export function ShareFoldForm({
       <ImagePicker
         name="photo"
         label="Photo of your fold"
-        hint="One photo. It gets resized on your phone before it uploads."
         required
         maxEdge={FOLD_PHOTO_MAX_EDGE}
       />
@@ -116,7 +115,6 @@ export function ShareFoldForm({
           min={1}
           max={10}
           placeholder="6"
-          hint="1 to 10. Yours, not the designer's."
         />
       </div>
 

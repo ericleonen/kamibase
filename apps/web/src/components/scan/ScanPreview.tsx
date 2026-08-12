@@ -89,8 +89,14 @@ export function ScanPreview({
       ref={canvas}
       width={900}
       height={900}
-      className="w-full rounded-2xl"
-      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+      className="mx-auto w-full rounded-2xl"
+      style={{
+        background: "var(--surface)",
+        border: "1px solid var(--border)",
+        // The pattern is square, so an unbounded column makes it as tall as the
+        // page is wide and pushes every control below the fold.
+        maxWidth: "min(100%, 68vh)",
+      }}
       role="img"
       aria-label={`${report.creases.length} creases detected, drawn over the flattened photograph.`}
     />

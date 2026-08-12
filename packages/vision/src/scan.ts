@@ -167,8 +167,7 @@ export function scanCreasePattern(image: GrayImage, options: ScanOptions = {}): 
    */
   if (cleaned.length === 0) {
     notes.push(
-      "No creases were found. Try a flatter light across the paper, or check " +
-        "that the corners are on the sheet.",
+      "No creases found. Try light from one side, or check the corners.",
     );
   } else if (grid) {
     notes.push(`Snapped to a ${grid} by ${grid} grid.`);
@@ -220,30 +219,25 @@ export function scanCreasePattern(image: GrayImage, options: ScanOptions = {}): 
   });
 
   if (assignment.oddVertices.length > 0) {
+    const n = assignment.oddVertices.length;
     notes.push(
-      `${assignment.oddVertices.length} vertex/vertices have an odd number of ` +
-        "creases, which no flat-foldable pattern does. Something was missed or " +
-        "detected twice near them.",
+      `${n} vertex${n === 1 ? "" : "es"} with an odd number of creases: ` +
+        "something was missed or found twice there.",
     );
   }
   if (assignment.ambiguous > 0) {
     notes.push(
-      `${assignment.ambiguous} crease(s) could go either way without breaking ` +
-        "Maekawa. They are assigned, but shown as uncertain: check those first.",
+      `${assignment.ambiguous} creases could go either way. Shown dashed.`,
     );
   }
-  if (!assignment.consistent && assignment.total > 0) {
+  // Only worth saying when it actually fails somewhere. Reporting "8 of 8"
+  // alongside a warning reads as a contradiction.
+  if (assignment.satisfied < assignment.total) {
     notes.push(
-      `Maekawa holds at ${assignment.satisfied} of ${assignment.total} interior ` +
-        "vertices. Where it does not, the creases around them are probably " +
-        "misplaced rather than mislabelled.",
+      `Maekawa holds at ${assignment.satisfied} of ${assignment.total} vertices.`,
     );
   }
-  notes.push(
-    "Mountains and valleys are inferred from the geometry, and the whole " +
-      "pattern may be inside out. Check one crease you remember and invert if " +
-      "it is backwards.",
-  );
+  notes.push("Mountains and valleys are inferred. The pattern may be inside out.");
 
   return {
     creases,

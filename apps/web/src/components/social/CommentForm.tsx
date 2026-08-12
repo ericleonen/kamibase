@@ -51,7 +51,7 @@ export function CommentForm({
           rows={3}
           required
           maxLength={COMMENT_MAX}
-          placeholder={placeholder ?? "Ask a question, or say how yours went…"}
+          placeholder={placeholder ?? "Add a comment…"}
           className="w-full rounded-xl px-3 py-2 text-sm"
           style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
         />

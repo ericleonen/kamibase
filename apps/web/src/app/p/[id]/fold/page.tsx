@@ -55,8 +55,7 @@ export default async function ShareFoldPage({
         </Link>
         <h1 className="text-2xl font-bold tracking-tight">Share your fold</h1>
         <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          A photo is all it takes. Everything else is optional, and a first
-          attempt is as welcome here as a clean one.
+          A photo is all it takes.
         </p>
       </header>
 

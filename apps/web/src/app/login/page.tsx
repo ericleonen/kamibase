@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/AuthForm";
 import { signIn } from "@/app/auth/actions";
-import { isSupabaseConfigured, SUPABASE_SETUP_HINT } from "@/lib/supabase/config";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { getCurrentUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Log in" };
@@ -40,7 +40,6 @@ export default async function LoginPage({
         mode="login"
         action={signIn}
         configured={isSupabaseConfigured()}
-        setupHint={SUPABASE_SETUP_HINT}
         {...(destination === undefined ? {} : { next: destination })}
       />
     </div>

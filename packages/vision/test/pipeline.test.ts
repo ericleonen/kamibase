@@ -146,7 +146,7 @@ describe("scanCreasePattern", () => {
     const result = scanCreasePattern(blank, { workingSize: 400 });
 
     expect(result.creases.every((crease) => crease.assignment === "B")).toBe(true);
-    expect(result.notes.join(" ")).toMatch(/No creases were found/i);
+    expect(result.notes.join(" ")).toMatch(/No creases found/i);
   });
 
   it("is deterministic, so the same photo twice gives the same answer", () => {

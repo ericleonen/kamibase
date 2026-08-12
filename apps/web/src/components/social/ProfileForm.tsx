@@ -25,7 +25,6 @@ export function ProfileForm({ profile }: { readonly profile: Profile }) {
       <ImagePicker
         name="avatar"
         label="Profile picture"
-        hint="Square works best. Leave it empty to keep the one you have."
         maxEdge={AVATAR_MAX_EDGE}
         shape="circle"
         {...(profile.avatarUrl === undefined ? {} : { currentUrl: profile.avatarUrl })}
@@ -64,10 +63,6 @@ export function ProfileForm({ profile }: { readonly profile: Profile }) {
             style={fieldStyle}
           />
         </div>
-        <span className="mt-1 block text-xs" style={{ color: "var(--text-faint)" }}>
-          Lowercase letters, numbers and underscores. Changing it changes your
-          profile link, and the old one stops working.
-        </span>
       </label>
 
       <label className="block">

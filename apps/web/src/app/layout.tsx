@@ -33,8 +33,10 @@ export default function RootLayout({
           style={{ color: "var(--text-muted)" }}
         >
           <p className="max-w-3xl">
-            Patterns are stored as <code className="font-mono">.kami</code>, a
-            strict profile of{" "}
+            <Link href="/explore" className="underline">
+              Explore
+            </Link>{" "}
+            ·{" "}
             <a
               className="underline"
               href="https://github.com/edemaine/fold"
@@ -42,8 +44,8 @@ export default function RootLayout({
               rel="noreferrer noopener"
             >
               FOLD
-            </a>
-            . 3D folding by{" "}
+            </a>{" "}
+            ·{" "}
             <a
               className="underline"
               href="https://origamisimulator.org/"
@@ -52,13 +54,7 @@ export default function RootLayout({
             >
               Origami Simulator
             </a>{" "}
-            (MIT), by Amanda Ghassaei, Erik Demaine and Neil Gershenfeld.
-            Crease colours follow the Origami Simulator convention.
-          </p>
-          <p className="mt-3">
-            <Link href="/explore" className="underline">
-              Explore
-            </Link>
+            (MIT), by Amanda Ghassaei, Erik Demaine and Neil Gershenfeld
           </p>
         </footer>
       </body>

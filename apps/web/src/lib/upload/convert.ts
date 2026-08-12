@@ -1,6 +1,7 @@
 import {
   ParseError,
   detectFormat,
+  graphFromSegments,
   ingest,
   parse,
   parseSvg,
@@ -8,12 +9,26 @@ import {
   type EdgeAssignment,
   type GradeResult,
   type KamiDocument,
+  type Segment,
   type SourceFormat,
   type SvgStyleSummary,
 } from "@kamibase/core";
 
-/** What the file picker offers, and what the drop zone accepts. */
-export const UPLOAD_ACCEPT = ".kami,.fold,.cp,.opx,.svg";
+/** The file formats that are parsed as text. */
+export const FILE_ACCEPT = ".kami,.fold,.cp,.opx,.svg";
+
+/** Everything the one drop zone takes: files, photographs and video. */
+export const UPLOAD_ACCEPT = `${FILE_ACCEPT},image/*,video/*`;
+
+/**
+ * A photograph is an input format like any other.
+ *
+ * Keeping it in this union is what lets one page, one result panel and one
+ * handoff serve both. A `.cp` states its assignments and a photograph has them
+ * inferred, but by the time either reaches the review step it is a graph with a
+ * confidence attached, and everything downstream treats it that way.
+ */
+export type ImportFormat = SourceFormat | "photo";
 
 /**
  * Refuse to read anything larger. The whole conversion runs in the browser, so
@@ -32,7 +47,7 @@ export type ReviewLevel = "publishable" | "review" | "blocked";
 
 export interface Conversion {
   readonly ok: true;
-  readonly format: SourceFormat;
+  readonly format: ImportFormat;
   /** Slug for downloads and the editor's autosave key. */
   readonly slug: string;
   readonly title: string;
@@ -86,7 +101,7 @@ export function convertUpload(
     return {
       ok: false,
       message: `Kamibase could not tell what kind of file ${filename || "this"} is.`,
-      hint: `Supported inputs are ${SUPPORTED}. Photos and scans are not converted yet.`,
+      hint: `Supported inputs are ${SUPPORTED}, or a photo of the paper itself.`,
     };
   }
 
@@ -156,6 +171,66 @@ export function convertUpload(
   }
 }
 
+/**
+ * The same `Conversion`, built from what the scanner found.
+ *
+ * From here on a photograph is indistinguishable from a converted file: the
+ * creases go through `graphFromSegments` and `ingest`, which is exactly what
+ * every other format does, and come out with a document, a grade and a
+ * confidence. That is what makes one review panel enough for both.
+ */
+export function conversionFromScan(
+  creases: readonly Segment[],
+  confidence: number,
+  notes: readonly string[],
+  filename: string,
+): ConversionResult {
+  const title = titleFromFilename(filename);
+
+  try {
+    const built = graphFromSegments(creases);
+    const result = ingest(built.graph, {
+      metadata: {
+        title,
+        creator: "Kamibase 0.1 (converter: kamibase-web)",
+        extra: {
+          "kami:provenance": {
+            convertedFrom: {
+              format: "photo",
+              converter: "kamibase-web@0.1",
+              confidence: Math.round(confidence * 1000) / 1000,
+              reviewedByHuman: false,
+            },
+          },
+        },
+      },
+    });
+
+    const { review, reasons } = gate(confidence, result.grade);
+    return {
+      ok: true,
+      format: "photo",
+      slug: slugFromFilename(filename),
+      title,
+      document: result.document,
+      graph: result.graph,
+      grade: result.grade,
+      confidence,
+      review,
+      // The scanner's own notes are more specific than the gate's, and both are
+      // about the same thing, so they lead.
+      reasons: [...notes, ...reasons],
+      warnings: result.warnings,
+      styles: [],
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "The scan could not be read.",
+    };
+  }
+}
+
 /** Which of the §3.4 buckets a conversion lands in, and why. */
 function gate(
   confidence: number,
@@ -167,20 +242,14 @@ function gate(
   if (structural) {
     reasons.push(
       grade.level === "invalid"
-        ? "No usable geometry was found in the file."
-        : "The pattern has structural defects, so it cannot be published until it reaches L1.",
+        ? "No usable geometry."
+        : "Structural defects: not publishable until they are fixed.",
     );
   }
   if (confidence < CONFIDENCE_THRESHOLDS.review) {
-    reasons.push(
-      `Only ${percent(confidence)} of the creases were identified with confidence. ` +
-        "Check every assignment in the editor before publishing.",
-    );
+    reasons.push(`${percent(confidence)} confidence. Check every assignment.`);
   } else if (confidence < CONFIDENCE_THRESHOLDS.publishable) {
-    reasons.push(
-      `${percent(confidence)} confidence in the crease assignments. ` +
-        "Have a look at the ones the converter was unsure about.",
-    );
+    reasons.push(`${percent(confidence)} confidence in the assignments.`);
   }
 
   if (structural || confidence < CONFIDENCE_THRESHOLDS.review) {
