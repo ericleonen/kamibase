@@ -141,10 +141,11 @@ Conversions are gated on the §3.4 thresholds: ≥0.95 confidence is publishable
 publishing until it is repaired in the editor. Nothing about the gate is
 hidden: the reasons are listed next to the badge.
 
-## Scanning a photograph
+## Adding a pattern
 
-`/scan` takes a photo (or a video) of an unfolded creased sheet and gives back
-an editable crease pattern. It is the raster half of DESIGN.md §3.3 and the most
+`/upload` takes a file, a photo or a video and gives back an editable crease
+pattern. Files convert straight through; photographs stop once to confirm the
+paper's corners. It is the raster half of DESIGN.md §3.3 and the most
 technical thing here; the full argument is in [SCANNING.md](SCANNING.md).
 
 Everything runs in the browser, in a Web Worker with a main-thread fallback.

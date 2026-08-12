@@ -243,8 +243,7 @@ async function PatternFolds({
         <SocialNotice reason={folds.reason} message={folds.message} />
       ) : folds.data.length === 0 ? (
         <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          Nobody has posted a fold of this one yet. Yours would be the first,
-          and a first attempt counts.
+          No folds of this one yet. Yours would be the first.
         </p>
       ) : (
         <FoldGrid folds={folds.data} showPattern={false} />

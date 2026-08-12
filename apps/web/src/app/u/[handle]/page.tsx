@@ -158,11 +158,11 @@ export default async function ProfilePage({
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>
             {isSelf ? (
               <>
-                You have not posted a fold yet. Pick something from{" "}
+                No folds yet. Pick something from{" "}
                 <Link href="/explore" className="font-semibold underline">
                   the library
                 </Link>
-                , fold it, and share a photo.
+                .
               </>
             ) : (
               `${nameOf(profile)} has not posted a fold yet.`

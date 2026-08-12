@@ -48,7 +48,7 @@ export async function CommentThread({
         <SocialNotice reason={result.reason} message={result.message} />
       ) : result.data.length === 0 ? (
         <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          No comments yet. Say what worked and what did not.
+          No comments yet.
         </p>
       ) : (
         <ul className="space-y-4">

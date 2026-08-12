@@ -33,7 +33,6 @@ export default async function ProfileSettingsPage() {
       <header className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight">Your profile</h1>
         <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          This is what people see next to your folds and comments.
           {profile.ok && (
             <>
               {" "}

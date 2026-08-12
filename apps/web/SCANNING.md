@@ -1,4 +1,4 @@
-# Scanning a crease pattern from a photograph
+# Reading a crease pattern off a photograph
 
 Photograph an unfolded, creased sheet of paper and get an editable crease
 pattern. DESIGN.md §3.3 calls this "a research-grade problem" and treats it as
@@ -9,7 +9,7 @@ there is no API key anywhere in it.
 
 ## Using it
 
-`/scan`, or **New → Scan a photo**. Three steps:
+`/upload`, or **New** in the header. A photo takes three steps; a file takes one.
 
 1. **Pick a photo or a video.** A video is treated as a burst of stills rather
    than as footage: Kamibase samples nine frames, scores each one by the

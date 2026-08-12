@@ -1,8 +1,8 @@
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import { signOut } from "@/app/auth/actions";
 import { getCurrentProfile } from "@/lib/social";
 import { getCurrentUser } from "@/lib/supabase/server";
-import { NewMenu } from "./NewMenu";
 import { UserMenu } from "./UserMenu";
 
 /** The folded-square mark. Same geometry language as the patterns themselves. */
@@ -55,8 +55,17 @@ export async function SiteHeader({ query }: { readonly query?: string }) {
           Feed
         </Link>
 
-        {/* Upload a file, or draw one: the two entry points of §8.2. */}
-        <NewMenu />
+        {/* One way in: files, photographs and video all land on /upload. */}
+        <Link
+          href="/upload"
+          title="Add a crease pattern"
+          className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition hover:opacity-70"
+          style={{ border: "1px solid var(--border-strong)" }}
+        >
+          <Plus className="size-4" aria-hidden />
+          <span className="hidden sm:inline">New</span>
+          <span className="sr-only sm:hidden">Add a crease pattern</span>
+        </Link>
 
         {/* A plain GET form, so search works with JavaScript disabled. */}
         <form action="/explore" className="min-w-0 flex-1">

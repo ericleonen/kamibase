@@ -96,12 +96,7 @@ export default async function ExplorePage({
           className="rounded-2xl px-6 py-16 text-center"
           style={{ background: "var(--surface-raised)", border: "1px solid var(--border)" }}
         >
-          <p className="font-semibold">Nothing matches that yet.</p>
-          <p className="mx-auto mt-1 max-w-md text-sm" style={{ color: "var(--text-muted)" }}>
-            The library is 13 seeded patterns so far: traditional bases and
-            published tessellations. Search looks at titles, designers, tags and
-            techniques.
-          </p>
+          <p className="font-semibold">Nothing matches that.</p>
           <Link href="/explore" className="mt-4 inline-block text-sm font-semibold underline">
             Clear the search
           </Link>

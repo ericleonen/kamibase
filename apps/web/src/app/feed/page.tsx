@@ -79,8 +79,7 @@ export default async function FeedPage({
           <Link href="/login" className="font-semibold underline">
             Log in
           </Link>{" "}
-          to follow folders and get a feed of their work. This is everyone&rsquo;s,
-          newest first.
+          to follow folders. This is everyone&rsquo;s work, newest first.
         </p>
       )}
 
@@ -90,17 +89,17 @@ export default async function FeedPage({
         <FoldGrid folds={folds.data} titles={titles} />
       ) : active === "discover" ? (
         <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          Nobody has posted a fold yet. Fold something from{" "}
+          No folds yet. Fold something from{" "}
           <Link href="/explore" className="font-semibold underline">
             the library
-          </Link>{" "}
-          and be first.
+          </Link>
+          .
         </p>
       ) : (
         <div className="space-y-4">
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>
             {followingIds.length === 0
-              ? "You are not following anyone yet. Here are some folders to start with."
+              ? "You are not following anyone yet."
               : "Nobody you follow has posted a fold yet. Try Discover."}
           </p>
           <PeopleList people={suggestions} empty="There is nobody else here yet." />
