@@ -30,7 +30,7 @@ A crease pattern is **structured data**, not a picture. Kamibase treats it that 
 
 | | |
 |---|---|
-| 📥 **Converts anything** | Upload a `.fold`, `.cp`, `.opx`, SVG, or even a photo of a sketch, and get back a clean, validated `.kami` file |
+| 📥 **Converts anything** | Upload a `.fold`, `.cp`, `.opx` or SVG, or photograph the creased paper itself, and get back a clean, validated `.kami` file |
 | 🧊 **Folds it in 3D** | Every pattern is collapsible in the browser via an embedded [Origami Simulator](https://origamisimulator.org/) |
 | 🔍 **Finds it semantically** | "Box-pleated beetle, 32 grid, medium difficulty". Or search by what the CP *looks like*, or by what it *folds into* |
 | ✏️ **Edits it** | A simple in-browser CP editor with symmetry tools and live flat-foldability checks |
@@ -120,8 +120,8 @@ workers, so the editor's rules and the server's rules can never drift apart.
 | Oriedita | `.ori` | Planned | |
 | SVG | `.svg` | **Implemented** | Color/layer/dash heuristics; LLM fallback for odd palettes is planned |
 | PDF / DXF | | Planned | Normalized into the SVG pipeline |
-| Raster image | `.png` `.jpg` | Experimental | Vision model + line detection; human review required |
-| Photo of paper | `.jpg` | Experimental | Dewarp, enhance, then the raster pipeline |
+| Raster image | `.png` `.jpg` | **Implemented** | Rectify, Canny, Hough, then human review |
+| Photo of paper | `.jpg` `.mp4` | **Implemented** | Corners, dewarp, detect, Maekawa-solved M/V |
 
 SVG import follows the Origami Simulator color convention, which is the de facto
 standard: red `#ff0000` mountain · blue `#0000ff` valley · black `#000000`

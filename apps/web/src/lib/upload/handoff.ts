@@ -16,6 +16,19 @@ export interface ImportPayload {
   readonly title: string;
   readonly slug: string;
   readonly doc: EditorDoc;
+  /**
+   * Where it came from. `/edit/import` uses it for the back link and for how
+   * loudly to caveat what it is showing.
+   */
+  readonly source?: "convert" | "scan";
+  /**
+   * What the producer was unsure about, in plain language. The converter is
+   * mostly certain; a scan of a photograph is not, and saying so next to the
+   * geometry is the whole of DESIGN.md §3.4's "never guess silently".
+   */
+  readonly notes?: readonly string[];
+  /** 0 to 1, as §3.4 defines it. */
+  readonly confidence?: number;
 }
 
 /**
@@ -42,7 +55,20 @@ export function readImportPayload(raw: string | null): ImportPayload | null {
 
   const segments = doc.filter(isSegment);
   if (segments.length === 0) return null;
-  return { title, slug, doc: segments };
+
+  const { source, notes, confidence } = parsed as Record<string, unknown>;
+  return {
+    title,
+    slug,
+    doc: segments,
+    ...(source === "scan" || source === "convert" ? { source } : {}),
+    ...(Array.isArray(notes)
+      ? { notes: notes.filter((note): note is string => typeof note === "string") }
+      : {}),
+    ...(typeof confidence === "number" && Number.isFinite(confidence)
+      ? { confidence }
+      : {}),
+  };
 }
 
 function isSegment(value: unknown): value is EditorDoc[number] {

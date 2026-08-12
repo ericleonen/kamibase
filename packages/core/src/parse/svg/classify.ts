@@ -6,8 +6,8 @@
  *
  * 1. **Colour**, matched in HSV with tolerance, against the Origami Simulator
  *    palette ("the de facto standard, and we adopt it exactly").
- * 2. **Layer and group names** — `mountain`, `valley`, `M`, `V`, 山 / 谷.
- * 3. **Stroke style** — dashed is usually valley, but it is ambiguous, so it
+ * 2. **Layer and group names**: `mountain`, `valley`, `M`, `V`, 山 / 谷.
+ * 3. **Stroke style**, where dashed is usually valley. That is ambiguous, so it
  *    scores low and only speaks when nothing else does.
  *
  * The fourth strategy, the vision-model fallback for unusual palettes, lives

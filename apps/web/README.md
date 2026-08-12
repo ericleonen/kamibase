@@ -141,6 +141,35 @@ Conversions are gated on the §3.4 thresholds: ≥0.95 confidence is publishable
 publishing until it is repaired in the editor. Nothing about the gate is
 hidden: the reasons are listed next to the badge.
 
+## Scanning a photograph
+
+`/scan` takes a photo (or a video) of an unfolded creased sheet and gives back
+an editable crease pattern. It is the raster half of DESIGN.md §3.3 and the most
+technical thing here; the full argument is in [SCANNING.md](SCANNING.md).
+
+Everything runs in the browser, in a Web Worker with a main-thread fallback.
+Nothing is uploaded and no key is needed, because the whole pipeline is
+arithmetic over a `Float32Array` in [`@kamibase/vision`](../../packages/vision).
+
+Three things about it are worth knowing without reading further:
+
+- **The corner step is not skippable.** Four corners define the homography, the
+  homography defines every angle, and Kawasaki's theorem is about angles. They
+  are guessed and then dragged, like every document scanner ever written, and
+  for the same reason: automatic detection fails on white paper on a white
+  table.
+- **Mountains and valleys come from Maekawa's theorem, not from the photo.** A
+  flattened sheet does not record which way its creases went. The constraint
+  does, for most patterns. Where several assignments fit equally well one is
+  offered and drawn dashed, and the notes say how many were ambiguous.
+- **A video is a burst of stills.** Nine frames are sampled and scored by
+  sharpness. A handheld shot is blurred in half its frames and sharp in one, and
+  the sharp one beats any amount of averaging.
+
+It ends in the editor, never at a published pattern. §3.3 requires a human in
+the loop for raster imports, and the confidence score is capped below §3.4's
+auto-publish line by construction.
+
 ## The social layer
 
 Profiles, folds, comments and following, on top of the Supabase accounts. Full
