@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { PencilRuler, Plus, Upload } from "lucide-react";
+import { Camera, PencilRuler, Plus, Upload } from "lucide-react";
 
 const OPTIONS = [
   {
@@ -10,6 +10,12 @@ const OPTIONS = [
     label: "Upload a file",
     hint: ".kami, .fold, .cp, .opx or .svg",
     Icon: Upload,
+  },
+  {
+    href: "/scan",
+    label: "Scan a photo",
+    hint: "A photo of the unfolded paper",
+    Icon: Camera,
   },
   {
     href: "/edit",
@@ -20,12 +26,16 @@ const OPTIONS = [
 ] as const;
 
 /**
- * The two ways a pattern gets into Kamibase.
+ * The three ways a pattern gets into Kamibase.
  *
  * "New" used to go straight to the editor, which quietly asserted that drawing
  * is the only way in. Converting a file people already have is the other half
  * of DESIGN.md §8.2, and the one that actually fills the library, so the
  * button asks rather than assumes.
+ *
+ * Scanning is the third, and for most folders it is the first: the pattern they
+ * want to share is sitting on the table in front of them as a creased sheet of
+ * paper rather than as a file.
  */
 export function NewMenu() {
   const [open, setOpen] = useState(false);

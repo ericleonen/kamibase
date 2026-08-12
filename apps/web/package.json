@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@kamibase/core": "workspace:*",
+    "@kamibase/vision": "workspace:*",
     "@noble/hashes": "^1.7.1",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.2",

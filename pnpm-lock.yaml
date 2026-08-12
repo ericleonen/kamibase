@@ -13,6 +13,9 @@ importers:
       '@kamibase/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@kamibase/vision':
+        specifier: workspace:*
+        version: link:../../packages/vision
       '@noble/hashes':
         specifier: ^1.7.1
         version: 1.8.0
@@ -87,6 +90,22 @@ importers:
       tsx:
         specifier: ^4.19.2
         version: 4.23.8
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)(jsdom@30.0.1(@noble/hashes@1.8.0))(lightningcss@1.32.0)
+
+  packages/vision:
+    dependencies:
+      '@kamibase/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.1
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
