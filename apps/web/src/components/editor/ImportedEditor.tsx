@@ -42,65 +42,26 @@ export function ImportedEditor() {
       <div className="space-y-3">
         <h1 className="text-xl font-black tracking-tight">Nothing to import</h1>
         <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          This page opens a pattern that was just converted or scanned, and there is
-          none waiting. Both live in this browser tab only, so a reload or a new tab
-          starts over.
+          Uploads live in this browser tab only, so a reload or a new tab starts
+          over.
         </p>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/upload"
-            className="rounded-full px-4 py-2 text-sm font-bold transition hover:opacity-85"
-            style={{ background: "var(--brand)", color: "var(--ink)" }}
-          >
-            Convert a file
-          </Link>
-          <Link
-            href="/scan"
-            className="rounded-full px-4 py-2 text-sm font-bold transition hover:opacity-70"
-            style={{ border: "1px solid var(--border-strong)" }}
-          >
-            Scan a photo
-          </Link>
-          <Link
-            href="/edit"
-            className="rounded-full px-4 py-2 text-sm font-bold transition hover:opacity-70"
-            style={{ border: "1px solid var(--border-strong)" }}
-          >
-            Draw from scratch
-          </Link>
-        </div>
+        <Link
+          href="/edit"
+          className="inline-block rounded-full px-4 py-2 text-sm font-bold transition hover:opacity-85"
+          style={{ background: "var(--brand)", color: "var(--ink)" }}
+        >
+          Draw from scratch
+        </Link>
       </div>
     );
   }
 
-  const from = payload.source === "scan" ? "/scan" : "/upload";
-
   return (
-    <div className="space-y-4">
-      {payload.notes && payload.notes.length > 0 && (
-        <details className="rounded-xl p-3 text-sm" open style={{ background: "var(--brand-soft)" }}>
-          <summary className="cursor-pointer font-semibold">
-            What this import was unsure about
-            {payload.confidence !== undefined && (
-              <span className="ml-2 font-normal tabular-nums" style={{ color: "var(--text-muted)" }}>
-                confidence {Math.round(payload.confidence * 100)}%
-              </span>
-            )}
-          </summary>
-          <ul className="mt-2 list-disc space-y-1 pl-5" style={{ color: "var(--text-muted)" }}>
-            {payload.notes.map((note) => (
-              <li key={note}>{note}</li>
-            ))}
-          </ul>
-        </details>
-      )}
-
-      <CreasePatternEditor
-        initialDoc={payload.doc}
-        title={payload.title}
-        slug={payload.slug}
-        backHref={from}
-      />
-    </div>
+    <CreasePatternEditor
+      initialDoc={payload.doc}
+      title={payload.title}
+      slug={payload.slug}
+      {...(payload.backdrop === undefined ? {} : { backdrop: payload.backdrop })}
+    />
   );
 }

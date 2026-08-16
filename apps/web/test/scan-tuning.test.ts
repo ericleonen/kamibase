@@ -62,46 +62,43 @@ describe("tuningToOptions", () => {
 describe("the handoff to the editor", () => {
   const doc = [{ x1: 0, y1: 0, x2: 1, y2: 1, assignment: "M" }];
 
-  it("carries the scan's caveats and confidence through", () => {
+  it("carries a rectified backdrop through", () => {
     const payload = readImportPayload(
       JSON.stringify({
         title: "Scanned pattern",
         slug: "scanned",
         doc,
-        source: "scan",
-        notes: ["1 crease could go either way."],
-        confidence: 0.42,
+        backdrop: "data:image/png;base64,iVBORw0KGgo=",
       }),
     );
 
-    expect(payload?.source).toBe("scan");
-    expect(payload?.notes).toEqual(["1 crease could go either way."]);
-    expect(payload?.confidence).toBeCloseTo(0.42);
+    expect(payload?.doc).toHaveLength(1);
+    expect(payload?.backdrop).toBe("data:image/png;base64,iVBORw0KGgo=");
   });
 
-  it("still reads a converter payload that has none of those fields", () => {
+  it("reads a payload with no backdrop, which is every file format", () => {
     const payload = readImportPayload(JSON.stringify({ title: "T", slug: "s", doc }));
     expect(payload?.doc).toHaveLength(1);
-    expect(payload?.source).toBeUndefined();
-    expect(payload?.notes).toBeUndefined();
+    expect(payload?.backdrop).toBeUndefined();
   });
 
-  it("drops junk in the optional fields rather than rendering it", () => {
-    // Session storage is user-writable, so this is untrusted input.
-    const payload = readImportPayload(
-      JSON.stringify({
-        title: "T",
-        slug: "s",
-        doc,
-        source: "somewhere-else",
-        notes: ["fine", 42, null, { bad: true }],
-        confidence: "high",
-      }),
-    );
-
-    expect(payload?.source).toBeUndefined();
-    expect(payload?.notes).toEqual(["fine"]);
-    expect(payload?.confidence).toBeUndefined();
+  it("refuses a backdrop that is not a data image", () => {
+    /*
+     * Session storage is writable by anything on the page, and this value goes
+     * straight into an image source. A `javascript:` or remote URL there is a
+     * way to make the editor fetch or run something it should not.
+     */
+    for (const backdrop of [
+      "javascript:alert(1)",
+      "https://example.com/tracker.png",
+      "data:text/html,<script>alert(1)</script>",
+      42,
+    ]) {
+      const payload = readImportPayload(
+        JSON.stringify({ title: "T", slug: "s", doc, backdrop }),
+      );
+      expect(payload?.backdrop, String(backdrop)).toBeUndefined();
+    }
   });
 
   it("refuses a payload with no usable geometry", () => {

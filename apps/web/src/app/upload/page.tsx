@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ImportStudio } from "@/components/import/ImportStudio";
+import { UploadLanding } from "@/components/UploadLanding";
 
 export const metadata: Metadata = {
   title: "Add a crease pattern",
@@ -8,10 +8,7 @@ export const metadata: Metadata = {
     "Everything runs in your browser.",
 };
 
-/**
- * The one way in (DESIGN.md §8.2). Files and photographs are the same problem
- * from the outside, so they share a page, a review panel and a handoff.
- */
+/** The upload modal, reached by URL instead of from the header menu. */
 export default function AddPatternPage() {
-  return <ImportStudio />;
+  return <UploadLanding />;
 }

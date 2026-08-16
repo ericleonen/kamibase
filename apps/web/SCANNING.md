@@ -9,21 +9,22 @@ there is no API key anywhere in it.
 
 ## Using it
 
-`/upload`, or **New** in the header. A photo takes three steps; a file takes one.
+**New → Upload** in the header, or the `/upload` URL. Pick a photo or a video
+and the editor opens on the result. There is no step in between.
 
-1. **Pick a photo or a video.** A video is treated as a burst of stills rather
-   than as footage: Kamibase samples nine frames, scores each one by the
-   variance of its Laplacian, and offers the sharpest first. Handheld shots are
-   usually blurred in half their frames and sharp in one or two, and a sharp
-   frame is worth more to a line detector than any amount of averaging.
-2. **Put the handles on the corners.** They are guessed automatically and then
-   yours to drag. This step cannot be skipped, and the reason is in the maths:
-   the corners define the homography, the homography defines every angle in the
-   pattern, and Kawasaki's theorem is a statement about angles. A corner ten
-   pixels out is a pattern that fails its own validation for reasons that have
-   nothing to do with how it was folded.
-3. **Review, tune, open in the editor.** The creases are drawn over the
-   flattened photograph so a missed or invented one is obvious.
+There used to be two: confirm the paper's corners, then read a review panel of
+grades and confidences. Both are gone. The corners are guessed and the detector
+runs on its defaults, and instead of describing what it found, the flattened
+photograph is laid under the drawing canvas at low opacity. A missed crease is
+then a line you can see and draw, which is a better answer to "did it read this
+right" than any score. The opacity slider in the editor's panel fades it out
+when you are done with it.
+
+A video is treated as a burst of stills rather than as footage: Kamibase
+samples nine frames, scores each by the variance of its Laplacian, and uses the
+sharpest. Handheld shots are usually blurred in half their frames and sharp in
+one or two, and a sharp frame is worth more to a line detector than any amount
+of averaging.
 
 ### Taking a photo it can read
 
@@ -31,10 +32,17 @@ there is no API key anywhere in it.
   ones are detected.
 - **Light it from one side.** A lamp low and off to the left throws a shadow
   into every crease. A flash straight on erases all of them.
-- **Fill the frame, square on.** The corner handles correct a tilt; they cannot
+- **Fill the frame, square on.** Rectification corrects a tilt; it cannot
   recover detail that was never in the picture.
-- **Use a dark surface.** Only to help the corners get found automatically. You
-  can always drag them.
+- **Use a dark surface.** The corners are found by separating paper from
+  background, and that is easiest when they do not look alike.
+
+Corners still decide everything downstream: they define the homography, the
+homography defines every angle, and Kawasaki's theorem is a statement about
+angles. A guess ten pixels out is a pattern that fails its own validation for
+reasons that have nothing to do with how it was folded. Which is the other
+argument for the backdrop: when the guess is off, the creases visibly do not
+sit on the photograph.
 
 ## What it does
 
@@ -151,12 +159,12 @@ pnpm --filter @kamibase/vision test
   pattern will come back as nothing, or as a polygon.
 - **Very fine tessellations lose their smallest creases.** The working size is
   900px square, so a 64-grid has 14 pixels per cell and its creases fall below
-  the detector's minimum length. Raise sensitivity and lower the minimum length
-  and it may come back, along with noise.
+  the detector's minimum length. The missing ones are drawn by hand over the
+  backdrop.
 - **Coloured pen is not read as colour.** The image goes to grayscale
   immediately, because the target is bare creases on white paper. A printed
-  crease pattern with red and blue lines should go through `/upload` as an SVG
-  or a photo-of-a-print, where the colour convention of §3.3 applies.
+  crease pattern with red and blue lines does better uploaded as an SVG, where
+  the colour convention of §3.3 applies.
 - **Maekawa is necessary, not sufficient.** A pattern satisfying it everywhere
   can still fail to fold flat, since layer ordering is NP-hard. The result is a
   candidate, and the L2 simulator run is what would settle it.

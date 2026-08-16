@@ -11,85 +11,118 @@ export const metadata: Metadata = {
 interface SearchParams {
   readonly q?: string;
   readonly technique?: string;
+  readonly sort?: string;
+  readonly foldable?: string;
 }
 
+const SORTS = {
+  title: "Title",
+  creases: "Creases",
+  difficulty: "Difficulty",
+} as const;
+
+type SortKey = keyof typeof SORTS;
+
+function isSort(value: string | undefined): value is SortKey {
+  return value === "title" || value === "creases" || value === "difficulty";
+}
+
+/**
+ * The library.
+ *
+ * The filters used to be a scrolling rail of technique chips, which grows with
+ * the library and answers exactly one question. This is a plain form: a
+ * dropdown per axis, a checkbox, and a submit. It stays one line however many
+ * techniques there are, and it works with JavaScript off.
+ */
 export default async function ExplorePage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const { q, technique } = await searchParams;
+  const { q, technique, sort, foldable } = await searchParams;
   const all = await patterns.list();
   const facets = techniqueFacets(all);
-  const results = filterPatterns(all, {
+  const order: SortKey = isSort(sort) ? sort : "title";
+  const onlyFoldable = foldable === "1";
+
+  let results = filterPatterns(all, {
     ...(q ? { q } : {}),
     ...(technique ? { technique } : {}),
   });
+  if (onlyFoldable) results = results.filter((pattern) => pattern.flatFoldable);
 
-  const chipHref = (value?: string): string => {
-    const params = new URLSearchParams();
-    if (q) params.set("q", q);
-    if (value) params.set("technique", value);
-    const query = params.toString();
-    return query ? `/explore?${query}` : "/explore";
-  };
+  results = [...results].sort((a, b) => {
+    if (order === "creases") return b.edgeCount - a.edgeCount;
+    if (order === "difficulty") return (b.difficulty ?? 0) - (a.difficulty ?? 0);
+    return a.title.localeCompare(b.title);
+  });
+
+  const filtered = Boolean(q || technique || onlyFoldable);
 
   return (
     <div className="space-y-5">
-      <nav
-        className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        aria-label="Filter by technique"
+      <form
+        action="/explore"
+        className="flex flex-wrap items-end gap-3 rounded-2xl p-3"
+        style={{ background: "var(--surface-sunken)" }}
       >
-        <Link
-          href={chipHref()}
-          aria-current={technique ? undefined : "page"}
-          className="shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition hover:opacity-70"
-          style={
-            technique
-              ? { background: "var(--surface-sunken)" }
-              : { background: "var(--text)", color: "var(--surface)" }
-          }
-        >
-          All
-        </Link>
-        {facets.map(({ technique: name, count }) => {
-          const active = technique === name;
-          return (
-            <Link
-              key={name}
-              href={chipHref(active ? undefined : name)}
-              aria-current={active ? "page" : undefined}
-              className="shrink-0 rounded-full px-4 py-2 text-sm font-semibold capitalize transition hover:opacity-70"
-              style={
-                active
-                  ? { background: "var(--text)", color: "var(--surface)" }
-                  : { background: "var(--surface-sunken)" }
-              }
-            >
-              {name.replace(/-/g, " ")}{" "}
-              <span style={{ color: active ? "inherit" : "var(--text-faint)" }}>{count}</span>
-            </Link>
-          );
-        })}
-      </nav>
+        {q && <input type="hidden" name="q" value={q} />}
 
-      {(q || technique) && (
-        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          {results.length} {results.length === 1 ? "pattern" : "patterns"}
-          {q && (
-            <>
-              {" "}
-              matching <strong style={{ color: "var(--text)" }}>{q}</strong>
-            </>
-          )}
-          {technique && (
-            <>
-              {" "}
-              in <strong style={{ color: "var(--text)" }}>{technique.replace(/-/g, " ")}</strong>
-            </>
-          )}
-        </p>
-      )}
+        <Field label="Technique">
+          <select name="technique" defaultValue={technique ?? ""} className={selectClass} style={controlStyle}>
+            <option value="">All</option>
+            {facets.map(({ technique: name, count }) => (
+              <option key={name} value={name}>
+                {name.replace(/-/g, " ")} ({count})
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="Sort by">
+          <select name="sort" defaultValue={order} className={selectClass} style={controlStyle}>
+            {Object.entries(SORTS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <label className="flex min-h-10 items-center gap-2 text-sm font-medium">
+          <input type="checkbox" name="foldable" value="1" defaultChecked={onlyFoldable} />
+          Flat-foldable only
+        </label>
+
+        <button
+          type="submit"
+          className="min-h-10 rounded-xl px-4 text-sm font-bold transition hover:opacity-85"
+          style={{ background: "var(--brand)", color: "var(--ink)" }}
+        >
+          Apply
+        </button>
+
+        {filtered && (
+          <Link
+            href="/explore"
+            className="flex min-h-10 items-center text-sm font-semibold underline"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Clear
+          </Link>
+        )}
+      </form>
+
+      <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+        {results.length} {results.length === 1 ? "pattern" : "patterns"}
+        {q && (
+          <>
+            {" "}
+            matching <strong style={{ color: "var(--text)" }}>{q}</strong>
+          </>
+        )}
+      </p>
 
       {results.length === 0 ? (
         <div
@@ -98,7 +131,7 @@ export default async function ExplorePage({
         >
           <p className="font-semibold">Nothing matches that.</p>
           <Link href="/explore" className="mt-4 inline-block text-sm font-semibold underline">
-            Clear the search
+            Clear the filters
           </Link>
         </div>
       ) : (
@@ -109,5 +142,29 @@ export default async function ExplorePage({
         </div>
       )}
     </div>
+  );
+}
+
+const selectClass = "min-h-10 rounded-xl px-3 text-sm font-medium capitalize";
+
+const controlStyle = {
+  background: "var(--surface)",
+  border: "1px solid var(--border)",
+} as const;
+
+function Field({
+  label,
+  children,
+}: {
+  readonly label: string;
+  readonly children: React.ReactNode;
+}) {
+  return (
+    <label className="space-y-1">
+      <span className="block text-xs font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+        {label}
+      </span>
+      {children}
+    </label>
   );
 }
