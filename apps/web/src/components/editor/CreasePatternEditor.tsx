@@ -59,6 +59,11 @@ export interface CreasePatternEditorProps {
   readonly slug: string;
   /** When editing an existing pattern, where to go back to. */
   readonly backHref?: string;
+  /**
+   * A rectified image of what this was made from, as a data URL, shown under
+   * the paper to trace over. Set when the pattern came from a photograph.
+   */
+  readonly backdrop?: string;
 }
 
 /**
@@ -79,6 +84,7 @@ export function CreasePatternEditor({
   title,
   slug,
   backHref,
+  backdrop,
 }: CreasePatternEditorProps) {
   const [history, setHistory] = useState(() => initHistory(initialDoc ?? emptyPaper()));
   const [tool, setTool] = useState<EditorTool>("draw");
@@ -90,6 +96,7 @@ export function CreasePatternEditor({
     null,
   );
   const [saved, setSaved] = useState<string | null>(null);
+  const [backdropOpacity, setBackdropOpacity] = useState(0.35);
   /*
    * On a phone the control panel is pinned to the bottom of the viewport, so
    * every row it grows costs drawing surface. Enough of them and the toolbar
@@ -213,16 +220,17 @@ export function CreasePatternEditor({
           <button
             type="button"
             onClick={simulate}
-            className="rounded-full px-4 py-2 text-sm font-bold transition hover:opacity-85"
+            className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold transition hover:opacity-85"
             style={{ background: "var(--brand)", color: "var(--ink)" }}
           >
-            <Box className="inline size-4 align-[-2px]" aria-hidden /> Fold in 3D
+            <Box className="size-4" aria-hidden />
+            {simulation ? "Refold" : "Fold in 3D"}
           </button>
         </div>
       </header>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem]">
-        <div className="space-y-3">
+        <div className="space-y-4">
           <EditorCanvas
             doc={doc}
             tool={tool}
@@ -231,6 +239,7 @@ export function CreasePatternEditor({
             gridDivisions={gridDivisions}
             vertexMarks={analysis.vertexMarks}
             showMarks={showMarks}
+            {...(backdrop === undefined ? {} : { backdrop, backdropOpacity })}
             onDraw={(segment) => apply((current) => addSegment(current, segment))}
             onErase={(index) => apply((current) => removeSegment(current, index))}
             onAssign={(index) =>
@@ -238,9 +247,32 @@ export function CreasePatternEditor({
             }
           />
 
+          {/* Kept to the canvas's own width so the two stack as one column. */}
           {simulation && (
-            <section className="space-y-2">
-              <h2 className="text-sm font-bold">3D fold</h2>
+            <section
+              className="mx-auto w-full space-y-3 rounded-2xl p-4"
+              style={{
+                maxWidth: "min(100%, 68vh)",
+                background: "var(--surface-raised)",
+                boxShadow: "var(--shadow-card)",
+              }}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <h2
+                  className="text-xs font-bold uppercase tracking-wide"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  3D fold
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setSimulation(null)}
+                  className="rounded-full px-3 py-1.5 text-xs font-bold transition hover:opacity-70"
+                  style={{ border: "1px solid var(--border)" }}
+                >
+                  Close
+                </button>
+              </div>
               <Simulator
                 key={simulation.key}
                 fold={simulation.fold}
@@ -258,43 +290,39 @@ export function CreasePatternEditor({
         </div>
 
         {/*
-         * The controls. On phones this is a sticky bar pinned to the bottom of
-         * the viewport, where thumbs live. A toolbar above a canvas on a
-         * small screen means reaching across your own drawing.
+         * The controls. On phones a bar pinned to the bottom of the viewport,
+         * where thumbs are; on a wide screen a proper panel beside the canvas.
+         * A toolbar *above* a canvas on a small screen means reaching across
+         * your own drawing to use it.
          */}
         <aside
-          className="sticky bottom-0 z-20 -mx-4 space-y-3 px-4 py-3 lg:static lg:z-auto lg:mx-0 lg:space-y-4 lg:px-0 lg:py-0"
-          style={{ background: "var(--surface)", borderTop: "1px solid var(--border)" }}
+          className="sticky bottom-0 z-20 -mx-4 space-y-4 px-4 pt-3 pb-4 lg:static lg:z-auto lg:mx-0 lg:space-y-5 lg:rounded-2xl lg:p-4"
+          style={{
+            background: "var(--surface-raised)",
+            borderTop: "1px solid var(--border)",
+            boxShadow: "var(--shadow-card)",
+          }}
         >
-          <div className="lg:hidden" />
-
-          <section>
-            <div className="mb-1.5 flex items-center justify-between">
-              <h2 className="text-xs font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-                Crease
-              </h2>
-              <div className="flex gap-1">
-                <button
-                  type="button"
-                  onClick={() => setHistory(undo)}
+          <Group
+            title="Crease"
+            action={
+              <div className="flex gap-1.5">
+                <IconButton
+                  label="Undo"
+                  Icon={Undo2}
                   disabled={!canUndo(history)}
-                  className="rounded-full px-3 py-1 text-xs font-bold disabled:opacity-35"
-                  style={{ border: "1px solid var(--border-strong)" }}
-                >
-                  <Undo2 className="inline size-3" aria-hidden /> Undo
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setHistory(redo)}
+                  onClick={() => setHistory(undo)}
+                />
+                <IconButton
+                  label="Redo"
+                  Icon={Redo2}
                   disabled={!canRedo(history)}
-                  className="rounded-full px-3 py-1 text-xs font-bold disabled:opacity-35"
-                  style={{ border: "1px solid var(--border-strong)" }}
-                >
-                  <Redo2 className="inline size-3" aria-hidden /> Redo
-                </button>
+                  onClick={() => setHistory(redo)}
+                />
               </div>
-            </div>
-            <div className="grid grid-cols-5 gap-1.5">
+            }
+          >
+            <div className="grid grid-cols-5 gap-2">
               {ASSIGNMENTS.map((entry) => {
                 const active = assignment === entry.key;
                 return (
@@ -304,7 +332,7 @@ export function CreasePatternEditor({
                     onClick={() => setAssignment(entry.key)}
                     title={`${entry.label} (${entry.hotkey.toUpperCase()})`}
                     aria-pressed={active}
-                    className="flex min-h-11 flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[11px] font-bold transition"
+                    className="flex min-h-12 flex-col items-center justify-center gap-1.5 rounded-xl text-[11px] font-bold transition"
                     style={{
                       background: active ? "var(--surface-sunken)" : "transparent",
                       border: `1px solid ${active ? "var(--border-strong)" : "var(--border)"}`,
@@ -320,13 +348,10 @@ export function CreasePatternEditor({
                 );
               })}
             </div>
-          </section>
+          </Group>
 
-          <section>
-            <h2 className="mb-1.5 text-xs font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-              Tool
-            </h2>
-            <div className="grid grid-cols-4 gap-1.5">
+          <Group title="Tool">
+            <div className="grid grid-cols-4 gap-2">
               {TOOLS.map((entry) => {
                 const active = tool === entry.key;
                 return (
@@ -336,7 +361,7 @@ export function CreasePatternEditor({
                     onClick={() => setTool(entry.key)}
                     title={`${entry.hint} (${entry.hotkey.toUpperCase()})`}
                     aria-pressed={active}
-                    className="flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-xl px-2 text-[11px] font-bold transition"
+                    className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[11px] font-bold transition"
                     style={{
                       background: active ? "var(--brand)" : "transparent",
                       color: active ? "var(--ink)" : "inherit",
@@ -349,123 +374,206 @@ export function CreasePatternEditor({
                 );
               })}
             </div>
-          </section>
+          </Group>
 
           {/* Everything below the fold on a phone: the essentials are above. */}
           <button
             type="button"
             onClick={() => setShowMore((value) => !value)}
             aria-expanded={showMore}
-            className="w-full rounded-xl py-2 text-xs font-bold uppercase tracking-wide lg:hidden"
+            className="min-h-10 w-full rounded-xl text-xs font-bold uppercase tracking-wide lg:hidden"
             style={{ background: "var(--surface-sunken)", color: "var(--text-muted)" }}
           >
             {showMore ? "Hide" : "Grid, checks & export"}
           </button>
 
           {showMore && (
-            <div className="mt-2 space-y-3">
-              <section>
-                <h2 className="mb-1.5 hidden text-xs font-bold uppercase tracking-wide lg:block" style={{ color: "var(--text-muted)" }}>
-                  Grid
-                </h2>
-                <div className="flex flex-wrap gap-1.5">
+            <div className="space-y-5">
+              {backdrop && (
+                <Group title="Tracing image">
+                  <input
+                    type="range"
+                    min={0}
+                    max={0.8}
+                    step={0.05}
+                    value={backdropOpacity}
+                    onChange={(event) => setBackdropOpacity(Number(event.target.value))}
+                    aria-label="Tracing image strength"
+                    className="kami-slider w-full"
+                  />
+                </Group>
+              )}
+
+              <Group title="Grid divisions">
+                {/* One row, so the panel's height does not change with a
+                    label's width. */}
+                <div className="grid grid-cols-5 gap-1.5">
                   {GRIDS.map((divisions) => (
                     <button
                       key={divisions}
                       type="button"
                       onClick={() => setGridDivisions(divisions)}
                       aria-pressed={gridDivisions === divisions}
-                      className="min-h-9 rounded-full px-3 text-xs font-bold transition"
+                      title={divisions === 0 ? "No grid" : `${divisions}×${divisions} grid`}
+                      className="min-h-9 rounded-full px-1 text-xs font-bold transition"
                       style={{
                         background:
                           gridDivisions === divisions ? "var(--surface-sunken)" : "transparent",
                         border: `1px solid ${gridDivisions === divisions ? "var(--border-strong)" : "var(--border)"}`,
                       }}
                     >
-                      {divisions === 0 ? "None" : `${divisions}×${divisions}`}
+                      {divisions === 0 ? "None" : divisions}
                     </button>
                   ))}
                 </div>
-                <label className="mt-2 flex items-center gap-2 text-xs">
-                  <input
-                    type="checkbox"
+                <div className="mt-2.5 space-y-2">
+                  <Check
+                    label="Snap to existing vertices"
                     checked={snapToVertices}
-                    onChange={(event) => setSnapToVertices(event.target.checked)}
+                    onChange={setSnapToVertices}
                   />
-                  Snap to existing vertices
-                </label>
-                <label className="mt-1 flex items-center gap-2 text-xs">
-                  <input
-                    type="checkbox"
+                  <Check
+                    label="Flat-foldability warnings"
                     checked={showMarks}
-                    onChange={(event) => setShowMarks(event.target.checked)}
+                    onChange={setShowMarks}
                   />
-                  Show flat-foldability warnings
-                </label>
-              </section>
+                </div>
+              </Group>
 
-              <section
-                className="rounded-xl p-3 text-xs"
-                style={{ background: "var(--surface-sunken)" }}
-              >
-                <h2 className="mb-1 font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-                  Checks {stale && <span style={{ color: "var(--text-faint)" }}>· updating</span>}
-                </h2>
-                {analysis.skipped ? (
-                  <p style={{ color: "var(--text-muted)" }}>
-                    Paused above {LIVE_ANALYSIS_EDGE_LIMIT} creases. The crossing
-                    check is O(n²) and would stall the canvas.
-                  </p>
-                ) : (
-                  <ul className="space-y-0.5">
-                    <li>
-                      {analysis.errorCount === 0
-                        ? "No structural defects"
-                        : `${analysis.errorCount} structural ${analysis.errorCount === 1 ? "defect" : "defects"}`}
-                    </li>
-                    {analysis.warningCount > 0 && <li>{analysis.warningCount} warnings</li>}
-                    <li>{analysis.faceCount} faces</li>
-                    <li>
-                      {analysis.flatFoldable
-                        ? "Locally flat-foldable"
-                        : `${analysis.vertexMarks.filter((mark) => !mark.ok).length} vertices fail Maekawa or Kawasaki`}
-                    </li>
-                  </ul>
-                )}
-                {analysis.defects.length > 0 && (
-                  <ul className="mt-2 space-y-1" style={{ color: "var(--text-muted)" }}>
-                    {analysis.defects.slice(0, 4).map((defect, index) => (
-                      <li key={`${defect.code}-${index}`}>
-                        <strong style={{ color: "var(--text)" }}>{defect.rule}</strong>{" "}
-                        {defect.message}
+              <Group title={stale ? "Checks · updating" : "Checks"}>
+                <div
+                  className="rounded-xl p-3 text-xs"
+                  style={{ background: "var(--surface-sunken)" }}
+                >
+                  {analysis.skipped ? (
+                    <p style={{ color: "var(--text-muted)" }}>
+                      Paused above {LIVE_ANALYSIS_EDGE_LIMIT} creases.
+                    </p>
+                  ) : (
+                    <ul className="space-y-1">
+                      <li>
+                        {analysis.errorCount === 0
+                          ? "No structural defects"
+                          : `${analysis.errorCount} structural ${analysis.errorCount === 1 ? "defect" : "defects"}`}
                       </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
+                      {analysis.warningCount > 0 && <li>{analysis.warningCount} warnings</li>}
+                      <li>{analysis.faceCount} faces</li>
+                      <li>{flatFoldabilityLine(analysis)}</li>
+                    </ul>
+                  )}
+                  {analysis.defects.length > 0 && (
+                    <ul className="mt-2.5 space-y-1.5" style={{ color: "var(--text-muted)" }}>
+                      {analysis.defects.slice(0, 4).map((defect, index) => (
+                        <li key={`${defect.code}-${index}`}>
+                          <strong style={{ color: "var(--text)" }}>{defect.rule}</strong>{" "}
+                          {defect.message}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </Group>
 
-              <section>
-                <h2 className="mb-1.5 text-xs font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-                  Export
-                </h2>
-                <div className="grid grid-cols-4 gap-1.5">
+              <Group title="Export">
+                <div className="grid grid-cols-4 gap-2">
                   {DOWNLOAD_FORMATS.map((format) => (
                     <button
                       key={format}
                       type="button"
                       onClick={() => download(format)}
-                      className="min-h-9 rounded-xl font-mono text-xs transition hover:opacity-70"
+                      className="min-h-10 rounded-xl font-mono text-xs transition hover:opacity-70"
                       style={{ border: "1px solid var(--border)" }}
                     >
                       {FORMAT_LABELS[format]}
                     </button>
                   ))}
                 </div>
-              </section>
+              </Group>
             </div>
           )}
         </aside>
       </div>
     </div>
+  );
+}
+
+function flatFoldabilityLine(analysis: ReturnType<typeof analyse>): string {
+  if (analysis.flatFoldable) return "Locally flat-foldable";
+  const failing = analysis.vertexMarks.filter((mark) => !mark.ok).length;
+  return failing === 1
+    ? "1 vertex fails Maekawa or Kawasaki"
+    : `${failing} vertices fail Maekawa or Kawasaki`;
+}
+
+/** A titled block in the control panel. One place decides the spacing. */
+function Group({
+  title,
+  action,
+  children,
+}: {
+  readonly title: string;
+  readonly action?: React.ReactNode;
+  readonly children: React.ReactNode;
+}) {
+  return (
+    <section>
+      <div className="mb-2 flex min-h-7 items-center justify-between gap-2">
+        <h2
+          className="text-xs font-bold uppercase tracking-wide"
+          style={{ color: "var(--text-muted)" }}
+        >
+          {title}
+        </h2>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function IconButton({
+  label,
+  Icon,
+  disabled,
+  onClick,
+}: {
+  readonly label: string;
+  readonly Icon: typeof Undo2;
+  readonly disabled: boolean;
+  readonly onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={label}
+      aria-label={label}
+      className="flex size-8 items-center justify-center rounded-full transition disabled:opacity-30"
+      style={{ border: "1px solid var(--border-strong)" }}
+    >
+      <Icon className="size-3.5" aria-hidden />
+    </button>
+  );
+}
+
+function Check({
+  label,
+  checked,
+  onChange,
+}: {
+  readonly label: string;
+  readonly checked: boolean;
+  readonly onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="flex items-center gap-2 text-xs">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+      />
+      {label}
+    </label>
   );
 }

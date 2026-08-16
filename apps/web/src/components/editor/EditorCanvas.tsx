@@ -15,6 +15,14 @@ export interface EditorCanvasProps {
   readonly gridDivisions: number;
   readonly vertexMarks: readonly VertexMark[];
   readonly showMarks: boolean;
+  /**
+   * A rectified image of the source, as a data URL, drawn under the paper to
+   * trace over. It fills the unit square exactly, because it is the same square
+   * the creases were detected in.
+   */
+  readonly backdrop?: string;
+  /** 0 to 1. The backdrop is a reference, so it is never at full strength. */
+  readonly backdropOpacity?: number;
   readonly onDraw: (segment: {
     x1: number;
     y1: number;
@@ -69,6 +77,8 @@ export function EditorCanvas({
   gridDivisions,
   vertexMarks,
   showMarks,
+  backdrop,
+  backdropOpacity = 0.35,
   onDraw,
   onErase,
   onAssign,
@@ -253,6 +263,20 @@ export function EditorCanvas({
         >
           {/* Paper. Drawn under everything so creases read as ink on it. */}
           <rect x="0" y="0" width="1" height="1" fill="var(--surface)" />
+
+          {/* The photograph this came from, if it came from one. Faded, so a
+              crease drawn over it is still obviously the darker of the two. */}
+          {backdrop && (
+            <image
+              href={backdrop}
+              x="0"
+              y="0"
+              width="1"
+              height="1"
+              opacity={backdropOpacity}
+              preserveAspectRatio="none"
+            />
+          )}
 
           {gridLines.map((t) => (
             <g key={t} stroke="var(--border)" strokeWidth={0.0015 / view.scale}>

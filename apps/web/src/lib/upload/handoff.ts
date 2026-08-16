@@ -17,18 +17,10 @@ export interface ImportPayload {
   readonly slug: string;
   readonly doc: EditorDoc;
   /**
-   * Where it came from. `/edit/import` uses it for the back link and for how
-   * loudly to caveat what it is showing.
+   * The source image, rectified into the unit square, as a data URL. Set for
+   * photographs and video, so the editor can put it under the paper to trace.
    */
-  readonly source?: "convert" | "scan";
-  /**
-   * What the producer was unsure about, in plain language. The converter is
-   * mostly certain; a scan of a photograph is not, and saying so next to the
-   * geometry is the whole of DESIGN.md §3.4's "never guess silently".
-   */
-  readonly notes?: readonly string[];
-  /** 0 to 1, as §3.4 defines it. */
-  readonly confidence?: number;
+  readonly backdrop?: string;
 }
 
 /**
@@ -56,17 +48,15 @@ export function readImportPayload(raw: string | null): ImportPayload | null {
   const segments = doc.filter(isSegment);
   if (segments.length === 0) return null;
 
-  const { source, notes, confidence } = parsed as Record<string, unknown>;
+  const { backdrop } = parsed as Record<string, unknown>;
   return {
     title,
     slug,
     doc: segments,
-    ...(source === "scan" || source === "convert" ? { source } : {}),
-    ...(Array.isArray(notes)
-      ? { notes: notes.filter((note): note is string => typeof note === "string") }
-      : {}),
-    ...(typeof confidence === "number" && Number.isFinite(confidence)
-      ? { confidence }
+    // Only a data URL. This comes out of storage, which anything on the page
+    // can write, and it is about to become an image source.
+    ...(typeof backdrop === "string" && backdrop.startsWith("data:image/")
+      ? { backdrop }
       : {}),
   };
 }

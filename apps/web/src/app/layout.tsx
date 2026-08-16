@@ -29,7 +29,7 @@ export default function RootLayout({
         <SiteHeader />
         <main className="mx-auto max-w-[1600px] px-4 py-6">{children}</main>
         <footer
-          className="print-hidden mx-auto max-w-[1600px] px-4 py-10 text-xs"
+          className="print-hidden mx-auto max-w-[1600px] px-4 py-6 text-xs"
           style={{ color: "var(--text-muted)" }}
         >
           <p className="max-w-3xl">
