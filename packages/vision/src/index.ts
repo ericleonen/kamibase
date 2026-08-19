@@ -79,8 +79,72 @@ export {
   snapToBorder,
   removeBorderDuplicates,
   dropShort,
+  dominantAngles,
+  snapToAngles,
+  inferGridAxes,
+  snapToAxes,
+  GRID_CANDIDATES,
+  type GridAxes,
   type Line,
 } from "./segments.js";
+
+export {
+  createRgb,
+  pixelAt,
+  rgbFromRgba,
+  rgbToRgba,
+  toGray,
+  downscaleRgb,
+  colourDistance,
+  toHsv,
+  profileRaster,
+  BACKGROUND_TOLERANCE,
+  type Rgb,
+  type RgbImage,
+  type RasterProfile,
+} from "./raster.js";
+
+export {
+  extractInk,
+  type InkLayer,
+  type InkOptions,
+  type InkResult,
+  type InkRole,
+} from "./ink.js";
+
+export {
+  edgeMapFromInk,
+  orientationField,
+  thin,
+  close,
+  dilate,
+  erode,
+  type InkEdgeOptions,
+} from "./skeleton.js";
+
+export {
+  weldEndpoints,
+  healJunctions,
+  healGeometry,
+  snapToPaper,
+  dropDegenerate,
+  DEFAULT_WELD_TOLERANCE,
+} from "./weld.js";
+
+export {
+  scanLineArt,
+  isLineArt,
+  type LineArtOptions,
+  type LineArtResult,
+  type LayerSummary,
+} from "./lineart.js";
+
+export {
+  readCreasePattern,
+  type ReadKind,
+  type ReadOptions,
+  type ReadResult,
+} from "./read.js";
 
 export {
   shadingPrior,

@@ -5,6 +5,7 @@ import {
   relativeTime,
   type CommentTarget,
 } from "@/lib/social";
+import { SectionHeading } from "@/components/Section";
 import { deleteCommentAction } from "@/lib/social/actions";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { Avatar } from "./Avatar";
@@ -22,9 +23,18 @@ import { SocialNotice } from "./SocialNotice";
 export async function CommentThread({
   target,
   heading = "Comments",
+  bare = false,
 }: {
   readonly target: CommentTarget;
   readonly heading?: string;
+  /**
+   * Use the thread's own heading rather than the page's section chrome.
+   *
+   * A fold's page is a single subject with a conversation under it, and a
+   * capitalised rule there would be chrome around nothing. A pattern's page is
+   * five things stacked, and there the thread has to look like one of them.
+   */
+  readonly bare?: boolean;
 }) {
   const [result, user] = await Promise.all([listComments(target), getCurrentUser()]);
 
@@ -34,16 +44,28 @@ export async function CommentThread({
       : { foldId: target.foldId };
 
   return (
-    <section className="print-hidden space-y-4">
-      <h2 className="text-lg font-semibold tracking-tight">
-        {heading}
-        {result.ok && result.data.length > 0 && (
-          <span className="ml-2 text-sm font-normal" style={{ color: "var(--text-muted)" }}>
-            {result.data.length}
-          </span>
-        )}
-      </h2>
+    <section
+      className={`print-hidden ${bare ? "space-y-4" : "border-t pt-7"}`}
+      style={bare ? undefined : { borderColor: "var(--border)" }}
+    >
+      {!bare && (
+        <SectionHeading
+          title={heading}
+          {...(result.ok ? { count: result.data.length } : {})}
+        />
+      )}
+      {bare && (
+        <h2 className="text-lg font-semibold tracking-tight">
+          {heading}
+          {result.ok && result.data.length > 0 && (
+            <span className="ml-2 text-sm font-normal" style={{ color: "var(--text-muted)" }}>
+              {result.data.length}
+            </span>
+          )}
+        </h2>
+      )}
 
+      <div className="space-y-4">
       {!result.ok ? (
         <SocialNotice reason={result.reason} message={result.message} />
       ) : result.data.length === 0 ? (
@@ -106,6 +128,7 @@ export async function CommentThread({
             to join the conversation.
           </p>
         ))}
+      </div>
     </section>
   );
 }

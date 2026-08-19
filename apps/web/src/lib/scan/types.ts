@@ -1,5 +1,5 @@
 import type { EdgeAssignment } from "@kamibase/core";
-import type { Quad } from "@kamibase/vision";
+import type { GridAxes, LayerSummary, Quad, ReadKind } from "@kamibase/vision";
 
 /**
  * What crosses the wire between the page and the worker.
@@ -38,7 +38,14 @@ export interface ScanRequest {
   readonly height: number;
   /** RGBA bytes, as they come out of `getImageData`. */
   readonly pixels: Uint8ClampedArray;
-  readonly quad: Quad;
+  /**
+   * The paper's corners in the photo. Only a photograph has any: a drawing is
+   * already flat, and its paper is found from where the ink is rather than
+   * from where a rectangle was dragged.
+   */
+  readonly quad?: Quad;
+  /** Force a pipeline. Omitted, the image is looked at and one is chosen. */
+  readonly kind?: ReadKind;
   readonly tuning: ScanTuning;
 }
 
@@ -52,17 +59,24 @@ export interface ScannedCreaseWire {
 }
 
 export interface ScanReport {
+  /** Which pipeline read it. Worth knowing first when a result looks wrong. */
+  readonly kind: ReadKind;
   readonly creases: readonly ScannedCreaseWire[];
-  readonly grid: number | null;
+  readonly grid: GridAxes;
+  /** The paper's extent in crease coordinates. Not always square. */
+  readonly paper: { readonly width: number; readonly height: number };
+  /** The ink colours found and what each was taken to mean. Empty for photos. */
+  readonly layers: readonly LayerSummary[];
   readonly confidence: number;
   readonly notes: readonly string[];
   readonly maekawaSatisfied: number;
   readonly maekawaTotal: number;
   readonly ambiguous: number;
   readonly oddVertices: number;
-  /** The rectified, lighting-flattened square, for the preview. */
+  /** The image the detection ran on, cropped to the paper, for the preview. */
   readonly rectified: {
-    readonly size: number;
+    readonly width: number;
+    readonly height: number;
     readonly gray: Float32Array;
   };
 }

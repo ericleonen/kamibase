@@ -88,6 +88,11 @@ export interface ScanResult {
   readonly notes: readonly string[];
 }
 
+/** Mirror about y = 1/2: image coordinates to paper coordinates. */
+function flipY<T extends Line>(lines: readonly T[]): T[] {
+  return lines.map((line) => ({ ...line, y1: 1 - line.y1, y2: 1 - line.y2 }));
+}
+
 const BORDER: readonly Line[] = [
   { x1: 0, y1: 0, x2: 1, y2: 0 },
   { x1: 1, y1: 0, x2: 1, y2: 1 },
@@ -134,7 +139,16 @@ export function scanCreasePattern(image: GrayImage, options: ScanOptions = {}): 
     gapTolerance: Math.max(6, workingSize * 0.02),
   });
 
-  const rawSegments = toUnitSquare(merged, workingSize);
+  /*
+   * Into the unit square, and flipped.
+   *
+   * An image has y increasing downwards; a crease pattern has it increasing
+   * upwards, and so do the editor canvas, the SVG renderer and `.fold` export.
+   * Without the flip a symmetric pattern looks fine, an asymmetric one comes
+   * back mirrored, and the rectified backdrop the editor draws underneath is
+   * upside down relative to the creases traced from it.
+   */
+  const rawSegments = flipY(toUnitSquare(merged, workingSize));
   const prior = shadingPrior(flattened, merged);
 
   // 5. Snap. Angles first: a crease at the right angle whose ends are a pixel

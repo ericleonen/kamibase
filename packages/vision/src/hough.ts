@@ -53,7 +53,20 @@ export interface HoughOptions {
   readonly minLength?: number;
   /** How far apart two runs can be and still be one crease, in pixels. */
   readonly maxGap?: number;
-  /** How far off a line a pixel can sit and still support it, in pixels. */
+  /**
+   * How far off a line a pixel can sit and still support it, in pixels.
+   *
+   * Defaults to the accumulator's own quantisation error, which is the only
+   * defensible value and not an obvious one. A peak's angle is only known to
+   * half a theta bin, and half a bin of angular error displaces the line by
+   * half a bin times the distance from the origin — several pixels at the far
+   * end of a long crease. Set the tolerance below that and a long crease is
+   * *carved into bands*: the peak collects the stretch where its line happens
+   * to coincide, claims those pixels, and leaves the ends to be picked up by
+   * neighbouring peaks with gaps between them where the geometry drifted out
+   * of reach. The pattern comes back fragmented, and every fragment looks
+   * perfectly plausible on its own.
+   */
   readonly tolerance?: number;
   /** Most lines to consider. A guard against pathological images. */
   readonly maxLines?: number;
@@ -69,12 +82,15 @@ interface Resolved {
 }
 
 function resolve(options: HoughOptions, diagonal: number): Resolved {
+  const thetaStep = ((options.thetaStepDegrees ?? 0.5) * Math.PI) / 180;
   return {
-    thetaStep: ((options.thetaStepDegrees ?? 0.5) * Math.PI) / 180,
+    thetaStep,
     gradientWindow: ((options.gradientWindowDegrees ?? 12) * Math.PI) / 180,
     minLength: options.minLength ?? Math.max(12, diagonal * 0.05),
     maxGap: options.maxGap ?? Math.max(3, diagonal * 0.02),
-    tolerance: options.tolerance ?? 2,
+    // Half a bin of angle, over half the image: the worst displacement the
+    // accumulator's own resolution can produce. See `tolerance` above.
+    tolerance: options.tolerance ?? Math.max(2, 0.25 * thetaStep * diagonal),
     maxLines: options.maxLines ?? 400,
   };
 }
@@ -107,12 +123,33 @@ export function detectSegments(
     sin[t] = Math.sin(theta);
   }
 
-  // Collect the edge pixels once. The transform walks them repeatedly and
-  // scanning a million-pixel array each time would dominate the cost.
+  // Collect the edge pixels once, bucketed by the direction their own gradient
+  // points. The transform walks them repeatedly and scanning a million-pixel
+  // array each time would dominate the cost.
+  //
+  // The buckets are not only about the accumulation. Every peak below has to
+  // find the pixels that lie along it, and the filter it applies is exactly
+  // "is this pixel's gradient near the peak's angle" — so bucketing by that
+  // angle turns a full sweep of the pixel list per peak into a sweep of the
+  // handful of buckets the peak can draw from. On a photograph with forty
+  // creases nobody notices; on a box-pleated pattern with three thousand it is
+  // the difference between a second and a minute.
   const pixels: number[] = [];
+  const byDirection: number[][] = Array.from({ length: thetaBins }, () => []);
+  const binOf = (index: number): number =>
+    Math.min(
+      thetaBins - 1,
+      Math.floor(
+        ((((direction[index] ?? 0) % Math.PI) + Math.PI) % Math.PI) / (Math.PI / thetaBins),
+      ),
+    );
+
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
-      if (data[y * width + x] === 1) pixels.push(y * width + x);
+      const index = y * width + x;
+      if (data[index] !== 1) continue;
+      pixels.push(index);
+      byDirection[binOf(index)]!.push(index);
     }
   }
   if (pixels.length === 0) return [];
@@ -155,17 +192,25 @@ export function detectSegments(
     const rho = peak.rho - rhoOffset;
 
     // Everything still unclaimed that lies on this line and runs along it.
+    // Only the direction buckets whose pixels could pass the gradient test are
+    // visited; the test itself still runs, so this is a shortlist rather than a
+    // different rule.
     const along: { t: number; index: number }[] = [];
-    for (const index of pixels) {
-      if (consumed[index] === 1) continue;
-      const x = index % width;
-      const y = (index - x) / width;
-      if (Math.abs(x * c + y * s - rho) > config.tolerance) continue;
+    for (let offset = -windowBins - 1; offset <= windowBins + 1; offset += 1) {
+      const bucket = byDirection[(peak.theta + offset + thetaBins) % thetaBins];
+      if (!bucket) continue;
 
-      const gradient = ((direction[index] ?? 0) % Math.PI + Math.PI) % Math.PI;
-      if (angleDistance(gradient, theta) > config.gradientWindow) continue;
+      for (const index of bucket) {
+        if (consumed[index] === 1) continue;
+        const x = index % width;
+        const y = (index - x) / width;
+        if (Math.abs(x * c + y * s - rho) > config.tolerance) continue;
 
-      along.push({ t: -x * s + y * c, index });
+        const gradient = ((direction[index] ?? 0) % Math.PI + Math.PI) % Math.PI;
+        if (angleDistance(gradient, theta) > config.gradientWindow) continue;
+
+        along.push({ t: -x * s + y * c, index });
+      }
     }
     if (along.length === 0) continue;
 
@@ -245,16 +290,24 @@ function findPeaks(
   const rhoWindow = 4;
   const accepted: Peak[] = [];
 
+  // Accepted peaks indexed by theta bin. Suppression only ever compares peaks
+  // within `thetaWindow` of each other, so a linear scan of everything
+  // accepted so far is wasted work — and quadratic work, which a dense pattern
+  // yielding thousands of lines feels immediately.
+  const byTheta: Peak[][] = Array.from({ length: thetaBins }, () => []);
+
   for (const candidate of candidates) {
     if (accepted.length >= maxLines) break;
-    const clash = accepted.some((peak) => {
-      const dTheta = Math.min(
-        Math.abs(peak.theta - candidate.theta),
-        thetaBins - Math.abs(peak.theta - candidate.theta),
-      );
-      return dTheta <= thetaWindow && Math.abs(peak.rho - candidate.rho) <= rhoWindow;
-    });
-    if (!clash) accepted.push(candidate);
+
+    let clash = false;
+    for (let offset = -thetaWindow; offset <= thetaWindow && !clash; offset += 1) {
+      const bucket = byTheta[(candidate.theta + offset + thetaBins) % thetaBins]!;
+      clash = bucket.some((peak) => Math.abs(peak.rho - candidate.rho) <= rhoWindow);
+    }
+    if (clash) continue;
+
+    accepted.push(candidate);
+    byTheta[candidate.theta]!.push(candidate);
   }
 
   return accepted;

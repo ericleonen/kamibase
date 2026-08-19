@@ -132,7 +132,7 @@ export default async function FoldPage({
       </div>
 
       <div className="mx-auto max-w-2xl">
-        <CommentThread target={{ kind: "fold", foldId: fold.id }} />
+        <CommentThread target={{ kind: "fold", foldId: fold.id }} bare />
       </div>
     </div>
   );
