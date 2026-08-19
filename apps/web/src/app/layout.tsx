@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AppShell } from "@/components/AppShell";
 import { SiteHeader } from "@/components/SiteHeader";
 import { metadataSiteUrl } from "@/lib/site-url";
 import "./globals.css";
@@ -26,37 +27,48 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen">
-        <SiteHeader />
-        <main className="mx-auto max-w-[1600px] px-4 py-6">{children}</main>
-        <footer
-          className="print-hidden mx-auto max-w-[1600px] px-4 py-6 text-xs"
-          style={{ color: "var(--text-muted)" }}
+        {/*
+         * The chrome is passed in rather than rendered here, so the shell can
+         * drop it for the editor without any of it becoming a client
+         * component: `SiteHeader` still runs on the server and reads the
+         * session, it just does so as a prop.
+         */}
+        <AppShell
+          header={<SiteHeader />}
+          footer={
+            <footer
+              className="print-hidden mx-auto max-w-[1600px] px-4 py-6 text-xs"
+              style={{ color: "var(--text-muted)" }}
+            >
+              <p className="max-w-3xl">
+                <Link href="/explore" className="underline">
+                  Explore
+                </Link>{" "}
+                ·{" "}
+                <a
+                  className="underline"
+                  href="https://github.com/edemaine/fold"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  FOLD
+                </a>{" "}
+                ·{" "}
+                <a
+                  className="underline"
+                  href="https://origamisimulator.org/"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  Origami Simulator
+                </a>{" "}
+                (MIT), by Amanda Ghassaei, Erik Demaine and Neil Gershenfeld
+              </p>
+            </footer>
+          }
         >
-          <p className="max-w-3xl">
-            <Link href="/explore" className="underline">
-              Explore
-            </Link>{" "}
-            ·{" "}
-            <a
-              className="underline"
-              href="https://github.com/edemaine/fold"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              FOLD
-            </a>{" "}
-            ·{" "}
-            <a
-              className="underline"
-              href="https://origamisimulator.org/"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              Origami Simulator
-            </a>{" "}
-            (MIT), by Amanda Ghassaei, Erik Demaine and Neil Gershenfeld
-          </p>
-        </footer>
+          {children}
+        </AppShell>
       </body>
     </html>
   );
