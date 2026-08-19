@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ORIGAMI_SIMULATOR_PALETTE, type EdgeAssignment } from "@kamibase/core";
 import type { VertexMark } from "@/lib/editor/analysis";
+import { gridLines, type GridSpec } from "@/lib/editor/grid";
 import { segmentAt, snapPoint, type EditorDoc } from "@/lib/editor/model";
 import type { PanZoom } from "@/lib/viewport/use-pan-zoom";
 
@@ -13,8 +14,7 @@ export interface EditorCanvasProps {
   readonly tool: EditorTool;
   readonly assignment: EdgeAssignment;
   /** The snap radius is screen-relative, so it is not part of this. */
-  readonly snap: { readonly divisions: number; readonly snapToVertices: boolean };
-  readonly gridDivisions: number;
+  readonly snap: { readonly grid: GridSpec; readonly snapToVertices: boolean };
   readonly vertexMarks: readonly VertexMark[];
   readonly showMarks: boolean;
   /** The viewport, owned by the editor so its chrome can drive it too. */
@@ -71,7 +71,6 @@ export function EditorCanvas({
   tool,
   assignment,
   snap,
-  gridDivisions,
   vertexMarks,
   showMarks,
   panZoom,
@@ -102,12 +101,18 @@ export function EditorCanvas({
     [panZoom],
   );
 
-  const { divisions, snapToVertices } = snap;
+  const { grid, snapToVertices } = snap;
   const snapWith = useCallback(
     (point: [number, number], document_: EditorDoc): [number, number] =>
-      snapPoint(point, document_, { divisions, snapToVertices, radius: px(SNAP_PX) }),
-    [divisions, px, snapToVertices],
+      snapPoint(point, document_, { grid, snapToVertices, radius: px(SNAP_PX) }),
+    [grid, px, snapToVertices],
   );
+
+  // Recomputed only when the lattice changes, not on every pan: at 64
+  // divisions on the diagonal this is a couple of hundred clipped segments,
+  // and rebuilding them mid-drag is exactly the kind of work that turns a
+  // smooth canvas into a stuttering one.
+  const lattice = useMemo(() => gridLines(grid), [grid]);
 
   const onPointerDown = useCallback(
     (event: React.PointerEvent<SVGSVGElement>) => {
@@ -177,11 +182,6 @@ export function EditorCanvas({
     [assignment, doc, onDraw, panZoom, snapWith, start, toPaper, tool],
   );
 
-  const gridLines: number[] = [];
-  if (gridDivisions > 0) {
-    for (let i = 1; i < gridDivisions; i += 1) gridLines.push(i / gridDivisions);
-  }
-
   return (
     <svg
       ref={panZoom.ref}
@@ -222,12 +222,20 @@ export function EditorCanvas({
           />
         )}
 
-        {gridLines.map((t) => (
-          <g key={t} stroke="var(--border)" strokeWidth={px(GRID_PX)}>
-            <line x1={t} y1={0} x2={t} y2={1} />
-            <line x1={0} y1={t} x2={1} y2={t} />
-          </g>
-        ))}
+        {/* The lattice. Drawn in paper coordinates like everything else, so a
+            rotated grid needs no special case: `gridLines` has already turned
+            it into segments clipped to the sheet. */}
+        <g stroke="var(--border)" strokeWidth={px(GRID_PX)}>
+          {lattice.map((line, index) => (
+            <line
+              key={`${index}-${line.x1},${line.y1}`}
+              x1={line.x1}
+              y1={1 - line.y1}
+              x2={line.x2}
+              y2={1 - line.y2}
+            />
+          ))}
+        </g>
 
         {doc.map((segment, index) => (
           <line

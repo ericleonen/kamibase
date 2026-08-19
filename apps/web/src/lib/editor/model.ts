@@ -5,6 +5,7 @@ import {
   type EdgeAssignment,
   type Segment,
 } from "@kamibase/core";
+import { snapToGridSpec, type GridSpec } from "./grid";
 
 /**
  * The editor's document.
@@ -122,8 +123,8 @@ function sameEndpoints(a: EditorSegment, b: EditorSegment, epsilon = 1e-9): bool
 /* -------------------------------------------------------------------------- */
 
 export interface SnapOptions {
-  /** n×n grid. 0 disables grid snapping. */
-  readonly divisions: number;
+  /** The lattice to snap to. See `grid.ts`; `NO_GRID` disables it. */
+  readonly grid: GridSpec;
   /** Also snap to the endpoints of existing creases. */
   readonly snapToVertices: boolean;
   /** Snap radius in unit coordinates. */
@@ -161,15 +162,9 @@ export function snapPoint(
     if (best) return best;
   }
 
-  if (options.divisions > 0) {
-    const step = 1 / options.divisions;
-    const snapped: [number, number] = [
-      Math.round(point[0] / step) * step,
-      Math.round(point[1] / step) * step,
-    ];
-    if (Math.hypot(snapped[0] - point[0], snapped[1] - point[1]) <= options.radius) {
-      return [round9(snapped[0]), round9(snapped[1])];
-    }
+  const snapped = snapToGridSpec(point, options.grid);
+  if (snapped && Math.hypot(snapped[0] - point[0], snapped[1] - point[1]) <= options.radius) {
+    return [round9(snapped[0]), round9(snapped[1])];
   }
 
   return [round9(point[0]), round9(point[1])];

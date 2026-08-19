@@ -7,7 +7,7 @@ import {
 import { inferAssignments, type AssignmentResult } from "./assign.js";
 import { detectSegments, type HoughOptions } from "./hough.js";
 import { extractInk, type InkLayer, type InkOptions } from "./ink.js";
-import type { GrayImage } from "./image.js";
+import { createGray, type GrayImage } from "./image.js";
 import { downscaleRgb, profileRaster, toGray, type RgbImage } from "./raster.js";
 import {
   dominantAngles,
@@ -94,7 +94,14 @@ export interface LineArtResult {
     readonly assignment: EdgeAssignment;
     readonly confidence: number;
   }[];
-  /** The working image, in grey, for the editor to trace against. */
+  /**
+   * The drawing itself, in grey, cropped to the paper.
+   *
+   * Cropped rather than whole, so that it lines up with the creases: the
+   * editor draws it under the pattern at exactly the paper's extent, and a
+   * backdrop including the file's margin would sit a few percent off and
+   * quietly mislead every line traced against it.
+   */
   readonly rectified: GrayImage;
   /** Detected creases before snapping and healing. For a preview. */
   readonly rawSegments: readonly Line[];
@@ -352,7 +359,7 @@ export function scanLineArt(image: RgbImage, options: LineArtOptions = {}): Line
 
   return {
     creases,
-    rectified: toGray(work),
+    rectified: cropToPaper(toGray(work), paperBox),
     rawSegments,
     grid,
     paper,
@@ -498,6 +505,25 @@ function joinByAssignment(
       },
     );
     for (const line of merged) out.push({ line, assignment });
+  }
+  return out;
+}
+
+/** The paper's own pixels, so a backdrop lines up with the creases exactly. */
+function cropToPaper(
+  image: GrayImage,
+  box: { x: number; y: number; width: number; height: number },
+): GrayImage {
+  const width = Math.max(1, Math.round(box.width) + 1);
+  const height = Math.max(1, Math.round(box.height) + 1);
+  const out = createGray(width, height);
+
+  for (let y = 0; y < height; y += 1) {
+    const sy = Math.min(image.height - 1, Math.max(0, Math.round(box.y) + y));
+    for (let x = 0; x < width; x += 1) {
+      const sx = Math.min(image.width - 1, Math.max(0, Math.round(box.x) + x));
+      out.data[y * width + x] = image.data[sy * image.width + sx] ?? 1;
+    }
   }
   return out;
 }

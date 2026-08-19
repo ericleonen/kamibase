@@ -9,10 +9,12 @@ import {
   Eraser,
   Hand,
   PaintBucket,
+  Link2,
   PanelRight,
   PenLine,
   Redo2,
   Undo2,
+  Unlink,
   X,
 } from "lucide-react";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
@@ -39,6 +41,16 @@ import {
   undo,
   type EditorDoc,
 } from "@/lib/editor/model";
+import {
+  ANGLE_PRESETS,
+  GRID_PRESETS,
+  MAX_DIVISIONS,
+  describeGrid,
+  formatAngle,
+  isGridVisible,
+  normalizeGrid,
+  type GridSpec,
+} from "@/lib/editor/grid";
 import { renderDownload, DOWNLOAD_FORMATS, FORMAT_LABELS } from "@/lib/downloads";
 import { useModifierLabel } from "@/lib/viewport/platform";
 import { ZOOM_STEP, usePanZoom } from "@/lib/viewport/use-pan-zoom";
@@ -71,10 +83,11 @@ const TOOLS: {
   { key: "pan", label: "Pan", hotkey: "h", hint: "Drag to move the paper", Icon: Hand },
 ];
 
-const GRIDS = [0, 4, 8, 16, 22] as const;
-
 /** The properties panel, in CSS pixels, so the fit can allow for it. */
 const PANEL_WIDTH = 280;
+
+const DEFAULT_GRID: GridSpec = { x: 8, y: 8, angleDegrees: 0 };
+const GRID_KEY = "kamibase:editor:grid";
 
 export interface CreasePatternEditorProps {
   /** Starting geometry. Defaults to an empty square of paper. */
@@ -121,7 +134,15 @@ export function CreasePatternEditor({
   const [history, setHistory] = useState(() => initHistory(initialDoc ?? emptyPaper()));
   const [tool, setTool] = useState<EditorTool>("draw");
   const [assignment, setAssignment] = useState<EdgeAssignment>("M");
-  const [gridDivisions, setGridDivisions] = useState(8);
+  const [grid, setGrid] = useState<GridSpec>(DEFAULT_GRID);
+  /*
+   * Whether typing in one division field types in both.
+   *
+   * On by default because the overwhelming majority of grids are square, and
+   * making somebody type 32 twice to get a 32 grid would be a worse default
+   * than the five fixed buttons this replaced.
+   */
+  const [linkAxes, setLinkAxes] = useState(true);
   const [snapToVertices, setSnapToVertices] = useState(true);
   const [showMarks, setShowMarks] = useState(true);
   const [simulation, setSimulation] = useState<{ fold: FoldDocument; key: number } | null>(null);
@@ -181,6 +202,34 @@ export function CreasePatternEditor({
   const apply = useCallback((next: (current: EditorDoc) => EditorDoc) => {
     setHistory((current) => commit(current, next(current.present)));
   }, []);
+
+  /*
+   * The grid is remembered across sessions, and remembered globally rather
+   * than per document.
+   *
+   * Globally because it is a property of how somebody works, not of the file:
+   * a designer who lays out on a 32 grid lays out every pattern on one, and
+   * having to say so again in each new document would be worse than the five
+   * fixed buttons this replaced. It is read after mount rather than in the
+   * initial state so that the server-rendered markup and the first client
+   * render agree.
+   */
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(GRID_KEY);
+      if (stored) setGrid(normalizeGrid({ ...DEFAULT_GRID, ...JSON.parse(stored) }));
+    } catch {
+      // Unparseable or unavailable. The default grid is a fine answer.
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(GRID_KEY, JSON.stringify(grid));
+    } catch {
+      // Private mode, or the quota is full. Not worth interrupting anyone.
+    }
+  }, [grid]);
 
   /* Autosave. localStorage rather than the IndexedDB §4 asks for: this is a
    * single small document, and a synchronous key/value store is the right size
@@ -348,8 +397,7 @@ export function CreasePatternEditor({
           doc={doc}
           tool={tool}
           assignment={assignment}
-          snap={{ divisions: gridDivisions, snapToVertices }}
-          gridDivisions={gridDivisions}
+          snap={{ grid, snapToVertices }}
           vertexMarks={analysis.vertexMarks}
           showMarks={showMarks}
           panZoom={panZoom}
@@ -461,31 +509,14 @@ export function CreasePatternEditor({
               </Group>
             )}
 
-            <Group title="Grid divisions">
-              {/* One row, so the panel's height does not change with a
-                  label's width. */}
-              <div className="grid grid-cols-5 gap-1.5">
-                {GRIDS.map((divisions) => (
-                  <button
-                    key={divisions}
-                    type="button"
-                    onClick={() => setGridDivisions(divisions)}
-                    aria-pressed={gridDivisions === divisions}
-                    title={divisions === 0 ? "No grid" : `${divisions}×${divisions} grid`}
-                    className="min-h-9 rounded-full px-1 text-xs font-bold transition"
-                    style={{
-                      background:
-                        gridDivisions === divisions ? "var(--surface-sunken)" : "transparent",
-                      border: `1px solid ${
-                        gridDivisions === divisions ? "var(--border-strong)" : "var(--border)"
-                      }`,
-                    }}
-                  >
-                    {divisions === 0 ? "None" : divisions}
-                  </button>
-                ))}
-              </div>
-              <div className="mt-2.5 space-y-2">
+            <Group title={describeGrid(grid)}>
+              <GridControls
+                grid={grid}
+                linked={linkAxes}
+                onLinkedChange={setLinkAxes}
+                onChange={setGrid}
+              />
+              <div className="mt-3 space-y-2">
                 <Check
                   label="Snap to existing vertices"
                   checked={snapToVertices}
@@ -723,6 +754,199 @@ function ExportMenu({
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * The grid controls.
+ *
+ * Presets first, because most of the time the answer is one of five numbers
+ * and a chip is faster than a text field. Then the fields, because the rest of
+ * the time it is not: 12 by 18 on a rectangle, 27 because the model wanted
+ * thirds of ninths, 45 degrees because the design is in the 22.5 system. The
+ * old control offered the five chips and nothing else, which is a fine answer
+ * to the common case and no answer at all to the others.
+ *
+ * The link toggle exists so that the common case does not become slower in the
+ * course of making the uncommon one possible: with it on, typing 32 in either
+ * field gives a 32 grid.
+ */
+function GridControls({
+  grid,
+  linked,
+  onLinkedChange,
+  onChange,
+}: {
+  readonly grid: GridSpec;
+  readonly linked: boolean;
+  readonly onLinkedChange: (linked: boolean) => void;
+  readonly onChange: (grid: GridSpec) => void;
+}) {
+  const set = (next: Partial<GridSpec>): void => onChange(normalizeGrid({ ...grid, ...next }));
+
+  const setDivisions = (axis: "x" | "y", value: number): void => {
+    set(linked ? { x: value, y: value } : { [axis]: value });
+  };
+
+  const matchesPreset = (spec: GridSpec): boolean =>
+    spec.x === grid.x && spec.y === grid.y && spec.angleDegrees === grid.angleDegrees;
+
+  return (
+    <div className="space-y-2.5">
+      <div className="grid grid-cols-5 gap-1.5">
+        {GRID_PRESETS.map((preset) => (
+          <button
+            key={preset.label}
+            type="button"
+            onClick={() => onChange(preset.spec)}
+            aria-pressed={matchesPreset(preset.spec)}
+            title={
+              preset.spec.x === 0
+                ? "No grid"
+                : `${preset.spec.x}×${preset.spec.y} grid`
+            }
+            className="min-h-9 rounded-full px-1 text-xs font-bold transition"
+            style={{
+              background: matchesPreset(preset.spec) ? "var(--surface-sunken)" : "transparent",
+              border: `1px solid ${
+                matchesPreset(preset.spec) ? "var(--border-strong)" : "var(--border)"
+              }`,
+            }}
+          >
+            {preset.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex items-end gap-1.5">
+        <NumberField
+          label="Across"
+          value={grid.x}
+          min={0}
+          max={MAX_DIVISIONS}
+          onChange={(value) => setDivisions("x", value)}
+        />
+        <button
+          type="button"
+          onClick={() => {
+            // Turning the link on squares the grid immediately, rather than
+            // waiting for the next keystroke to do it. Anything else leaves
+            // the control claiming the axes are linked while they differ.
+            if (!linked) set({ y: grid.x });
+            onLinkedChange(!linked);
+          }}
+          aria-pressed={linked}
+          title={linked ? "Divisions are linked" : "Divisions are independent"}
+          className="mb-0.5 flex h-9 w-7 shrink-0 items-center justify-center rounded-lg text-xs transition"
+          style={{
+            color: linked ? "var(--text)" : "var(--text-faint)",
+            background: linked ? "var(--surface-sunken)" : "transparent",
+          }}
+        >
+          {linked ? <Link2 className="size-4" aria-hidden /> : <Unlink className="size-4" aria-hidden />}
+        </button>
+        <NumberField
+          label="Down"
+          value={grid.y}
+          min={0}
+          max={MAX_DIVISIONS}
+          onChange={(value) => setDivisions("y", value)}
+        />
+      </div>
+
+      {isGridVisible(grid) && (
+        <div className="space-y-1.5">
+          <div className="flex items-end gap-1.5">
+            <NumberField
+              label="Angle"
+              value={grid.angleDegrees}
+              min={0}
+              max={180}
+              step={0.5}
+              suffix="°"
+              onChange={(value) => set({ angleDegrees: value })}
+            />
+            <div className="mb-0.5 flex flex-1 gap-1">
+              {ANGLE_PRESETS.map((angle) => (
+                <button
+                  key={angle}
+                  type="button"
+                  onClick={() => set({ angleDegrees: angle })}
+                  aria-pressed={grid.angleDegrees === angle}
+                  className="h-9 flex-1 rounded-lg text-[11px] font-bold transition"
+                  style={{
+                    background:
+                      grid.angleDegrees === angle ? "var(--surface-sunken)" : "transparent",
+                    border: `1px solid ${
+                      grid.angleDegrees === angle ? "var(--border-strong)" : "var(--border)"
+                    }`,
+                  }}
+                >
+                  {formatAngle(angle)}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * A labelled number field.
+ *
+ * `type="number"` rather than a slider or a stepper, because the value being
+ * entered is one somebody already knows — "it is a 32 grid" — and every other
+ * control makes them arrive at a number they could have typed. It keeps the
+ * text they are typing rather than the number it parses to, so that clearing
+ * the field to type a new value does not fight back with a 0.
+ */
+function NumberField({
+  label,
+  value,
+  min,
+  max,
+  step = 1,
+  suffix,
+  onChange,
+}: {
+  readonly label: string;
+  readonly value: number;
+  readonly min: number;
+  readonly max: number;
+  readonly step?: number;
+  readonly suffix?: string;
+  readonly onChange: (value: number) => void;
+}) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const shown = draft ?? String(value);
+
+  return (
+    <label className="min-w-0 flex-1">
+      <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide" style={{ color: "var(--text-faint)" }}>
+        {label}
+        {suffix}
+      </span>
+      <input
+        type="number"
+        inputMode="decimal"
+        min={min}
+        max={max}
+        step={step}
+        value={shown}
+        onChange={(event) => {
+          setDraft(event.target.value);
+          const parsed = Number(event.target.value);
+          if (event.target.value !== "" && Number.isFinite(parsed)) {
+            onChange(Math.min(max, Math.max(min, parsed)));
+          }
+        }}
+        onBlur={() => setDraft(null)}
+        className="h-9 w-full rounded-lg px-2 text-sm font-bold tabular-nums"
+        style={{ background: "var(--surface-sunken)", border: "1px solid var(--border)" }}
+      />
+    </label>
   );
 }
 

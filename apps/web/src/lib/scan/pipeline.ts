@@ -1,4 +1,4 @@
-import { fromRgba, scanCreasePattern } from "@kamibase/vision";
+import { readCreasePattern, rgbFromRgba } from "@kamibase/vision";
 import { tuningToOptions, type ScanReport, type ScanRequest } from "./types";
 
 /**
@@ -8,22 +8,40 @@ import { tuningToOptions, type ScanReport, type ScanRequest } from "./types";
  * point: the worker is a performance detail, not a second code path. If the
  * bundler cannot produce one, the page calls this directly and the only
  * difference is that the tab stops painting for a second.
+ *
+ * Colour survives the trip. It used to be discarded here, on the way in, which
+ * threw away the one thing a published crease pattern states outright — a red
+ * line is a designer saying "mountain" — and left the pipeline to rediscover it
+ * from Maekawa, which can only ever get it right up to being inside out.
  */
 export function runScan(request: ScanRequest): ScanReport {
-  const image = fromRgba(request.pixels, request.width, request.height);
+  const image = rgbFromRgba(request.pixels, request.width, request.height);
   const options = tuningToOptions(request.tuning);
 
-  const result = scanCreasePattern(image, {
-    quad: request.quad,
-    workingSize: 900,
-    edges: options.edges,
-    minLengthFraction: options.minLengthFraction,
-    angleStepDegrees: options.angleStepDegrees,
-    grid: options.grid,
-    seed: 1,
+  const result = readCreasePattern(image, {
+    ...(request.kind === undefined ? {} : { kind: request.kind }),
+    photo: {
+      ...(request.quad === undefined ? {} : { quad: request.quad }),
+      workingSize: 900,
+      edges: options.edges,
+      minLengthFraction: options.minLengthFraction,
+      angleStepDegrees: options.angleStepDegrees,
+      grid: options.grid,
+      seed: 1,
+    },
+    lineArt: {
+      // The tuning sliders are about pulling faint creases out of a
+      // photograph. A drawing has no faint creases, so the only one that
+      // carries over is the shortest crease worth keeping — and even that is
+      // scaled down, because a single cell of a 32-grid is 3% of the paper and
+      // the photo default would throw the whole pattern away.
+      minLengthFraction: Math.min(0.04, options.minLengthFraction * 0.25),
+      seed: 1,
+    },
   });
 
   return {
+    kind: result.kind,
     creases: result.creases.map((crease) => ({
       x1: crease.x1,
       y1: crease.y1,
@@ -33,6 +51,8 @@ export function runScan(request: ScanRequest): ScanReport {
       confidence: crease.confidence,
     })),
     grid: result.grid,
+    paper: result.paper,
+    layers: result.layers,
     confidence: result.confidence,
     notes: result.notes,
     maekawaSatisfied: result.assignment.satisfied,
@@ -40,7 +60,8 @@ export function runScan(request: ScanRequest): ScanReport {
     ambiguous: result.assignment.ambiguous,
     oddVertices: result.assignment.oddVertices.length,
     rectified: {
-      size: result.rectified.width,
+      width: result.rectified.width,
+      height: result.rectified.height,
       gray: result.rectified.data,
     },
   };

@@ -1,11 +1,18 @@
 "use client";
 
-import { toRgba } from "@kamibase/vision";
-import { fromRgba, guessPaperQuad, insetQuad } from "@kamibase/vision";
+import {
+  fromRgba,
+  guessPaperQuad,
+  insetQuad,
+  profileRaster,
+  rgbFromRgba,
+  toRgba,
+  type Quad,
+} from "@kamibase/vision";
 import { docFromGraph, type EditorDoc } from "@/lib/editor/model";
 import { loadMedia } from "@/lib/scan/media";
 import { scanImage } from "@/lib/scan/runner";
-import { DEFAULT_TUNING } from "@/lib/scan/types";
+import { DEFAULT_TUNING, type ScanReport } from "@/lib/scan/types";
 import {
   conversionFromScan,
   convertUpload,
@@ -21,9 +28,9 @@ import {
  * asking someone who wanted to draw to first form an opinion about Maekawa.
  *
  * So the decisions are made here instead, with the best settings we have, and
- * the result goes straight to the editor. For a photograph the rectified image
- * comes too, as a backdrop to trace over, which is a better answer to "did it
- * read this right" than any amount of reporting: you can see it underneath.
+ * the result goes straight to the editor. For a picture the image itself comes
+ * too, as a backdrop to trace over, which is a better answer to "did it read
+ * this right" than any amount of reporting: you can see it underneath.
  */
 
 export interface PreparedUpload {
@@ -31,15 +38,16 @@ export interface PreparedUpload {
   readonly slug: string;
   readonly doc: EditorDoc;
   /**
-   * The source, rectified into the unit square, as a data URL. Present for
-   * photographs and video only.
+   * The image the creases were read from, as a data URL, to trace over.
+   * Present for photographs, video and drawings; never for a parsed file.
    *
-   * Only when it is *exactly* aligned. The rectified square is the very image
-   * the creases were detected in, so it lines up by construction. A raw SVG
-   * would not: `ingest` normalizes a pattern's bounding box to the unit square
-   * preserving aspect, and the file's own viewBox rarely matches that, so a
-   * backdrop from one would sit a few percent off and quietly mislead every
-   * line traced against it.
+   * Only when it is *exactly* aligned. A rectified photograph and a drawing
+   * cropped to its paper are both the very pixels the creases were detected
+   * in, so they line up by construction. A raw SVG would not: `ingest`
+   * normalizes a pattern's bounding box to the unit square preserving aspect,
+   * and the file's own viewBox rarely matches that, so a backdrop from one
+   * would sit a few percent off and quietly mislead every line traced against
+   * it.
    */
   readonly backdrop?: string;
 }
@@ -118,15 +126,29 @@ async function prepareMedia(file: File): Promise<PrepareResult> {
     };
   }
 
-  // The corners, guessed and not asked about. Getting them wrong costs some
-  // accuracy in the angles; asking costs a step, and the backdrop lets anyone
-  // see and fix the result by hand anyway.
-  const gray = fromRgba(frame.data, frame.width, frame.height);
-  let quad;
-  try {
-    quad = guessPaperQuad(gray);
-  } catch {
-    quad = insetQuad(gray, 0.02);
+  /*
+   * Corners, but only for a photograph.
+   *
+   * A drawing has no perspective to undo and its paper is found from where the
+   * ink is, so handing it a guessed quadrilateral does nothing but crop it —
+   * and `guessPaperQuad` looking for a bright rectangle on a dark ground finds
+   * something arbitrary in a picture that is white almost everywhere. Asking
+   * the same question of both would be asking a question only one of them has.
+   */
+  const rgb = rgbFromRgba(frame.data, frame.width, frame.height);
+  const lineArt = profileRaster(rgb).lineArt;
+
+  let quad: Quad | undefined;
+  if (!lineArt) {
+    // Guessed and not asked about. Getting them wrong costs some accuracy in
+    // the angles; asking costs a step, and the backdrop lets anyone see and
+    // fix the result by hand anyway.
+    const gray = fromRgba(frame.data, frame.width, frame.height);
+    try {
+      quad = guessPaperQuad(gray);
+    } catch {
+      quad = insetQuad(gray, 0.02);
+    }
   }
 
   try {
@@ -134,7 +156,7 @@ async function prepareMedia(file: File): Promise<PrepareResult> {
       width: frame.width,
       height: frame.height,
       pixels: new Uint8ClampedArray(frame.data),
-      quad,
+      ...(quad === undefined ? {} : { quad }),
       tuning: DEFAULT_TUNING,
     });
 
@@ -147,12 +169,12 @@ async function prepareMedia(file: File): Promise<PrepareResult> {
         assignment: crease.assignment,
       })),
       run.report.confidence,
-      [],
+      run.report.notes,
       file.name,
     );
     if (!converted.ok) return { ok: false, error: converted.message };
 
-    const backdrop = rectifiedDataUrl(run.report.rectified);
+    const backdrop = backdropFor(run.report);
     return {
       ok: true,
       upload: {
@@ -170,21 +192,34 @@ async function prepareMedia(file: File): Promise<PrepareResult> {
   }
 }
 
-/** The rectified square as a PNG data URL, for the canvas to sit on top of. */
-function rectifiedDataUrl(rectified: { size: number; gray: Float32Array }): string | undefined {
+/**
+ * The image the creases were read from, as a PNG data URL, for the canvas to
+ * sit on top of.
+ *
+ * Offered only when it lines up. The editor draws the backdrop across the unit
+ * square exactly, and `ingest` normalizes a pattern's bounding box into that
+ * square preserving aspect — so for a sheet that is not square the two disagree
+ * by however much the aspect differs, and a backdrop that is a few percent off
+ * is worse than none: every line traced against it inherits the error, and
+ * nothing on screen says so.
+ */
+function backdropFor(report: ScanReport): string | undefined {
+  const { paper, rectified } = report;
+  if (Math.abs(paper.width / paper.height - 1) > 0.01) return undefined;
+
   try {
     const canvas = document.createElement("canvas");
-    canvas.width = rectified.size;
-    canvas.height = rectified.size;
+    canvas.width = rectified.width;
+    canvas.height = rectified.height;
     const context = canvas.getContext("2d");
     if (!context) return undefined;
 
     const rgba = toRgba({
-      width: rectified.size,
-      height: rectified.size,
+      width: rectified.width,
+      height: rectified.height,
       data: rectified.gray,
     });
-    const image = context.createImageData(rectified.size, rectified.size);
+    const image = context.createImageData(rectified.width, rectified.height);
     image.data.set(rgba);
     context.putImageData(image, 0, 0);
     return canvas.toDataURL("image/png");

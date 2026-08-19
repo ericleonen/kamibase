@@ -17,6 +17,12 @@ import {
   undo,
   type EditorDoc,
 } from "@/lib/editor/model";
+import { NO_GRID, type GridSpec } from "@/lib/editor/grid";
+
+/** The square, orthogonal grid the editor used to be limited to. */
+function square(divisions: number): GridSpec {
+  return { x: divisions, y: divisions, angleDegrees: 0 };
+}
 
 const M = { x1: 0, y1: 0, x2: 1, y2: 1, assignment: "M" } as const;
 
@@ -94,7 +100,7 @@ describe("snapPoint", () => {
 
   it("snaps to the grid when close enough", () => {
     const snapped = snapPoint([0.26, 0.24], doc, {
-      divisions: 4,
+      grid: square(4),
       snapToVertices: false,
       radius: 0.05,
     });
@@ -103,7 +109,7 @@ describe("snapPoint", () => {
 
   it("leaves a point alone when the grid is too far away", () => {
     const snapped = snapPoint([0.4, 0.4], doc, {
-      divisions: 4,
+      grid: square(4),
       snapToVertices: false,
       radius: 0.02,
     });
@@ -112,7 +118,7 @@ describe("snapPoint", () => {
 
   it("does not snap at all with the grid off", () => {
     expect(
-      snapPoint([0.37, 0.61], doc, { divisions: 0, snapToVertices: false, radius: 0.05 }),
+      snapPoint([0.37, 0.61], doc, { grid: NO_GRID, snapToVertices: false, radius: 0.05 }),
     ).toEqual([0.37, 0.61]);
   });
 
@@ -121,7 +127,7 @@ describe("snapPoint", () => {
     // that lands on the grid nearby leaves a T-junction (§2.4.6).
     const withCentre = addSegment(doc, { x1: 0.5, y1: 0.5, x2: 0.9, y2: 0.9, assignment: "M" });
     const snapped = snapPoint([0.52, 0.52], withCentre, {
-      divisions: 8,
+      grid: square(8),
       snapToVertices: true,
       radius: 0.06,
     });
@@ -130,7 +136,7 @@ describe("snapPoint", () => {
 
   it("rounds to the canonical 9 decimal places", () => {
     const snapped = snapPoint([1 / 3, 2 / 3], doc, {
-      divisions: 0,
+      grid: NO_GRID,
       snapToVertices: false,
       radius: 0,
     });
@@ -140,7 +146,7 @@ describe("snapPoint", () => {
 
   it("never produces negative zero", () => {
     const snapped = snapPoint([-1e-12, 0], doc, {
-      divisions: 0,
+      grid: NO_GRID,
       snapToVertices: false,
       radius: 0,
     });
