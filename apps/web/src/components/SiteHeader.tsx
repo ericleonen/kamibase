@@ -48,15 +48,19 @@ export async function SiteHeader({ query }: { readonly query?: string }) {
           Explore
         </Link>
 
-        <Link
-          href="/feed"
-          className="hidden rounded-full px-3.5 py-2 text-sm font-semibold transition hover:opacity-70 md:block"
-        >
-          Feed
-        </Link>
+        {/* A feed of the people you follow is nobody's feed until you have an
+            account, so it is not offered until you do. */}
+        {user && (
+          <Link
+            href="/feed"
+            className="hidden rounded-full px-3.5 py-2 text-sm font-semibold transition hover:opacity-70 md:block"
+          >
+            Feed
+          </Link>
+        )}
 
         {/* Bring a file or start blank. Either way the editor is the next screen. */}
-        <NewMenu />
+        <NewMenu signedIn={user !== null} />
 
         {/* A plain GET form, so search works with JavaScript disabled. */}
         <form action="/explore" className="min-w-0 flex-1">
