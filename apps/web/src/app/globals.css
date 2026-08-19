@@ -79,6 +79,12 @@ body {
   color: var(--text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  /*
+   * No rubber-banding past the ends of the page. On a phone, a canvas that
+   * declines a gesture hands it to the page, and the page bouncing (or worse,
+   * pull-to-refresh firing mid-drawing) is not what anyone meant by "pan".
+   */
+  overscroll-behavior: none;
 }
 
 /* Keyboard focus, in brand. */
@@ -222,6 +228,19 @@ body {
   .print-sheet svg {
     width: 100% !important;
     height: 100% !important;
+  }
+
+  /*
+   * Paper prints at its own scale, not at whatever the viewport happened to be
+   * showing. Printing a pattern someone had zoomed into would otherwise put a
+   * corner of it on the page at an arbitrary size, which defeats the entire
+   * point of printing to a recommended size.
+   */
+  .kami-pan-layer {
+    position: static !important;
+    width: 100% !important;
+    height: 100% !important;
+    transform: none !important;
   }
 
   @page {
