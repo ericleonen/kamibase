@@ -76,13 +76,30 @@ export function FoldGrid({
   folds,
   showPattern = true,
   titles,
+  layout = "masonry",
 }: {
   readonly folds: readonly Fold[];
   readonly showPattern?: boolean;
   readonly titles?: Readonly<Record<string, string>>;
+  /**
+   * `masonry` fills the browsing surfaces, where the grid is as wide as the
+   * window and the cards are the whole point.
+   *
+   * `column` is for a card that sits inside a narrow reading column. The
+   * masonry is CSS columns, and CSS columns count off the *viewport* rather
+   * than the container — so a 48rem column on a 1600px screen would lay five
+   * columns of cards into it and each would be eighty pixels wide.
+   */
+  readonly layout?: "masonry" | "column";
 }) {
   return (
-    <div className="masonry">
+    <div
+      className={
+        layout === "masonry"
+          ? "masonry"
+          : "grid grid-cols-2 gap-3 sm:grid-cols-3"
+      }
+    >
       {folds.map((fold) => (
         <FoldCard
           key={fold.id}

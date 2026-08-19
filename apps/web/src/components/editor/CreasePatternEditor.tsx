@@ -509,7 +509,7 @@ export function CreasePatternEditor({
               </Group>
             )}
 
-            <Group title={describeGrid(grid)}>
+            <Group title="Grid" hint={describeGrid(grid)}>
               <GridControls
                 grid={grid}
                 linked={linkAxes}
@@ -634,18 +634,26 @@ function flatFoldabilityLine(analysis: ReturnType<typeof analyse>): string {
 /** A titled block in the properties panel. One place decides the spacing. */
 function Group({
   title,
+  hint,
   children,
 }: {
   readonly title: string;
+  /** What the block currently says, in words, beside its name. */
+  readonly hint?: string;
   readonly children: React.ReactNode;
 }) {
   return (
     <section>
       <h2
-        className="mb-2 text-xs font-bold uppercase tracking-wide"
+        className="mb-2 flex flex-wrap items-baseline gap-x-2 text-xs font-bold uppercase tracking-wide"
         style={{ color: "var(--text-muted)" }}
       >
         {title}
+        {hint && (
+          <span className="font-normal normal-case tracking-normal" style={{ color: "var(--text-faint)" }}>
+            {hint}
+          </span>
+        )}
       </h2>
       {children}
     </section>

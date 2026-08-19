@@ -33,6 +33,16 @@ export interface CreasePatternViewerProps {
   /** `kami:paper.recommendedSizeMm`, for print-to-scale. */
   readonly printSizeMm?: number;
   readonly title: string;
+  /**
+   * Sizing for the frame when it is not expanded.
+   *
+   * A square filling its column is the right default for a browsing surface
+   * and the wrong one inside a reading column, where 48rem square is the whole
+   * screen on a laptop. The pattern is fitted into whatever box it is given and
+   * letterboxes rather than stretching, so capping the height costs nothing but
+   * some side margin.
+   */
+  readonly frameClassName?: string;
 }
 
 /**
@@ -62,6 +72,7 @@ export function CreasePatternViewer({
   present,
   printSizeMm,
   title,
+  frameClassName = "aspect-square w-full",
 }: CreasePatternViewerProps) {
   const styleId = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [hidden, setHidden] = useState<ReadonlySet<EdgeAssignment>>(new Set());
