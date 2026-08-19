@@ -5,26 +5,22 @@ import type { PatternSummary } from "@/lib/patterns";
  * Pinterest-shaped card: image first, chrome only on hover, everything else
  * quiet.
  *
- * The frame height varies per card so the masonry actually staggers. Crease
- * patterns are all square, and a grid of identical squares reads as a table
- * rather than a feed. So the *frame* changes aspect while the pattern inside
- * stays `object-contain`. The geometry is never distorted; only the amount of
- * mat around it changes.
+ * Every frame is the same square. Crease patterns are square, so a frame that
+ * changed aspect per card was mat, not content: the same drawing sat in a
+ * randomly taller or shorter box, which read as inconsistent rather than
+ * deliberate. One size means one size for the pattern too, so cards are
+ * comparable at a glance.
+ *
+ * The stagger the varying frames used to provide comes from `.masonry-stagger`
+ * instead: every other card carries extra vertical margin, which offsets the
+ * columns without touching how big anything is drawn. See globals.css.
  */
-const FRAMES = ["aspect-square", "aspect-[4/5]", "aspect-[5/6]", "aspect-[3/4]"] as const;
-
-function frameFor(id: string): string {
-  let hash = 0;
-  for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  return FRAMES[hash % FRAMES.length]!;
-}
-
 export function PatternCard({ pattern }: { readonly pattern: PatternSummary }) {
   return (
     <article className="group">
       <Link href={`/p/${pattern.id}`} className="block">
         <div
-          className={`relative overflow-hidden rounded-2xl ${frameFor(pattern.id)}`}
+          className="relative aspect-square overflow-hidden rounded-2xl"
           style={{ background: "var(--surface-raised)", boxShadow: "var(--shadow-card)" }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- SVG from our own renderer */}

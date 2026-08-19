@@ -11,14 +11,23 @@ export const metadata: Metadata = {
 };
 
 /**
- * The home page: one screen, no scrolling.
+ * The home page: a headline, a handful of patterns, two buttons.
  *
- * A headline, four patterns, two buttons. It was six sections deep with a
- * roadmap's worth of copy, all of which said what the library is rather than
- * showing it, and none of which anybody scrolled to read.
+ * It was six sections deep with a roadmap's worth of copy, all of which said
+ * what the library is rather than showing it, and none of which anybody
+ * scrolled to read. The patterns do that job instead — but only if they are
+ * big enough to read as drawings.
+ *
+ * That is the constraint the previous version got backwards. It pinned the
+ * whole page to one non-scrolling screen and let the thumbnails absorb every
+ * bit of the squeeze, which on a phone left four columns of roughly 70px each:
+ * four smudges. A crease pattern that small conveys nothing, so the no-scroll
+ * rule is gone. The grid reflows to two columns on a phone and four from
+ * `sm` up, and the tiles are sized in real terms rather than as whatever is
+ * left over.
  */
 
-/** How many patterns the front page shows. Four fits one row at every width. */
+/** How many patterns the front page shows. Four: one row wide, two rows narrow. */
 const FEATURED = 4;
 
 export default async function HomePage() {
@@ -27,28 +36,44 @@ export default async function HomePage() {
 
   return (
     /*
-     * Exactly the space left after the header, the main padding and the
-     * footer. Not `min-h`: the thumbnails are the flexible part, and giving
-     * this a definite height is what lets them shrink into a short window
-     * instead of pushing the page past the fold. `svh` rather than `vh` so a
-     * phone's collapsing address bar does not count twice.
+     * `min-h` on the viewport minus the chrome, so on a tall desktop window the
+     * content still centres and fills the screen, while on a phone it is free
+     * to run past the fold rather than crushing the patterns to fit. `svh`
+     * rather than `vh` so a collapsing address bar does not count twice.
      */
-    <div className="flex h-[calc(100svh-13rem)] flex-col justify-center gap-6">
+    <div className="flex min-h-[calc(100svh-13rem)] flex-col justify-center gap-8 py-4 sm:gap-10 sm:py-6">
       <header className="mx-auto max-w-3xl shrink-0 text-center">
-        <h1 className="text-3xl font-black tracking-tight text-balance sm:text-4xl lg:text-5xl">
+        <h1 className="text-[2rem] font-black leading-[1.1] tracking-tight text-balance sm:text-5xl lg:text-6xl">
           A centralized database of origami crease patterns
         </h1>
-        <div className="mt-6 flex flex-wrap justify-center gap-2.5">
+        {/*
+         * The subhead the old page dropped along with the six sections. One
+         * line is not the wall of copy that got cut; it is what tells a first
+         * visitor these are foldable files rather than pictures of paper.
+         */}
+        <p
+          className="mx-auto mt-4 max-w-xl text-balance text-base leading-relaxed sm:mt-5 sm:text-lg"
+          style={{ color: "var(--text-muted)" }}
+        >
+          Real geometry, not screenshots. Browse, fold in 3D, and download every
+          pattern as FOLD, SVG or OPX.
+        </p>
+        {/*
+         * Full-width stacked buttons on a phone, side by side from `sm` up. A
+         * pair of pill buttons wrapping onto two ragged lines is the single
+         * most common way a hero looks broken on a narrow screen.
+         */}
+        <div className="mt-7 flex flex-col justify-center gap-2.5 sm:mt-8 sm:flex-row">
           <Link
             href="/explore"
-            className="rounded-full px-6 py-3 text-sm font-bold transition hover:opacity-85"
+            className="rounded-full px-7 py-3.5 text-base font-bold transition hover:opacity-85 sm:text-sm"
             style={{ background: "var(--brand)", color: "var(--ink)" }}
           >
             Browse {all.length} patterns
           </Link>
           <Link
             href="/edit"
-            className="rounded-full px-6 py-3 text-sm font-bold transition hover:opacity-70"
+            className="rounded-full px-7 py-3.5 text-base font-bold transition hover:opacity-70 sm:text-sm"
             style={{
               background: "var(--surface-raised)",
               border: "1px solid var(--border-strong)",
@@ -60,27 +85,32 @@ export default async function HomePage() {
       </header>
 
       {featured.length > 0 && (
-        /* One row at every width. Four small thumbnails beat two big ones and
-         * a scrollbar. */
-        <section className="flex min-h-0 flex-1 flex-col justify-center">
+        <section className="shrink-0">
           <h2
-            className="mb-2 shrink-0 text-center text-xs font-bold uppercase tracking-widest"
+            className="mb-3 text-center text-xs font-bold uppercase tracking-widest sm:mb-4"
             style={{ color: "var(--text-muted)" }}
           >
             Featured today
           </h2>
           {/*
-           * Grows into a tall window and shrinks into a short one, but only up
-           * to roughly the point where a tile is square. Past that the extra
-           * height is padding around a drawing, which reads as a bug, so the
-           * cap tracks how wide a column actually gets at each breakpoint.
+           * Two columns on a phone, four from `sm` up. Two is the whole fix:
+           * at four, a tile on a 390px screen is about 70px of drawing, and a
+           * crease pattern at 70px is a grey smudge. At two it is nearer 160px,
+           * which is enough to actually see the creases — which is the only
+           * reason to put patterns on the front page at all.
            */}
-          <ul className="mx-auto grid max-h-32 min-h-0 w-full max-w-4xl flex-1 grid-cols-4 gap-3 sm:max-h-52 sm:gap-4 lg:max-h-64">
+          <ul className="mx-auto grid w-full max-w-sm grid-cols-2 gap-4 sm:max-w-4xl sm:grid-cols-4 sm:gap-5">
             {featured.map((pattern) => (
-              <li key={pattern.id} className="min-h-0">
-                <Link href={`/p/${pattern.id}`} className="group flex h-full flex-col">
+              <li key={pattern.id}>
+                <Link href={`/p/${pattern.id}`} className="group block">
+                  {/*
+                   * `aspect-square`, matching the explore grid. The tile is
+                   * sized by the column rather than by whatever vertical space
+                   * happens to be left, so it never collapses on a short
+                   * window.
+                   */}
                   <div
-                    className="min-h-0 flex-1 overflow-hidden rounded-2xl p-3 transition group-hover:opacity-85"
+                    className="aspect-square overflow-hidden rounded-2xl p-3 transition duration-300 group-hover:-translate-y-0.5 sm:p-4"
                     style={{
                       background: "var(--surface-raised)",
                       boxShadow: "var(--shadow-card)",
@@ -90,19 +120,15 @@ export default async function HomePage() {
                     <img
                       src={`/p/${pattern.id}/thumbnail`}
                       alt={pattern.title}
-                      className="size-full object-contain"
+                      className="size-full object-contain transition duration-300 group-hover:scale-[1.03]"
                     />
                   </div>
-                  {/* Wrapped rather than truncated: at four columns on a phone
-                      a clipped title is unreadable, and two short lines are
-                      not. */}
-                  <p className="mt-2 line-clamp-2 shrink-0 text-xs font-bold leading-tight sm:text-sm">
+                  {/* Wrapped rather than truncated: a clipped title is
+                      unreadable, and two short lines are not. */}
+                  <p className="mt-2.5 line-clamp-2 text-sm font-bold leading-tight">
                     {pattern.title}
                   </p>
-                  <p
-                    className="shrink-0 truncate text-xs"
-                    style={{ color: "var(--text-muted)" }}
-                  >
+                  <p className="truncate text-xs" style={{ color: "var(--text-muted)" }}>
                     {pattern.designer}
                   </p>
                 </Link>

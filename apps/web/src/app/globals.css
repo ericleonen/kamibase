@@ -192,6 +192,32 @@ body {
 }
 
 /*
+ * The stagger, for grids whose tiles are all one size.
+ *
+ * `PatternCard` used to vary its frame's aspect ratio so the columns did not
+ * line up. That made the pattern inside it vary in size too, which is the wrong
+ * thing to trade away: the drawing is the content. So the tiles are uniform
+ * squares and the offset comes from margin instead — every other card gets
+ * extra room above and below, which pushes its column out of phase with its
+ * neighbours while every pattern stays the same size.
+ *
+ * Applied per-column-item rather than per-row: `columns` fills top-to-bottom,
+ * so alternating in DOM order alternates down each column, which is exactly the
+ * axis the offset needs to be on.
+ */
+.masonry-stagger > *:nth-child(even) {
+  margin-top: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+@media (min-width: 768px) {
+  .masonry-stagger > *:nth-child(even) {
+    margin-top: 2rem;
+    margin-bottom: 3rem;
+  }
+}
+
+/*
  * Print-to-scale (DESIGN.md §8.3). The viewer sets --print-size-mm from
  * kami:paper.recommendedSizeMm; printing then puts the crease pattern on paper
  * at its real folded size, which is the whole point of having the scale in the
