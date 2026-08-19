@@ -47,8 +47,8 @@ export async function generateMetadata({
  * reading as one undifferentiated scroll because nothing separated them.
  *
  * So: one column, capped at a comfortable measure, everything in the order
- * somebody actually wants it — what it is, what it looks like, what you can do
- * with it, what is known about it, who has folded it, what people said — and a
+ * somebody actually wants it: what it is, what it looks like, what you can do
+ * with it, what is known about it, who has folded it, what people said. And a
  * rule between each of those, because a rule is what separates content for
  * somebody scanning rather than reading.
  */
@@ -112,7 +112,7 @@ export default async function PatternPage({
       {/*
        * Capped in height as well as width. A square viewer filling a 48rem
        * column is 768px tall, which on a laptop is the whole screen and then
-       * some — and the viewer has a fullscreen button for exactly the moment
+       * some, and the viewer has a fullscreen button for exactly the moment
        * somebody wants it that big. The pattern letterboxes inside a wider
        * frame rather than stretching, so a shorter box costs nothing.
        */}

@@ -368,7 +368,7 @@ export function dropShort<T extends Line>(segments: readonly T[], minimum: numbe
  * wrong assumption for a published crease pattern, because the interesting ones
  * are exactly the ones it fails on. A Lang tree-theory base has circle-packing
  * angles in it that are not any nice fraction of anything, and rotating them by
- * three degrees onto the nearest 22.5 does not repair a measurement — it
+ * three degrees onto the nearest 22.5 does not repair a measurement: it
  * destroys a design decision, and it breaks Kawasaki at both ends of every
  * crease it touches.
  *
@@ -587,8 +587,8 @@ function bestLattice(
      *
      * Share alone is not enough, and the failure it lets through is a bad one.
      * Four creases whose ends are all at 0, 1/2 and 1 sit on a 14 lattice just
-     * as exactly as they sit on a 2 lattice — every coordinate is a multiple
-     * of 1/14 — so `share` is 1 for both, and a stray endpoint that misses the
+     * as exactly as they sit on a 2 lattice, since every coordinate is a multiple
+     * of 1/14, so `share` is 1 for both, and a stray endpoint that misses the
      * 2 lattice by a hundredth can hand the answer to the 14. Snapping to it
      * then drags creases onto lines the drawing never had, which does not look
      * like a bad lattice guess, it looks like a mangled pattern.

@@ -14,7 +14,7 @@
  * and none of them were expressible.
  *
  * Three numbers, then: divisions across, divisions down, and an angle. Everything
- * else — where the lines are drawn, what a point snaps to — follows from them.
+ * else, from where the lines are drawn to what a point snaps to, follows from them.
  */
 
 export interface GridSpec {
@@ -44,8 +44,8 @@ export const NO_GRID: GridSpec = { x: 0, y: 0, angleDegrees: 0 };
 /**
  * The ceiling on divisions.
  *
- * Not a limit anybody will meet — a 128 grid is four times the finest anyone
- * box-pleats on — but a typed field needs one, because the cost of drawing the
+ * Not a limit anybody will meet, since a 128 grid is four times the finest anyone
+ * box-pleats on, but a typed field needs one, because the cost of drawing the
  * lattice is linear in it and a stray keystroke should not be able to ask for
  * a hundred thousand lines.
  */
@@ -82,10 +82,16 @@ export function normalizeGrid(grid: GridSpec): GridSpec {
   };
 }
 
+/** Just the divisions, for a control that shows the angle separately. */
+export function describeDivisions(grid: GridSpec): string {
+  if (!isGridVisible(grid)) return "None";
+  return grid.x === grid.y ? `${grid.x}×${grid.x}` : `${grid.x || "–"}×${grid.y || "–"}`;
+}
+
 /** A short description, for a label that has to say what the grid is. */
 export function describeGrid(grid: GridSpec): string {
   if (!isGridVisible(grid)) return "No grid";
-  const size = grid.x === grid.y ? `${grid.x}×${grid.x}` : `${grid.x || "–"}×${grid.y || "–"}`;
+  const size = describeDivisions(grid);
   return grid.angleDegrees === 0 ? size : `${size} at ${formatAngle(grid.angleDegrees)}°`;
 }
 
@@ -102,7 +108,7 @@ export function formatAngle(degrees: number): string {
  *
  * The lattice is the ordinary axis-aligned one, rotated about the paper's
  * centre. Rotating about the centre rather than a corner is what makes 45
- * degrees do the expected thing — the diagonal of the sheet is a lattice line —
+ * degrees do the expected thing, since the diagonal of the sheet is a lattice line,
  * and what makes the grid look the same whichever way the paper is turned.
  *
  * Anchoring at the *origin* rather than the centre matters just as much, and

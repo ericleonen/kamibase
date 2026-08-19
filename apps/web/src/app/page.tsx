@@ -15,7 +15,7 @@ export const metadata: Metadata = {
  *
  * It was six sections deep with a roadmap's worth of copy, all of which said
  * what the library is rather than showing it, and none of which anybody
- * scrolled to read. The patterns do that job instead — but only if they are
+ * scrolled to read. The patterns do that job instead, but only if they are
  * big enough to read as drawings.
  *
  * That is the constraint the previous version got backwards. It pinned the
@@ -96,7 +96,7 @@ export default async function HomePage() {
            * Two columns on a phone, four from `sm` up. Two is the whole fix:
            * at four, a tile on a 390px screen is about 70px of drawing, and a
            * crease pattern at 70px is a grey smudge. At two it is nearer 160px,
-           * which is enough to actually see the creases — which is the only
+           * which is enough to actually see the creases, which is the only
            * reason to put patterns on the front page at all.
            */}
           <ul className="mx-auto grid w-full max-w-sm grid-cols-2 gap-4 sm:max-w-4xl sm:grid-cols-4 sm:gap-5">

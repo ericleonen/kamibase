@@ -299,7 +299,7 @@ describe("making the ends meet", () => {
 
   it("never claims a reading is auto-publishable", () => {
     // DESIGN.md §3.4 puts that line at 0.95. A drawing states its assignments,
-    // so it earns more confidence than a photograph — but the geometry was
+    // so it earns more confidence than a photograph, but the geometry was
     // still read off pixels, and a person should still look at it.
     const result = scanLineArt(renderPattern(basicFold));
     expect(result.confidence).toBeLessThan(0.95);

@@ -38,8 +38,8 @@ import { healGeometry, snapToPaper } from "./weld.js";
  * degrees corrupts rather than repairs. And the assignment is not a mystery: it
  * is written in the colour of every line.
  *
- * So this is a second pipeline, sharing the parts that genuinely generalise —
- * the Hough transform, the segment merge, the graph, the solver — and replacing
+ * So this is a second pipeline, sharing the parts that genuinely generalise
+ * (the Hough transform, the segment merge, the graph, the solver) and replacing
  * the parts that do not:
  *
  *   1. separate  split the drawing into the colours it was drawn with
@@ -130,7 +130,7 @@ export function scanLineArt(image: RgbImage, options: LineArtOptions = {}): Line
   /*
    * Pixels to paper coordinates, with y flipped.
    *
-   * Flipped because a crease pattern is drawn in maths convention — y upwards —
+   * Flipped because a crease pattern is drawn in maths convention, y upwards,
    * and an image is stored with y downwards, and every consumer of this result
    * (the editor canvas, the SVG renderer, `.fold` export) assumes the former.
    * Leaving it alone costs nothing on a symmetric pattern and mirrors every
@@ -218,8 +218,8 @@ export function scanLineArt(image: RgbImage, options: LineArtOptions = {}): Line
   /*
    * The lattice, and how far a coordinate may be moved to reach it.
    *
-   * The tolerance is a *measurement* tolerance — the few pixels a detected
-   * endpoint can be out by — and not a fraction of the cell. Scaling it to the
+   * The tolerance is a *measurement* tolerance, the few pixels a detected
+   * endpoint can be out by, and not a fraction of the cell. Scaling it to the
    * cell was the first attempt and it is a trap: on a coarse lattice a
    * generous fraction of a large cell is an enormous distance, so a 22.5
    * degree pattern that half-fits a 2-grid has every 0.414 dragged to 0.5 and
@@ -242,7 +242,7 @@ export function scanLineArt(image: RgbImage, options: LineArtOptions = {}): Line
    * The first merge ran per layer in pixels, before anything had been
    * straightened. Two fragments of one crease separated by the blot where four
    * other creases cross it are not collinear until the angle snapping has made
-   * them so — measured, they differ by a degree and a half and sit two pixels
+   * them so: measured, they differ by a degree and a half and sit two pixels
    * apart, which is under no tolerance that is also safe to apply to a raw
    * detection. Afterwards they are exactly collinear and join cleanly.
    *
@@ -259,8 +259,8 @@ export function scanLineArt(image: RgbImage, options: LineArtOptions = {}): Line
    * Heal against the paper's outline as well as against the other creases.
    *
    * Without it, a crease that stops eight pixels short of the sheet's edge has
-   * nothing to be pulled onto — the outline is not added until after this
-   * point — so it stays hanging, `planarize` gives it a vertex of degree one,
+   * nothing to be pulled onto, because the outline is not added until after this
+   * point, so it stays hanging, `planarize` gives it a vertex of degree one,
    * and the validator reports a defect that is entirely an artefact of the
    * order these passes run in. The outline is passed as anchored, so it guides
    * without being moved.
@@ -382,7 +382,7 @@ export function isLineArt(image: RgbImage): boolean {
  *
  * A published pattern is nearly always drawn with a margin, and sometimes with
  * a caption. Taking the box of the ink rather than of the file is what makes
- * the paper edge land at 0 and 1 instead of at 0.06 and 0.94 — and everything
+ * the paper edge land at 0 and 1 instead of at 0.06 and 0.94, and everything
  * afterwards, the lattice above all, is stated as a fraction of the paper.
  */
 function inkBounds(
@@ -478,7 +478,7 @@ function trimWhiskers(
  * Join fragments of one crease back together, one assignment at a time.
  *
  * `mergeCollinear` wants the strength and support a Hough peak carries, which
- * these no longer have — they have been snapped and moved since. Both are used
+ * these no longer have, since they have been snapped and moved. Both are used
  * only to weight the merged result, so passing a constant is not a fudge: it
  * says these fragments are equally trustworthy, which after the snapping they
  * are.
@@ -643,7 +643,7 @@ function describeColour(colour: { r: number; g: number; b: number }): string {
  *
  * Two things speak to that. How much of the pattern's assignment came from the
  * drawing rather than from the solver; and whether the topology came out sane,
- * measured by interior vertices with an odd number of creases — which no
+ * measured by interior vertices with an odd number of creases, which no
  * crease pattern has, so every one of them is a crease this reading missed or
  * found twice.
  *

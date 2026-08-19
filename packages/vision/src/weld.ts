@@ -15,14 +15,14 @@ import type { Line } from "./segments.js";
  *
  * Three operations fix it, and the order they run in is the whole design.
  *
- *   1. `weldEndpoints` — ends that nearly coincide become one point.
- *   2. `healJunctions` — an end that nearly touches another crease's body is
+ *   1. `weldEndpoints`: ends that nearly coincide become one point.
+ *   2. `healJunctions`: an end that nearly touches another crease's body is
  *      moved onto it, at the exact intersection of the two lines.
- *   3. `weldEndpoints` again — because step 2 creates new coincidences.
+ *   3. `weldEndpoints` again, because step 2 creates new coincidences.
  *
  * Every one of them repairs a measurement rather than inventing geometry.
  * Nothing moves further than the tolerance, no crease is created, none is
- * deleted, and — this matters more than it sounds — no crease changes
+ * deleted, and, this matters more than it sounds, no crease changes
  * direction, because `healJunctions` slides an endpoint *along its own line* to
  * the intersection rather than pulling it sideways onto its neighbour.
  */
@@ -109,7 +109,7 @@ export function weldEndpoints<T extends Line>(
    *
    * The mean of its points, except that an anchored point wins outright. The
    * paper's outline is exact geometry the caller supplied rather than a
-   * measurement, so a crease tip near a corner should move *to* the corner —
+   * measurement, so a crease tip near a corner should move *to* the corner,
    * averaging the two would drag the corner of the sheet inwards by half the
    * tip's error, which is both wrong and impossible to notice.
    */
@@ -228,7 +228,7 @@ export function healJunctions<T extends Line>(
 /**
  * Weld, heal, weld. The order the comment at the top of this file explains.
  *
- * `anchored` marks lines that are known rather than measured — in practice the
+ * `anchored` marks lines that are known rather than measured. In practice the
  * paper's outline. They take part as targets and never move, so creases land
  * exactly on the sheet's edge instead of pulling it about.
  */

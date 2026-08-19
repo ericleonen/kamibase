@@ -11,7 +11,7 @@ import type { GridAxes } from "./segments.js";
  * Callers hand over pixels. They should not have to know that a photograph of a
  * folded sheet and a PNG of a published crease pattern need almost entirely
  * different treatment, and they certainly should not have to ask the person
- * uploading — "is this a drawing or a photo?" is a question about our
+ * uploading, since "is this a drawing or a photo?" is a question about our
  * implementation, not about their file, and half the answers would be wrong
  * anyway because a screenshot of a drawing is still a drawing.
  *

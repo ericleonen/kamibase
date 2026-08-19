@@ -3,8 +3,8 @@
  * viewer and the editor.
  *
  * Everything here is pure, because the interesting part of a viewport is
- * arithmetic and the fiddly part of getting one right — "zoom towards the
- * cursor, not towards the middle" — is a two-line invariant that is very easy
+ * arithmetic and the fiddly part of getting one right, "zoom towards the
+ * cursor, not towards the middle", is a two-line invariant that is very easy
  * to get subtly wrong and impossible to eyeball afterwards. Pure functions can
  * be tested; a `useState` inside a pointer handler cannot.
  *
@@ -73,7 +73,7 @@ export const IDENTITY_VIEWPORT: Viewport = { x: 0, y: 0, scale: 1 };
  * (±100 per notch), a trackpad (a stream of small deltas) and a pinch
  * gesture (a stream of tiny ctrl-deltas), so the factor is exponential in the
  * delta: that makes the *rate* of zoom consistent across all three, and makes
- * zooming reversible — scroll up N and back down N and you are where you
+ * zooming reversible: scroll up N and back down N and you are where you
  * started, which linear steps do not give you.
  */
 const ZOOM_PER_PIXEL = 0.0025;
@@ -114,8 +114,8 @@ export function fitViewport(content: Size, box: Size, padding: Padding = 0): Vie
  *
  * This is the whole trick of a canvas that feels good: zoom about the pointer
  * and the thing you are looking at stays under the pointer, so you can dive
- * into a corner of a tessellation in one gesture. Zoom about the centre — the
- * old behaviour — and every zoom needs a corrective pan, which is why zooming
+ * into a corner of a tessellation in one gesture. Zoom about the centre, the
+ * old behaviour, and every zoom needs a corrective pan, which is why zooming
  * into anything off-centre used to mean chasing it around the box.
  */
 export function zoomViewport(
@@ -186,7 +186,7 @@ export interface WheelOptions {
    * swallows every wheel event traps the page: you scroll past a pattern and
    * the page stops dead while the pattern zooms. So embedded viewers set this
    * `false` and only claim the gestures that unambiguously mean "zoom this"
-   * — ctrl/⌘+wheel and trackpad pinch — exactly as Google Maps and Figma's own
+   * (ctrl/⌘+wheel and trackpad pinch) exactly as Google Maps and Figma's own
    * embeds do. The fullscreen editor sets it `true`, because there is no page
    * behind it to scroll.
    */

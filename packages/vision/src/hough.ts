@@ -59,7 +59,7 @@ export interface HoughOptions {
    * Defaults to the accumulator's own quantisation error, which is the only
    * defensible value and not an obvious one. A peak's angle is only known to
    * half a theta bin, and half a bin of angular error displaces the line by
-   * half a bin times the distance from the origin — several pixels at the far
+   * half a bin times the distance from the origin, several pixels at the far
    * end of a long crease. Set the tolerance below that and a long crease is
    * *carved into bands*: the peak collects the stretch where its line happens
    * to coincide, claims those pixels, and leaves the ends to be picked up by
@@ -129,7 +129,7 @@ export function detectSegments(
   //
   // The buckets are not only about the accumulation. Every peak below has to
   // find the pixels that lie along it, and the filter it applies is exactly
-  // "is this pixel's gradient near the peak's angle" — so bucketing by that
+  // "is this pixel's gradient near the peak's angle", so bucketing by that
   // angle turns a full sweep of the pixel list per peak into a sweep of the
   // handful of buckets the peak can draw from. On a photograph with forty
   // creases nobody notices; on a box-pleated pattern with three thousand it is
@@ -292,7 +292,7 @@ function findPeaks(
 
   // Accepted peaks indexed by theta bin. Suppression only ever compares peaks
   // within `thetaWindow` of each other, so a linear scan of everything
-  // accepted so far is wasted work — and quadratic work, which a dense pattern
+  // accepted so far is wasted work, and quadratic work at that, which a dense pattern
   // yielding thousands of lines feels immediately.
   const byTheta: Peak[][] = Array.from({ length: thetaBins }, () => []);
 

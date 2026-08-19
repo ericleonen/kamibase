@@ -42,6 +42,15 @@ export interface SimulatorProps {
   readonly fallback: React.ReactNode;
   /** Warn that the solver may not settle. Shown inside the frame, in context. */
   readonly flatFoldable?: boolean;
+  /**
+   * `"preview"` is the small live one: no controls, no camera presets, no
+   * fullscreen button, and the whole frame is a button. It is a picture of the
+   * fold that happens to be moving, and everything you would want to do to it
+   * is somewhere else.
+   */
+  readonly variant?: "full" | "preview";
+  /** Preview only: what clicking the frame does. */
+  readonly onOpen?: () => void;
 }
 
 /**
@@ -66,7 +75,10 @@ export function Simulator({
   title,
   fallback,
   flatFoldable = true,
+  variant = "full",
+  onOpen,
 }: SimulatorProps) {
+  const preview = variant === "preview";
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<KamiSimHandle | null>(null);
@@ -86,6 +98,25 @@ export function Simulator({
   // has already happened and hang forever.
   const foldRef = useRef(fold);
   foldRef.current = fold;
+
+  /*
+   * Geometry that changes after the handshake.
+   *
+   * The editor's preview is live: it is showing the pattern being drawn, so
+   * new geometry arrives while the simulator is already running. Pushing it
+   * through the existing handle keeps the camera and the WebGL context, which
+   * remounting the iframe on every stroke would throw away, along with about
+   * a second of warm-up each time.
+   *
+   * The ref is what stops the first push from being a duplicate of the load
+   * the handshake already did.
+   */
+  const loadedRef = useRef<FoldDocument | null>(null);
+  useEffect(() => {
+    if (status !== "ready" || loadedRef.current === fold) return;
+    loadedRef.current = fold;
+    handleRef.current?.loadFold(fold);
+  }, [fold, status]);
 
   useEffect(() => {
     if (!hasWebGl2()) {
@@ -109,6 +140,7 @@ export function Simulator({
           return;
         }
         handle.loadFold(foldRef.current);
+        loadedRef.current = foldRef.current;
         handleRef.current = handle;
         setControllable(handle.controllable);
         // Adopt the simulator's own starting state rather than pushing ours
@@ -183,6 +215,19 @@ export function Simulator({
   }, []);
 
   if (status === "unavailable") {
+    // The preview is a supporting view. When it cannot run, it says so in one
+    // line and gets out of the way rather than putting a warning panel and a
+    // fallback drawing into a 200 pixel slot.
+    if (preview) {
+      return (
+        <p
+          className="rounded-xl p-3 text-xs"
+          style={{ background: "var(--surface-sunken)", color: "var(--text-muted)" }}
+        >
+          The 3D fold is not available here.
+        </p>
+      );
+    }
     return (
       <div className="space-y-4">
         <div
@@ -219,9 +264,39 @@ export function Simulator({
           ref={iframeRef}
           src={SIMULATOR_URL}
           title={`3D fold simulation of ${title}`}
-          className={`block w-full border-0 ${fullscreen ? "h-[calc(100vh-5.5rem)]" : "h-[58vh] min-h-[22rem]"}`}
+          className={`block w-full border-0 ${
+            preview
+              ? "h-52"
+              : fullscreen
+                ? "h-[calc(100vh-5.5rem)]"
+                : "h-[58vh] min-h-[22rem]"
+          }`}
           allow="fullscreen"
         />
+
+        {/*
+          The preview's one interaction. Over the iframe rather than beside it,
+          because an iframe swallows every pointer event that lands on it: a
+          button underneath would never be clicked, and dragging the model here
+          would be a rotation nobody can undo without the controls that are
+          deliberately absent.
+        */}
+        {preview && onOpen && (
+          <button
+            type="button"
+            onClick={onOpen}
+            className="group absolute inset-0 flex items-end justify-center pb-2 transition"
+            aria-label="Open the 3D fold"
+            title="Open the 3D fold"
+          >
+            <span
+              className="rounded-full px-2.5 py-1 text-[11px] font-bold opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100"
+              style={{ background: "var(--surface-raised)", boxShadow: "var(--shadow-card)" }}
+            >
+              Open
+            </span>
+          </button>
+        )}
 
         {busy && (
           <div
@@ -241,7 +316,7 @@ export function Simulator({
         )}
 
         {/* Camera presets sit on the canvas, where the model is. */}
-        {!busy && controllable && (
+        {!busy && controllable && !preview && (
           <div className="absolute right-3 top-3 flex gap-1 rounded-full bg-white/90 p-1 backdrop-blur"
             style={{ boxShadow: "var(--shadow-card)" }}
           >
@@ -259,7 +334,7 @@ export function Simulator({
           </div>
         )}
 
-        {!busy && (
+        {!busy && !preview && (
           <button
             type="button"
             onClick={toggleFullscreen}
@@ -283,7 +358,7 @@ export function Simulator({
         §5.3's
         rule about not pretending, applied to the chrome as well as the solve.
       */}
-      {controllable && (
+      {controllable && !preview && (
         <div className="border-t" style={{ borderColor: "var(--border)" }}>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-3 px-4 py-3">
             <div className="flex min-w-[15rem] flex-1 items-center gap-3">

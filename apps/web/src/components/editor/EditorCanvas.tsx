@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { ORIGAMI_SIMULATOR_PALETTE, type EdgeAssignment } from "@kamibase/core";
 import type { VertexMark } from "@/lib/editor/analysis";
 import { gridLines, type GridSpec } from "@/lib/editor/grid";
+import { paperTransform, toPaperPoint } from "@/lib/editor/paper";
 import { segmentAt, snapPoint, type EditorDoc } from "@/lib/editor/model";
 import type { PanZoom } from "@/lib/viewport/use-pan-zoom";
 
@@ -17,6 +18,11 @@ export interface EditorCanvasProps {
   readonly snap: { readonly grid: GridSpec; readonly snapToVertices: boolean };
   readonly vertexMarks: readonly VertexMark[];
   readonly showMarks: boolean;
+  /**
+   * How far the sheet is turned on screen, anticlockwise, in degrees. A view
+   * setting only: see `@/lib/editor/paper`.
+   */
+  readonly paperAngle?: number;
   /** The viewport, owned by the editor so its chrome can drive it too. */
   readonly panZoom: PanZoom;
   /**
@@ -63,7 +69,7 @@ const MARK_PX = 7;
  *
  * All pointer handling goes through Pointer Events rather than separate mouse
  * and touch paths, so a finger, a stylus and a mouse take exactly one code
- * path — and the viewport gets first refusal on every one of them, which is
+ * path, and the viewport gets first refusal on every one of them, which is
  * how two fingers pinch mid-stroke without leaving a stray crease behind.
  */
 export function EditorCanvas({
@@ -73,6 +79,7 @@ export function EditorCanvas({
   snap,
   vertexMarks,
   showMarks,
+  paperAngle = 0,
   panZoom,
   backdrop,
   backdropOpacity = 0.35,
@@ -89,16 +96,14 @@ export function EditorCanvas({
   /**
    * Screen → paper coordinates.
    *
-   * The y axis flips: crease patterns use maths convention (y up) and SVG uses
-   * y down, and the renderer that produces every other view of a pattern flips
-   * too. Getting this wrong mirrors the drawing against its own thumbnail.
+   * The viewport undoes the pan and zoom; `toPaperPoint` undoes the turn of the
+   * sheet and the y flip. Every coordinate the tools see is therefore a
+   * coordinate on the paper, whichever way the paper happens to be facing.
    */
   const toPaper = useCallback(
-    (clientX: number, clientY: number): [number, number] => {
-      const point = panZoom.toWorld(clientX, clientY);
-      return [point.x, 1 - point.y];
-    },
-    [panZoom],
+    (clientX: number, clientY: number): [number, number] =>
+      toPaperPoint(panZoom.toWorld(clientX, clientY), paperAngle),
+    [panZoom, paperAngle],
   );
 
   const { grid, snapToVertices } = snap;
@@ -196,6 +201,10 @@ export function EditorCanvas({
       aria-label="Crease pattern editor canvas"
     >
       <g transform={panZoom.svgTransform}>
+        {/* Everything on the sheet turns with the sheet, which is why the
+            rotation is one group around the lot rather than a term in every
+            coordinate. */}
+        <g transform={paperTransform(paperAngle)}>
         {/* Paper. Drawn under everything so creases read as ink on it, and
             given a shadow so it reads as a sheet on a table rather than as a
             hole in the background. */}
@@ -275,23 +284,35 @@ export function EditorCanvas({
         )}
 
         {/* Live flat-foldability, per DESIGN.md §4: "a red dot at a vertex
-            that violates Maekawa is worth a thousand words". */}
+            that violates Maekawa is worth a thousand words".
+
+            A dot, and not a ring around one. The ring was a second circle
+            drawn around a place where creases already meet, so a pattern with
+            a few problems in it read as a pattern with targets scattered over
+            it. This is the vertex itself, marked. It grows under the pointer,
+            which is both how you find the one you want among close neighbours
+            and how you get its reason to appear. */}
         {showMarks &&
           vertexMarks
             .filter((mark) => !mark.ok)
             .map((mark, index) => (
               <circle
                 key={`${mark.at[0]},${mark.at[1]},${index}`}
+                className="kami-vertex"
                 cx={mark.at[0]}
                 cy={1 - mark.at[1]}
-                r={px(MARK_PX)}
-                fill="none"
-                stroke="#d92d20"
-                strokeWidth={px(2)}
+                fill="#d92d20"
+                style={{
+                  // The two radii, in paper units, so the dot is the same size
+                  // on screen at 15% as at 6000%.
+                  ["--vertex-r" as string]: px(MARK_PX * 0.5),
+                  ["--vertex-r-hover" as string]: px(MARK_PX),
+                }}
               >
                 <title>{mark.reason}</title>
               </circle>
             ))}
+        </g>
       </g>
     </svg>
   );

@@ -9,7 +9,7 @@ import { createGray, type GrayImage } from "./image.js";
  * *published drawing*: a PNG off langorigami.com, a JPEG from a designer's
  * site, an export from Oriedita or ORIPA. Those images are not photographs of
  * paper at all. They are line art, with a flat background, strokes one to three
- * pixels wide, and — this is the part that matters — a red line where the
+ * pixels wide, and, this being the part that matters, a red line where the
  * designer meant mountain and a blue one where they meant valley.
  *
  * Throwing that away and inferring the assignment from Maekawa is not merely
@@ -49,7 +49,7 @@ export function pixelAt(image: RgbImage, x: number, y: number): Rgb {
  *
  * The white matters. A published crease pattern is very often a PNG with a
  * transparent background, and reading its alpha as opaque black turns the
- * paper into a black field with black boundary lines drawn on it — the
+ * paper into a black field with black boundary lines drawn on it, and the
  * boundary vanishes and every stroke inverts. Compositing over white is what
  * the browser does when it draws the same file onto a page, so it is also what
  * the person who exported it saw.
@@ -179,7 +179,7 @@ export interface RasterProfile {
    * Share of pixels identical to both their right and lower neighbours.
    *
    * Reported but not decided on. A pristine render lands above 0.9 and a noisy
-   * photograph near zero, which is suggestive — but a resampled JPEG of a
+   * photograph near zero, which is suggestive, but a resampled JPEG of a
    * drawing has almost no flat pixels left, and a photograph of evenly lit
    * paper has plenty, so the two populations overlap in exactly the cases that
    * matter. `inkContrast` below is what the decision is actually made on.
@@ -229,8 +229,8 @@ const NOT_PAPER = 20;
  * The consequence of getting this wrong is asymmetric, which is why the bar is
  * where it is. A photograph sent down the line-art path finds nothing, because
  * there is no flat background to subtract and every pixel becomes ink. A
- * drawing sent down the photo path still works — that is what shipped before
- * this file existed — it just throws the colours away. So the test leans
+ * drawing sent down the photo path still works, which is what shipped before
+ * this file existed. It just throws the colours away. So the test leans
  * towards calling things photographs.
  */
 export function profileRaster(image: RgbImage): RasterProfile {
@@ -351,8 +351,8 @@ export function profileRaster(image: RgbImage): RasterProfile {
    * Getting this wrong is asymmetric, which is where the bar comes from. A
    * photograph sent down the line-art path finds nothing, because there is no
    * flat paper to subtract and every pixel becomes ink. A drawing sent down
-   * the photo path still works — that is what shipped before this file
-   * existed — it merely throws the colours away. So the test leans towards
+   * the photo path still works, which is what shipped before this file
+   * existed. It merely throws the colours away. So the test leans towards
    * calling things photographs, and the margin it leaves is wide: drawings
    * measure around 0.6 here and photographs around 0.1.
    */

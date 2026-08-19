@@ -95,6 +95,35 @@ body {
 }
 
 /*
+ * A vertex the editor has something to say about.
+ *
+ * `r` is animated in CSS rather than in React because the alternative is
+ * tracking a hovered index in state and re-rendering the whole canvas on every
+ * pointer move across it, during a drag, on a pattern with hundreds of
+ * creases. `r` is an SVG geometry property, so a stylesheet can set it, and the
+ * two radii come in as custom properties because only the component knows what
+ * a screen pixel is worth at the current zoom.
+ *
+ * `pointer-events: all` because the dot is a few pixels across: without it only
+ * the painted fill is a target, and hitting it would be a game.
+ */
+.kami-vertex {
+  r: var(--vertex-r);
+  pointer-events: all;
+  transition: r 120ms ease-out;
+}
+
+.kami-vertex:hover {
+  r: var(--vertex-r-hover);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kami-vertex {
+    transition: none;
+  }
+}
+
+/*
  * The fold slider in the 3D simulator.
  *
  * A range input is the right control. It is draggable, arrow-key operable and
@@ -203,7 +232,7 @@ body {
  * `PatternCard` used to vary its frame's aspect ratio so the columns did not
  * line up. That made the pattern inside it vary in size too, which is the wrong
  * thing to trade away: the drawing is the content. So the tiles are uniform
- * squares and the offset comes from margin instead — every other card gets
+ * squares and the offset comes from margin instead, every other card gets
  * extra room above and below, which pushes its column out of phase with its
  * neighbours while every pattern stays the same size.
  *
