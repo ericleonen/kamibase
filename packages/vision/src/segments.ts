@@ -354,3 +354,304 @@ export function removeBorderDuplicates<T extends Line>(
 export function dropShort<T extends Line>(segments: readonly T[], minimum: number): T[] {
   return segments.filter((segment) => length(segment) >= minimum);
 }
+
+/* -------------------------------------------------------------------------- */
+/* Reading the pattern's own conventions off the pattern                       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The angles this particular drawing is built from.
+ *
+ * `snapAngles` above assumes 22.5 degrees, which is the right assumption for a
+ * photograph of a sheet somebody folded by hand: the 22.5 system covers box
+ * pleating, the 45s, and most of what gets folded from a square. It is the
+ * wrong assumption for a published crease pattern, because the interesting ones
+ * are exactly the ones it fails on. A Lang tree-theory base has circle-packing
+ * angles in it that are not any nice fraction of anything, and rotating them by
+ * three degrees onto the nearest 22.5 does not repair a measurement — it
+ * destroys a design decision, and it breaks Kawasaki at both ends of every
+ * crease it touches.
+ *
+ * So for line art the angles are read off the drawing instead. A length-weighted
+ * histogram of directions has a spike wherever a family of parallel creases
+ * runs, and those spikes are the pattern's own lattice, whatever it happens to
+ * be. Snapping to them cleans up the pixel-level jitter without imposing a
+ * system on a designer who was not using one.
+ */
+export function dominantAngles(
+  segments: readonly Line[],
+  options: {
+    /** Histogram resolution. */
+    readonly binDegrees?: number;
+    /** A peak must hold this share of the strongest peak's weight. */
+    readonly relativeFloor?: number;
+    readonly maxAngles?: number;
+  } = {},
+): number[] {
+  const binDegrees = options.binDegrees ?? 0.5;
+  const relativeFloor = options.relativeFloor ?? 0.04;
+  const maxAngles = options.maxAngles ?? 32;
+
+  const bins = Math.max(4, Math.round(180 / binDegrees));
+  const weight = new Float64Array(bins);
+  const binWidth = Math.PI / bins;
+
+  for (const segment of segments) {
+    const bin = Math.min(bins - 1, Math.floor(angleOf(segment) / binWidth));
+    weight[bin] = (weight[bin] ?? 0) + length(segment);
+  }
+
+  // A one-bin smooth, wrapping at 180 degrees, so a family straddling a bin
+  // boundary reads as one peak rather than two half-height ones.
+  const smoothed = new Float64Array(bins);
+  for (let i = 0; i < bins; i += 1) {
+    smoothed[i] =
+      (weight[(i - 1 + bins) % bins] ?? 0) * 0.25 +
+      (weight[i] ?? 0) * 0.5 +
+      (weight[(i + 1) % bins] ?? 0) * 0.25;
+  }
+
+  let strongest = 0;
+  for (let i = 0; i < bins; i += 1) strongest = Math.max(strongest, smoothed[i] ?? 0);
+  if (strongest <= 0) return [];
+
+  const peaks: { bin: number; weight: number }[] = [];
+  for (let i = 0; i < bins; i += 1) {
+    const here = smoothed[i] ?? 0;
+    if (here < strongest * relativeFloor) continue;
+    if (here < (smoothed[(i - 1 + bins) % bins] ?? 0)) continue;
+    if (here <= (smoothed[(i + 1) % bins] ?? 0)) continue;
+    peaks.push({ bin: i, weight: here });
+  }
+
+  peaks.sort((a, b) => b.weight - a.weight);
+
+  // Refine each peak to the length-weighted mean of the creases in it, which
+  // is a far better estimate of the family's true angle than the bin centre:
+  // fifty parallel creases each measured to within a degree average out to a
+  // hundredth of one.
+  const chosen: number[] = [];
+  for (const peak of peaks.slice(0, maxAngles)) {
+    const centre = (peak.bin + 0.5) * binWidth;
+    let sumSin = 0;
+    let sumCos = 0;
+    for (const segment of segments) {
+      const angle = angleOf(segment);
+      if (angleDistance(angle, centre) > binWidth * 1.5) continue;
+      const w = length(segment);
+      // Doubled, so that 179 degrees and 1 degree average to 0 rather than 90.
+      sumSin += w * Math.sin(2 * angle);
+      sumCos += w * Math.cos(2 * angle);
+    }
+    const refined =
+      sumSin === 0 && sumCos === 0
+        ? centre
+        : ((Math.atan2(sumSin, sumCos) / 2) % Math.PI + Math.PI) % Math.PI;
+    if (!chosen.some((existing) => angleDistance(existing, refined) < binWidth)) {
+      chosen.push(refined);
+    }
+  }
+
+  return chosen.sort((a, b) => a - b);
+}
+
+/**
+ * Rotate each crease onto the nearest of `angles`, if one is close enough.
+ *
+ * As with `snapAngles`, the rotation is about the midpoint and the tolerance is
+ * the safeguard: a crease near none of the family angles is left exactly where
+ * it was found, on the grounds that it is probably the one crease in the
+ * pattern that is genuinely at some other angle.
+ */
+export function snapToAngles<T extends Line>(
+  segments: readonly T[],
+  angles: readonly number[],
+  toleranceDegrees = 2,
+): T[] {
+  if (angles.length === 0) return [...segments];
+  const tolerance = (toleranceDegrees * Math.PI) / 180;
+
+  return segments.map((segment) => {
+    const angle = angleOf(segment);
+    let target = angle;
+    let best = tolerance;
+    for (const candidate of angles) {
+      const distance = angleDistance(angle, candidate);
+      if (distance < best) {
+        best = distance;
+        target = candidate;
+      }
+    }
+    if (target === angle) return segment;
+
+    const cx = (segment.x1 + segment.x2) / 2;
+    const cy = (segment.y1 + segment.y2) / 2;
+    const half = length(segment) / 2;
+    const ux = Math.cos(target);
+    const uy = Math.sin(target);
+    // Keep the ends in the order they came in, so a caller that cares which
+    // end is which still gets the same answer.
+    const forward = (segment.x2 - segment.x1) * ux + (segment.y2 - segment.y1) * uy >= 0 ? 1 : -1;
+
+    return {
+      ...segment,
+      x1: cx - ux * half * forward,
+      y1: cy - uy * half * forward,
+      x2: cx + ux * half * forward,
+      y2: cy + uy * half * forward,
+    };
+  });
+}
+
+/** Divisions along each axis. Either may be null when nothing fits. */
+export interface GridAxes {
+  readonly x: number | null;
+  readonly y: number | null;
+}
+
+/** Lattices worth trying. Every division count a real pattern uses, and no more. */
+export const GRID_CANDIDATES: readonly number[] = [
+  2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 36, 40, 44,
+  48, 56, 64,
+];
+
+/**
+ * The lattice each axis sits on, inferred independently.
+ *
+ * Independently because a great many patterns are not square in their grid even
+ * when they are square in their paper: 16 across and 24 down is an ordinary
+ * thing for a box-pleated design, and forcing one number on both either loses
+ * the coarse axis or invents divisions on the fine one. The photograph path
+ * asks for a single number because a photograph rarely supports more precision
+ * than that; a drawing does.
+ */
+export function inferGridAxes(
+  segments: readonly Line[],
+  options: {
+    readonly candidates?: readonly number[];
+    readonly tolerance?: number;
+    /** Share of coordinates a lattice must explain to be believed. */
+    readonly minimumShare?: number;
+    /**
+     * How wide the paper is along each axis. Not always 1: a 1:2 sheet is a
+     * perfectly ordinary thing to fold, and its divisions are counted across
+     * its own width rather than across a square it does not fill.
+     */
+    readonly extent?: { readonly x: number; readonly y: number };
+  } = {},
+): GridAxes {
+  const candidates = options.candidates ?? GRID_CANDIDATES;
+  const tolerance = options.tolerance ?? 0.01;
+  const minimumShare = options.minimumShare ?? 0.86;
+  const extent = options.extent ?? { x: 1, y: 1 };
+
+  const xs: number[] = [];
+  const ys: number[] = [];
+  for (const segment of segments) {
+    xs.push(segment.x1, segment.x2);
+    ys.push(segment.y1, segment.y2);
+  }
+
+  return {
+    x: bestLattice(xs, extent.x, candidates, tolerance, minimumShare),
+    y: bestLattice(ys, extent.y, candidates, tolerance, minimumShare),
+  };
+}
+
+function bestLattice(
+  values: readonly number[],
+  extent: number,
+  candidates: readonly number[],
+  tolerance: number,
+  minimumShare: number,
+): number | null {
+  if (values.length === 0 || extent <= 0) return null;
+
+  let best: number | null = null;
+  let bestScore = 0;
+
+  for (const divisions of candidates) {
+    const cell = extent / divisions;
+    // A tolerance wider than a third of a cell would let every value hit
+    // something, which is how a coarse lattice "explains" a fine pattern.
+    const reach = Math.min(tolerance, cell / 3);
+    let hits = 0;
+    for (const value of values) {
+      if (Math.abs(value - Math.round(value / cell) * cell) <= reach) hits += 1;
+    }
+    const share = hits / values.length;
+    if (share < minimumShare) continue;
+
+    /*
+     * How much of the lattice the pattern actually stands on.
+     *
+     * Share alone is not enough, and the failure it lets through is a bad one.
+     * Four creases whose ends are all at 0, 1/2 and 1 sit on a 14 lattice just
+     * as exactly as they sit on a 2 lattice — every coordinate is a multiple
+     * of 1/14 — so `share` is 1 for both, and a stray endpoint that misses the
+     * 2 lattice by a hundredth can hand the answer to the 14. Snapping to it
+     * then drags creases onto lines the drawing never had, which does not look
+     * like a bad lattice guess, it looks like a mangled pattern.
+     *
+     * A real lattice is nearly all used. Requiring that is what tells a
+     * 32-grid box pleat from a bird base pretending to be one.
+     */
+    let used = 0;
+    const seen = new Set<number>();
+    for (const value of values) {
+      const index = Math.round(value / cell);
+      if (Math.abs(value - index * cell) > reach) continue;
+      if (!seen.has(index)) {
+        seen.add(index);
+        used += 1;
+      }
+    }
+    if (used < divisions * 0.6) continue;
+
+    /*
+     * The penalty is what stops the answer from always being the finest
+     * candidate: a 64 lattice contains every point a 32 does, so without it
+     * every pattern is reported as a 64 grid and the snapping does nothing.
+     *
+     * Steep enough to matter. A coarse lattice that explains nine tenths of
+     * the coordinates should beat a fine one that explains all of them, since
+     * the fine one is explaining them by having a line nearly everywhere.
+     */
+    const score = share - divisions / 256;
+    if (score > bestScore) {
+      bestScore = score;
+      best = divisions;
+    }
+  }
+
+  return best;
+}
+
+/** Pull x onto its lattice and y onto its own, where each is already close. */
+export function snapToAxes<T extends Line>(
+  segments: readonly T[],
+  axes: GridAxes,
+  tolerance: number,
+  extent: { readonly x: number; readonly y: number } = { x: 1, y: 1 },
+): T[] {
+  const snapper = (divisions: number | null, span: number) => {
+    if (!divisions || divisions < 1 || span <= 0) return (value: number): number => value;
+    const cell = span / divisions;
+    const reach = Math.min(tolerance, cell / 3);
+    return (value: number): number => {
+      const target = Math.round(value / cell) * cell;
+      return Math.abs(target - value) <= reach ? target : value;
+    };
+  };
+
+  const snapX = snapper(axes.x, extent.x);
+  const snapY = snapper(axes.y, extent.y);
+
+  return segments.map((segment) => ({
+    ...segment,
+    x1: snapX(segment.x1),
+    y1: snapY(segment.y1),
+    x2: snapX(segment.x2),
+    y2: snapY(segment.y2),
+  }));
+}

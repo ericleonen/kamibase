@@ -44,6 +44,20 @@ export interface AssignmentOptions {
    * global flip.
    */
   readonly prior?: readonly number[];
+  /**
+   * Assignments that are already known and must not be searched over, indexed
+   * like `graph.edges`. `M` or `V` pins that crease; anything else is free.
+   *
+   * This is what a *drawn* crease pattern gives you. A photograph has to infer
+   * every assignment, because a flattened sheet does not record them; a red
+   * line in a published PNG is not an inference, it is the designer saying
+   * "mountain". Pinning those turns the search from "find any Maekawa-
+   * consistent labelling" into "fill in the ones nobody stated", which is both
+   * a far smaller problem and — because pinned creases break the global flip
+   * symmetry — one with an answer that is not merely correct up to being
+   * inside out.
+   */
+  readonly fixed?: readonly (EdgeAssignment | null | undefined)[];
   /** Independent searches to run. More restarts, more of the solution space. */
   readonly restarts?: number;
   /** Seed for the search's randomness, so a given photo gives a given answer. */
@@ -98,12 +112,18 @@ export function inferAssignments(
   const edgeCount = graph.edges.length;
 
   const existing = graph.assignments;
-  // Boundary creases are not folds and take no part in the count.
+  // Boundary creases are not folds and take no part in the count. Of the rest,
+  // the ones the caller already knows are held fixed and only the remainder is
+  // searched over.
+  const pinned = new Map<number, boolean>();
   const foldable: number[] = [];
   for (let e = 0; e < edgeCount; e += 1) {
     if (existing[e] === "B") continue;
-    foldable.push(e);
+    const known = options.fixed?.[e];
+    if (known === "M" || known === "V") pinned.set(e, known === "M");
+    else foldable.push(e);
   }
+  const anchored = pinned.size > 0;
 
   const slotOf = new Map<number, number>();
   foldable.forEach((edge, slot) => slotOf.set(edge, slot));
@@ -111,35 +131,60 @@ export function inferAssignments(
   const { boundaryVertices } = analyzeBoundary(graph);
   const incident = buildVertexEdges(graph);
 
-  /** Interior vertices, each with the slots of the foldable creases meeting it. */
-  const vertices: { vertex: number; slots: number[] }[] = [];
+  /**
+   * Interior vertices, each with the slots of the free creases meeting it, plus
+   * what the pinned ones there already contribute. `degree` counts both: it is
+   * the vertex's fold degree, and Maekawa is a statement about all of it.
+   */
+  const vertices: { vertex: number; slots: number[]; fixedMountains: number; degree: number }[] =
+    [];
   const oddVertices: number[] = [];
 
   graph.vertices.forEach((_, vertex) => {
     if (boundaryVertices.has(vertex)) return;
-    const slots = (incident[vertex] ?? [])
+    const folds = (incident[vertex] ?? []).filter((edge) => existing[edge] !== "B");
+    const slots = folds
       .map((edge) => slotOf.get(edge))
       .filter((slot): slot is number => slot !== undefined);
-    if (slots.length === 0) return;
-    if (slots.length % 2 !== 0) {
+    let fixedMountains = 0;
+    for (const edge of folds) if (pinned.get(edge) === true) fixedMountains += 1;
+
+    if (folds.length === 0) return;
+    if (folds.length % 2 !== 0) {
       // Maekawa needs |M - V| = 2 with M + V odd, which no integers satisfy.
       // The vertex is unsatisfiable whatever we assign, so it is reported and
       // kept out of the search rather than dragging every solution's cost up.
       oddVertices.push(vertex);
       return;
     }
-    vertices.push({ vertex, slots });
+    vertices.push({ vertex, slots, fixedMountains, degree: folds.length });
   });
 
+  /** What a pinned crease is, and how sure of it the caller was. */
+  const pinnedAssignments = (): { values: EdgeAssignment[]; confidence: number[] } => {
+    const values = existing.map<EdgeAssignment>((value) => (value === "B" ? "B" : "U"));
+    const confidence = new Array<number>(edgeCount).fill(0);
+    for (const [edge, mountain] of pinned) {
+      values[edge] = mountain ? "M" : "V";
+      confidence[edge] = 1;
+    }
+    return { values, confidence };
+  };
+
   if (foldable.length === 0 || vertices.length === 0) {
+    const { values, confidence } = pinnedAssignments();
+    let satisfied = 0;
+    for (const entry of vertices) {
+      if (Math.abs(2 * entry.fixedMountains - entry.degree) === 2) satisfied += 1;
+    }
     return {
-      assignments: existing.map((value) => (value === "B" ? "B" : "U")),
-      confidence: new Array<number>(edgeCount).fill(0),
-      satisfied: 0,
+      assignments: values,
+      confidence,
+      satisfied,
       total: vertices.length,
       oddVertices,
       ambiguous: foldable.length,
-      consistent: vertices.length === 0 && oddVertices.length === 0,
+      consistent: satisfied === vertices.length && oddVertices.length === 0,
     };
   }
 
@@ -151,7 +196,7 @@ export function inferAssignments(
 
   const prior = foldable.map((edge) => options.prior?.[edge] ?? 0);
 
-  const degree = vertices.map((entry) => entry.slots.length);
+  const degree = vertices.map((entry) => entry.degree);
   const mountains = new Int32Array(vertices.length);
 
   const vertexCost = (v: number): number =>
@@ -180,7 +225,7 @@ export function inferAssignments(
 
     mountains.fill(0);
     vertices.forEach((entry, v) => {
-      let count = 0;
+      let count = entry.fixedMountains;
       for (const slot of entry.slots) if (state[slot] === 1) count += 1;
       mountains[v] = count;
     });
@@ -232,24 +277,31 @@ export function inferAssignments(
       bestCost = cost;
       best = Uint8Array.from(state);
       optima.length = 0;
-      optima.push(canonical(state));
+      optima.push(canonical(state, anchored));
     } else if (cost === bestCost) {
-      const shape = canonical(state);
+      const shape = canonical(state, anchored);
       if (!optima.some((seen) => sameBits(seen, shape))) optima.push(shape);
     }
   }
 
   const solution = best ?? state;
 
-  // The whole pattern can be turned over, which swaps every mountain and
-  // valley and satisfies Maekawa just as well. Only the prior can say which
-  // side we are looking at, so use it, and leave the result as found when it
-  // has no opinion.
+  /*
+   * The whole pattern can be turned over, which swaps every mountain and
+   * valley and satisfies Maekawa just as well. Only the prior can say which
+   * side we are looking at, so use it, and leave the result as found when it
+   * has no opinion.
+   *
+   * Unless something is pinned. A crease the caller stated is a fact about
+   * which side of the paper this is, so the symmetry is already broken and
+   * flipping the free creases around it would contradict the very thing that
+   * was known.
+   */
   let agreement = 0;
   for (let slot = 0; slot < solution.length; slot += 1) {
     agreement += (solution[slot] === 1 ? 1 : -1) * (prior[slot] ?? 0);
   }
-  const flipAll = agreement < 0;
+  const flipAll = !anchored && agreement < 0;
 
   /*
    * How firmly the constraint pins each crease down.
@@ -270,7 +322,7 @@ export function inferAssignments(
    * and its mirror are the same pattern seen from the other side, and treating
    * them as disagreeing would call every crease ambiguous.
    */
-  const reference = canonical(solution);
+  const reference = canonical(solution, anchored);
   const mountainVotes = new Int32Array(foldable.length);
 
   for (const option of optima) {
@@ -278,16 +330,13 @@ export function inferAssignments(
     for (let slot = 0; slot < option.length; slot += 1) {
       if (option[slot] === reference[slot]) same += 1;
     }
-    const aligned = same * 2 >= option.length ? option : flipBits(option);
+    const aligned = anchored || same * 2 >= option.length ? option : flipBits(option);
     for (let slot = 0; slot < aligned.length; slot += 1) {
       if (aligned[slot] === 1) mountainVotes[slot] = (mountainVotes[slot] ?? 0) + 1;
     }
   }
 
-  const assignments: EdgeAssignment[] = existing.map((value) =>
-    value === "B" ? "B" : "U",
-  );
-  const confidence = new Array<number>(edgeCount).fill(0);
+  const { values: assignments, confidence } = pinnedAssignments();
   const total = Math.max(1, optima.length);
   let ambiguous = 0;
 
@@ -308,7 +357,7 @@ export function inferAssignments(
 
   mountains.fill(0);
   vertices.forEach((entry, v) => {
-    let count = 0;
+    let count = entry.fixedMountains;
     for (const slot of entry.slots) if (solution[slot] === 1) count += 1;
     mountains[v] = count;
   });
@@ -337,9 +386,16 @@ function applyFlip(
   for (const v of touching[slot]!) mountains[v] = (mountains[v] ?? 0) + delta;
 }
 
-/** Normalise the global flip so two mirror solutions compare equal. */
-function canonical(state: Uint8Array): Uint8Array {
-  return state[0] === 1 ? Uint8Array.from(state) : flipBits(state);
+/**
+ * Normalise the global flip so two mirror solutions compare equal.
+ *
+ * A no-op when creases are pinned: the mirror of an anchored solution is not
+ * the same pattern seen from the other side, it is a different and wrong
+ * answer, and folding the two together would hide a genuine disagreement.
+ */
+function canonical(state: Uint8Array, anchored: boolean): Uint8Array {
+  if (anchored || state[0] === 1) return Uint8Array.from(state);
+  return flipBits(state);
 }
 
 function flipBits(state: Uint8Array): Uint8Array {
