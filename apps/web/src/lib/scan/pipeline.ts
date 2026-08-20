@@ -10,8 +10,8 @@ import { tuningToOptions, type ScanReport, type ScanRequest } from "./types";
  * difference is that the tab stops painting for a second.
  *
  * Colour survives the trip. It used to be discarded here, on the way in, which
- * threw away the one thing a published crease pattern states outright — a red
- * line is a designer saying "mountain" — and left the pipeline to rediscover it
+ * threw away the one thing a published crease pattern states outright, since a red
+ * line is a designer saying "mountain", and left the pipeline to rediscover it
  * from Maekawa, which can only ever get it right up to being inside out.
  */
 export function runScan(request: ScanRequest): ScanReport {
@@ -32,7 +32,7 @@ export function runScan(request: ScanRequest): ScanReport {
     lineArt: {
       // The tuning sliders are about pulling faint creases out of a
       // photograph. A drawing has no faint creases, so the only one that
-      // carries over is the shortest crease worth keeping — and even that is
+      // carries over is the shortest crease worth keeping, and even that is
       // scaled down, because a single cell of a 32-grid is 3% of the paper and
       // the photo default would throw the whole pattern away.
       minLengthFraction: Math.min(0.04, options.minLengthFraction * 0.25),

@@ -53,8 +53,8 @@ export interface AssignmentOptions {
    * line in a published PNG is not an inference, it is the designer saying
    * "mountain". Pinning those turns the search from "find any Maekawa-
    * consistent labelling" into "fill in the ones nobody stated", which is both
-   * a far smaller problem and — because pinned creases break the global flip
-   * symmetry — one with an answer that is not merely correct up to being
+   * a far smaller problem and, because pinned creases break the global flip
+   * symmetry, one with an answer that is not merely correct up to being
    * inside out.
    */
   readonly fixed?: readonly (EdgeAssignment | null | undefined)[];

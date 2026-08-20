@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
  *
  * `/edit`, `/edit/import` and `/p/<id>/edit` are three doors into one tool, and
  * a tool that owns the viewport cannot have a site header above it and a
- * footer below it — the canvas would be whatever is left over, and the page
+ * footer below it. The canvas would be whatever is left over, and the page
  * would scroll underneath a surface whose whole job is to pan.
  */
 const FULLSCREEN = [/^\/edit(\/.*)?$/, /^\/p\/[^/]+\/edit\/?$/];

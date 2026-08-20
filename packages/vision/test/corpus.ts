@@ -139,7 +139,7 @@ export function miura(cols: number, rows: number): Pattern {
  * A box-pleated grid: every line of an n by n lattice, alternating.
  *
  * The density test. At 32 divisions two neighbouring creases are three percent
- * of the paper apart, which at the working size is about forty pixels — and
+ * of the paper apart, which at the working size is about forty pixels, and
  * every tolerance in the pipeline has to be well under that while still being
  * big enough to close a junction.
  */
@@ -192,8 +192,8 @@ export function waterbomb(divisions: number): Pattern {
  * A tree-theory base, with the angles that come out of circle packing.
  *
  * Nothing here is on a lattice and nothing is at a nice angle, which is exactly
- * the case where snapping to 22.5 degrees — the right thing to do to a
- * photograph — quietly ruins a design. Reading the angles off the drawing
+ * the case where snapping to 22.5 degrees, the right thing to do to a
+ * photograph, quietly ruins a design. Reading the angles off the drawing
  * instead has to leave these alone.
  */
 export const treeBase: Pattern = (() => {

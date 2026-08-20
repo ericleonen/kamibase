@@ -7,7 +7,7 @@ import type { Crease } from "./drawing.js";
  *
  * Counting segments does not work, and the reason is structural rather than
  * fussy. `planarize` splits every crease at every crossing, so one drawn line
- * across a 16-grid arrives back as sixteen edges — a perfect reading scores 16
+ * across a 16-grid arrives back as sixteen edges, so a perfect reading scores 16
  * against an expected 1, and a reading that missed half the pattern can score
  * higher than one that found all of it. The same goes the other way: a detector
  * that reports one crease in three fragments has not made three mistakes.
@@ -18,7 +18,7 @@ import type { Crease } from "./drawing.js";
  * round, so that a reading cannot win by drawing extra: what share of the
  * detected length lies along nothing that was ever drawn.
  *
- * Those three numbers — coverage, assignment accuracy, and spurious length —
+ * Those three numbers, coverage, assignment accuracy, and spurious length,
  * are what "the lines do not quite match up" means when it is made precise.
  */
 

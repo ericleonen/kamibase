@@ -179,7 +179,7 @@ export function extractInk(image: RgbImage, options: InkOptions = {}): InkResult
  * paper, and it did not work, for a reason worth writing down. A red line two
  * pixels wide is not two pixels of red. It is a core of red with a skirt of
  * every pink between red and white, and there are as many skirt pixels as core
- * ones — so the histogram grows a second peak in the middle of the skirt, that
+ * ones, so the histogram grows a second peak in the middle of the skirt, that
  * peak becomes "an ink colour", and from then on half of every red crease is
  * filed under a colour nobody drew with. The pattern comes back doubled,
  * fragmented, and with a phantom layer in the import notes.
@@ -187,7 +187,7 @@ export function extractInk(image: RgbImage, options: InkOptions = {}): InkResult
  * A stroke's core is where its departure from the paper is a local maximum.
  * Skirt pixels never are, by construction: they sit on the ramp between the
  * core and the paper. So restricting the histogram to local maxima is the
- * whole fix, and it is exact rather than a threshold that happened to work —
+ * whole fix, and it is exact rather than a threshold that happened to work,
  * the blends are then explained by the unmixing, which is what the unmixing is
  * for.
  *
@@ -302,7 +302,7 @@ function classify(colour: Rgb, background: Rgb): Classification {
    * Faint and colourless is scaffolding. Both halves matter: a faint *red* is
    * a mountain drawn thin or half-dissolved by resampling and must be kept,
    * while a strong grey is a paper edge and must also be kept. Only the
-   * intersection — pale, neutral — is the reference grid.
+   * intersection, pale and neutral, is the reference grid.
    */
   if (s < 0.16 && contrast < 110) {
     return {
@@ -426,8 +426,8 @@ function isDashed(ink: GrayImage): boolean {
    * Short pieces, and no single long one holding the layer together.
    *
    * "Short" has to mean *dash* short. A solid layer is broken into pieces too,
-   * wherever a crease of another colour is drawn across it — the boundary of a
-   * 32-grid box pleat arrives in sixty pieces — and calling that dotted is
+   * wherever a crease of another colour is drawn across it, so the boundary of a
+   * 32-grid box pleat arrives in sixty pieces, and calling that dotted is
    * wrong twice over: it says so in the import notes, and it bridges gaps that
    * were creases crossing rather than ink missing.
    */

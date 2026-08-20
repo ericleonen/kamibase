@@ -13,8 +13,8 @@ A **photograph** of an unfolded, creased sheet is the hard case. There is no
 colour to read, the creases are shallow ridges in a lit surface, the sheet is
 seen at an angle, and the paper does not remember which way each crease went.
 
-A **published drawing** — a PNG off a designer's website, a screenshot, an
-export from Oriedita or ORIPA — is a different problem with a different shape.
+A **published drawing** (a PNG off a designer's website, a screenshot, an
+export from Oriedita or ORIPA) is a different problem with a different shape.
 The lines are hairline-thin and exact. There is a reference grid underneath
 that is not a crease. Some strokes are dashed. The paper's edge is somewhere
 inside a margin. And the answer is written in it: a red line means mountain.
@@ -25,7 +25,7 @@ of an image that has none, finds two edges down either side of every stroke,
 and rounds angles a designer chose onto a 22.5° lattice they were not using.
 
 So there are two pipelines. Kamibase looks at the image and picks, from three
-numbers taken off the picture itself — how much of it is one flat colour, how
+numbers taken off the picture itself: how much of it is one flat colour, how
 much of what is not, and above all whether the departures from the paper are
 *bimodal*. A drawn stroke is a step: a pixel is either ink or paper, with one
 pixel of ramp between, so most of what is not paper is fully ink. A crease in a
@@ -43,9 +43,9 @@ a picture of a crease pattern and the editor opens on the result. There is no
 step in between.
 
 There used to be two: confirm the paper's corners, then read a review panel of
-grades and confidences. Both are gone. The corners are guessed — for a
+grades and confidences. Both are gone. The corners are guessed, at least for a
 photograph; a drawing has no perspective to undo and finds its paper from where
-the ink is — the detector runs on its defaults, and instead of describing what
+the ink is. The detector runs on its defaults, and instead of describing what
 it found, the picture itself is laid under the drawing canvas at low opacity. A
 missed crease is then a line you can see and draw, which is a better answer to
 "did it read this right" than any score. The opacity slider in the editor's
@@ -113,7 +113,7 @@ wherever it does not:
 | Step | What and why |
 |---|---|
 | **Separate** | Split the image into the colours it was drawn with. Every crossing between two differently coloured creases disappears, because the two are never in the same layer. |
-| **Discard** | Drop the pale grey lattice. It is the drawing's scaffolding, and reading it as creases produces a 32-by-32 waffle on top of the pattern — worse than finding nothing, because it looks right. |
+| **Discard** | Drop the pale grey lattice. It is the drawing's scaffolding, and reading it as creases produces a 32-by-32 waffle on top of the pattern, which is worse than finding nothing, because it looks right. |
 | **Thin** | Reduce each stroke to its centre line, and take its direction from the structure tensor. No Canny: a drawn line already *is* an edge, and an edge detector finds two of them. |
 | **Detect** | Hough, per colour. |
 | **Snap** | To the pattern's *own* angles, read off a length-weighted histogram, and to a lattice inferred per axis. |
@@ -126,8 +126,8 @@ The one subtle part. A stroke's edges are blends of paper and ink in some
 proportion nobody recorded, so a pixel near a red crease is pink, and pink is
 not a colour anybody drew with.
 
-The palette is therefore built from stroke *cores* — pixels where the departure
-from the paper is a local maximum — and every other inked pixel is then
+The palette is therefore built from stroke *cores*, the pixels where the departure
+from the paper is a local maximum, and every other inked pixel is then
 explained as some fraction of one of those, by projecting its departure onto
 each candidate ink's. The projection length is how much ink is there; the
 residual says whether that ink explains the pixel at all, and a pixel no ink
@@ -145,7 +145,7 @@ cores do not.
 ### Making the ends meet
 
 This is the defect everyone notices on a scanned pattern and nobody can name.
-The lines are all there and all correct to within a pixel — and a pixel, at the
+The lines are all there and all correct to within a pixel, and a pixel, at the
 working size, is about a thousandth of the paper. So four creases that meet at
 a vertex come back as four creases that pass within a thousandth of each other.
 
@@ -156,7 +156,7 @@ and the simulator tears the paper.
 
 `weld.ts` closes them, and the constraints on it are what make it safe: nothing
 moves further than the tolerance, no crease is created or deleted, and no
-crease changes direction — an end is slid *along its own line* to where it
+crease changes direction: an end is slid *along its own line* to where it
 meets its neighbour, never pulled sideways onto it. An end that is nowhere near
 anything is left hanging, because extending that would be inventing a vertex,
 and the result would validate perfectly while being wrong.
@@ -184,8 +184,8 @@ survives neither the flattening nor the camera.
 A *drawing* can, and does. A red line is not evidence about mountain; it is the
 designer saying "mountain". Those assignments are **pinned** rather than
 inferred, which changes the problem twice over: the search is only over the
-creases nobody labelled, and — because a pinned crease is a fact about which
-side of the paper this is — the answer is no longer merely correct up to being
+creases nobody labelled, and, because a pinned crease is a fact about which
+side of the paper this is, the answer is no longer merely correct up to being
 inside out. What follows is about the photograph's case, and about the creases
 in a drawing that carried no convention.
 
@@ -261,7 +261,7 @@ and sometimes neither, dashes, a margin, JPEG ringing, and a degree or two of
 rotation for the screenshot-of-a-screenshot case. The corpus it draws spans a
 basic fold, a 22.5° base, Miura-ori on a non-square lattice, box pleats up to
 32 divisions, a waterbomb tessellation, a tree base whose angles are no
-fraction of anything, and one deliberately asymmetric pattern — because a
+fraction of anything, and one deliberately asymmetric pattern, because a
 mirrored bird base is still a bird base, and nothing else would catch a scan
 coming back upside down.
 

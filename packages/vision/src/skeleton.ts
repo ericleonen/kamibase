@@ -17,7 +17,7 @@ import { boxBlur, createGray, type GrayImage } from "./image.js";
  * So line art skips Canny entirely. The ink layer is thinned to a
  * single-pixel skeleton, and that skeleton is handed to the same Hough
  * transform in the shape it expects. What Hough needs beyond the pixels is a
- * direction per pixel — it uses each pixel's own gradient to decide which lines
+ * direction per pixel: it uses each pixel's own gradient to decide which lines
  * that pixel is allowed to vote for, which is where an order of magnitude of
  * its speed and most of its sharpness come from. A drawn line's direction comes
  * from the structure tensor: over a window, the two flanks of a stroke have

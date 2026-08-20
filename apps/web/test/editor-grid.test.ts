@@ -13,7 +13,7 @@ import {
 /**
  * The grid is the coordinate system a crease pattern is stated in, so what is
  * tested here is not "does it draw lines" but "does it mean what a designer
- * means" — a 3 grid has lines at thirds, a 12 by 18 grid has both, and a 45
+ * means": a 3 grid has lines at thirds, a 12 by 18 grid has both, and a 45
  * degree grid runs corner to corner.
  */
 

@@ -118,7 +118,7 @@ export function usePanZoom(options: UsePanZoomOptions): PanZoom {
   const spaceRef = useRef(false);
   /**
    * Has anyone moved the view by hand yet? Until they have, the fit follows the
-   * box and the chrome around it — open the properties panel and the paper
+   * box and the chrome around it: open the properties panel and the paper
    * recentres. After a single deliberate zoom it stops second-guessing them.
    */
   const touchedRef = useRef(false);

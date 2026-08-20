@@ -25,6 +25,13 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Builds the library packages first, which is not belt and braces: they
+      # publish their types from dist/, dist/ is gitignored, and nothing builds
+      # a workspace dependency implicitly. On a fresh checkout @kamibase/vision
+      # therefore cannot see @kamibase/core's types at all, and typecheck fails
+      # with a hundred implicit-any errors that say nothing about the code.
+      # The root script does the build; this note is here because the symptom
+      # turns up in CI and nowhere else.
       - run: pnpm typecheck
 
       - run: pnpm test

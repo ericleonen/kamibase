@@ -7,7 +7,7 @@ in Kamibase.
 Two kinds of picture, two pipelines. A **photograph** of a creased sheet has
 uneven light, soft ridges, no colour, and an assignment that has to be inferred
 because flat paper does not remember which way it went. A **published drawing**
-— a PNG off a designer's site, an export from Oriedita or ORIPA — has none of
+(a PNG off a designer's site, an export from Oriedita or ORIPA) has none of
 those problems and a different set: hairline strokes, a reference grid that is
 not a crease, dashes, and a paper edge somewhere inside a margin. It also has
 the answer written in it, because a red line means mountain.
@@ -67,7 +67,7 @@ So the edge threshold is the higher of a percentile and a multiple of the
 image's own median gradient. The floor is the only thing standing between paper
 texture and a confident pile of imaginary creases.
 
-**Mountain and valley come from the geometry — unless the picture says.** A
+**Mountain and valley come from the geometry, unless the picture says.** A
 flattened sheet does not record which way its creases went, so Maekawa's theorem
 is asked instead: at every interior vertex the mountains and valleys differ by
 exactly two. Where several assignments fit equally well, one is offered and its
@@ -76,8 +76,8 @@ confidence says how many others fitted just as well. See
 
 A *drawing* is different, and the difference is the single biggest win here. A
 red line is not evidence about mountain, it is a designer saying "mountain".
-Those are pinned, the solver fills in only what no convention covered, and —
-because pinning breaks the symmetry Maekawa is blind to — the answer is not
+Those are pinned, the solver fills in only what no convention covered, and,
+because pinning breaks the symmetry Maekawa is blind to, the answer is not
 merely correct up to being inside out.
 
 **A drawing is separated by colour before anything else looks at it.** That
@@ -85,8 +85,8 @@ answers the assignment outright, removes every crossing between differently
 coloured creases, and lets the pale grey reference lattice under a box-pleated
 design be thrown away instead of folded. The unmixing is the subtle part: a
 stroke is anti-aliased, so pixels near it are blends of paper and ink in unknown
-proportion. The palette is built from stroke *cores* — pixels where the
-departure from the paper is a local maximum — and everything else is then
+proportion. The palette is built from stroke *cores*, the pixels where the
+departure from the paper is a local maximum, and everything else is then
 explained as some fraction of one of those. Histogramming all the pixels
 instead, which is the obvious thing, invents an ink colour in the middle of
 every skirt and files half of each crease under a colour nobody drew with.
@@ -94,14 +94,14 @@ every skirt and files half of each crease under a colour nobody drew with.
 **Drawn strokes skip Canny entirely.** A drawn line already *is* an edge, and
 running an edge detector over it finds two, one down each side. Instead the ink
 layer is thinned to a one-pixel skeleton and handed to the same Hough transform,
-with each pixel's direction taken from the structure tensor — which is blind to
+with each pixel's direction taken from the structure tensor, which is blind to
 sign, so the two flanks of a stroke reinforce instead of cancelling.
 
 **The ends are made to meet.** This is the defect everyone notices and nobody
 can name: the lines are all there, all correct to within a pixel, and a pixel is
 a thousandth of the paper, so four creases that meet at a vertex arrive as four
 creases that pass within a thousandth of each other. That pattern renders
-perfectly and is wrong in every way that matters — no vertex, nothing for
+perfectly and is wrong in every way that matters: no vertex, nothing for
 Maekawa to constrain, a pile of dangling creases, and a simulator that tears the
 sheet. `weld.ts` closes them, moving nothing further than the tolerance and
 never changing a crease's direction.
@@ -117,7 +117,7 @@ lighting gradient, reproducible noise, and an optional perspective transform.
 three pixels wide, a pale grey reference lattice, red and blue and sometimes
 neither, dashes, a margin around the paper, JPEG ringing, and a degree or two of
 rotation for the screenshots-of-screenshots case. `test/corpus.ts` holds the
-patterns drawn with it — a basic fold, a 22.5 degree base, Miura-ori on a
+patterns drawn with it: a basic fold, a 22.5 degree base, Miura-ori on a
 non-square lattice, box pleats up to 32 divisions, a waterbomb tessellation, a
 tree base whose angles are no fraction of anything, and one deliberately
 asymmetric pattern so that a mirrored result is visibly wrong.
@@ -165,7 +165,7 @@ number of creases.
 Straight creases only. A photograph's assignment is a candidate rather than a
 proof, because Maekawa is a necessary condition and not a sufficient one. A
 drawing in a colour scheme nobody has a convention for is read as geometry with
-the assignments left to the solver — the layer table says so, and the intended
+the assignments left to the solver, since the layer table says so, and the intended
 answer is to let the person remap it rather than to guess harder. Either way the
 result is meant to be opened in an editor by the person who drew or folded the
 thing.

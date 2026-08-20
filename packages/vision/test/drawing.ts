@@ -53,7 +53,7 @@ export interface RenderOptions {
   readonly showGrid?: boolean;
   /**
    * Draw the paper's outline. On by default, because a published crease
-   * pattern always shows the sheet it is folded from — and because that
+   * pattern always shows the sheet it is folded from, and because that
    * outline is what tells the reader (and the scanner) where the paper ends
    * and the margin begins.
    */
@@ -214,7 +214,7 @@ function stroke(
 
       const p = (y * image.width + x) * 3;
       // Painted over rather than blended together, so a crossing takes the
-      // colour of the line drawn last — which is what a drawing program does
+      // colour of the line drawn last, which is what a drawing program does
       // and what makes crossings genuinely ambiguous to read back.
       image.data[p] = (image.data[p] ?? 0) * (1 - alpha) + colour.r * alpha;
       image.data[p + 1] = (image.data[p + 1] ?? 0) * (1 - alpha) + colour.g * alpha;
@@ -272,7 +272,7 @@ function rotate(image: RgbImage, degrees: number, background: Rgb): RgbImage {
  * What a JPEG does to a line drawing.
  *
  * Two effects, and the second is the one that matters. Grain is easy to shrug
- * off. Ringing — a faint coloured halo beside every high-contrast edge — is
+ * off. Ringing, a faint coloured halo beside every high-contrast edge, is
  * not, because it produces pixels that are neither paper nor any ink in the
  * drawing, sitting exactly where the strokes are. If the palette is built from
  * those, the pattern comes back in forty shades of nothing.

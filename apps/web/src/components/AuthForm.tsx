@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { Eye, EyeOff } from "lucide-react";
 import type { AuthFormState } from "@/app/auth/actions";
 
 function SubmitButton({ label }: { readonly label: string }) {
@@ -16,6 +17,64 @@ function SubmitButton({ label }: { readonly label: string }) {
     >
       {pending ? "One moment…" : label}
     </button>
+  );
+}
+
+/**
+ * A password field you can look at.
+ *
+ * Typing a password you cannot see, into a form that will only tell you
+ * afterwards that it was wrong, is the one place a peek button earns its
+ * keep, most of all on a phone keyboard. It starts hidden, and the toggle
+ * says which state it is in rather than which state it would switch to.
+ */
+function PasswordField({
+  minLength,
+  autoComplete,
+  hint,
+}: {
+  readonly minLength?: number;
+  readonly autoComplete: string;
+  readonly hint?: string;
+}) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <label className="block">
+      <span className="mb-1 block text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+        Password
+      </span>
+      <span className="relative block">
+        <input
+          name="password"
+          type={visible ? "text" : "password"}
+          required
+          {...(minLength === undefined ? {} : { minLength })}
+          autoComplete={autoComplete}
+          className="w-full rounded-xl py-2 pl-3 pr-11 text-sm"
+          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+        />
+        <button
+          type="button"
+          onClick={() => setVisible((value) => !value)}
+          aria-label={visible ? "Hide password" : "Show password"}
+          aria-pressed={visible}
+          title={visible ? "Hide password" : "Show password"}
+          // Not in the tab order: it sits between the password and the submit
+          // button, and a keyboard user reaching for one should not land here.
+          tabIndex={-1}
+          className="absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-r-xl transition hover:opacity-60"
+          style={{ color: "var(--text-muted)" }}
+        >
+          {visible ? <EyeOff className="size-4" aria-hidden /> : <Eye className="size-4" aria-hidden />}
+        </button>
+      </span>
+      {hint && (
+        <span className="mt-1 block text-xs" style={{ color: "var(--text-faint)" }}>
+          {hint}
+        </span>
+      )}
+    </label>
   );
 }
 
@@ -94,25 +153,10 @@ export function AuthForm({ mode, action, configured, next }: AuthFormProps) {
           />
         </label>
 
-        <label className="block">
-          <span className="mb-1 block text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-            Password
-          </span>
-          <input
-            name="password"
-            type="password"
-            required
-            minLength={isSignup ? 8 : undefined}
-            autoComplete={isSignup ? "new-password" : "current-password"}
-            className="w-full rounded-xl px-3 py-2 text-sm"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-          />
-          {isSignup && (
-            <span className="mt-1 block text-xs" style={{ color: "var(--text-faint)" }}>
-              At least 8 characters.
-            </span>
-          )}
-        </label>
+        <PasswordField
+          autoComplete={isSignup ? "new-password" : "current-password"}
+          {...(isSignup ? { minLength: 8, hint: "At least 8 characters." } : {})}
+        />
 
         {state.error && (
           <p className="text-sm" role="alert" style={{ color: "#b4261f" }}>

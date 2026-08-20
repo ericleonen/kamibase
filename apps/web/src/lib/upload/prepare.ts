@@ -130,7 +130,7 @@ async function prepareMedia(file: File): Promise<PrepareResult> {
    * Corners, but only for a photograph.
    *
    * A drawing has no perspective to undo and its paper is found from where the
-   * ink is, so handing it a guessed quadrilateral does nothing but crop it —
+   * ink is, so handing it a guessed quadrilateral does nothing but crop it,
    * and `guessPaperQuad` looking for a bright rectangle on a dark ground finds
    * something arbitrary in a picture that is white almost everywhere. Asking
    * the same question of both would be asking a question only one of them has.
@@ -198,7 +198,7 @@ async function prepareMedia(file: File): Promise<PrepareResult> {
  *
  * Offered only when it lines up. The editor draws the backdrop across the unit
  * square exactly, and `ingest` normalizes a pattern's bounding box into that
- * square preserving aspect — so for a sheet that is not square the two disagree
+ * square preserving aspect, so for a sheet that is not square the two disagree
  * by however much the aspect differs, and a backdrop that is a few percent off
  * is worse than none: every line traced against it inherits the error, and
  * nothing on screen says so.

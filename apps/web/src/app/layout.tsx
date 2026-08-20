@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
+import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { metadataSiteUrl } from "@/lib/site-url";
 import "./globals.css";
@@ -33,40 +33,7 @@ export default function RootLayout({
          * component: `SiteHeader` still runs on the server and reads the
          * session, it just does so as a prop.
          */}
-        <AppShell
-          header={<SiteHeader />}
-          footer={
-            <footer
-              className="print-hidden mx-auto max-w-[1600px] px-4 py-6 text-xs"
-              style={{ color: "var(--text-muted)" }}
-            >
-              <p className="max-w-3xl">
-                <Link href="/explore" className="underline">
-                  Explore
-                </Link>{" "}
-                ·{" "}
-                <a
-                  className="underline"
-                  href="https://github.com/edemaine/fold"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  FOLD
-                </a>{" "}
-                ·{" "}
-                <a
-                  className="underline"
-                  href="https://origamisimulator.org/"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  Origami Simulator
-                </a>{" "}
-                (MIT), by Amanda Ghassaei, Erik Demaine and Neil Gershenfeld
-              </p>
-            </footer>
-          }
-        >
+        <AppShell header={<SiteHeader />} footer={<SiteFooter />}>
           {children}
         </AppShell>
       </body>

@@ -10,7 +10,7 @@
  *
  * So a section is a rule, a small capitalised label, an optional count, an
  * optional action on the right, and a fixed amount of air. The rule is what
- * does the work — a heading alone separates content only for someone already
+ * does the work. A heading alone separates content only for someone already
  * reading it, and a horizontal line separates it for someone scanning.
  */
 export function Section({

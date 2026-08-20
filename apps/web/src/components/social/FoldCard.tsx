@@ -87,7 +87,7 @@ export function FoldGrid({
    *
    * `column` is for a card that sits inside a narrow reading column. The
    * masonry is CSS columns, and CSS columns count off the *viewport* rather
-   * than the container — so a 48rem column on a 1600px screen would lay five
+   * than the container, so a 48rem column on a 1600px screen would lay five
    * columns of cards into it and each would be eighty pixels wide.
    */
   readonly layout?: "masonry" | "column";
