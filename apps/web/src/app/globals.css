@@ -95,6 +95,44 @@ body {
 }
 
 /*
+ * The search field, focused as one control.
+ *
+ * The bar is an input wearing a magnifier and a pill of background, so the
+ * thing that should light up is the pill, not the twenty-odd pixels of text
+ * cursor inside it. `:focus-within` puts the ring on the wrapper and the input
+ * gives up its own, which is the only way to get one outline around one
+ * control rather than a rectangle floating inside a capsule.
+ *
+ * Amber rather than the `--brand-strong` the rest of the site focuses in:
+ * this ring is decoration around a control that is already unmistakably the
+ * search box, and the fill colour is the brand. The transition is on the
+ * colour, not on `outline`, because animating outline width reflows nothing
+ * but flickers on some engines.
+ */
+.kami-search {
+  outline: 2px solid transparent;
+  outline-offset: 0;
+  transition:
+    outline-color 120ms ease-out,
+    box-shadow 120ms ease-out;
+}
+
+.kami-search:focus-within {
+  outline-color: var(--brand);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 26%, transparent);
+}
+
+.kami-search input:focus-visible {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kami-search {
+    transition: none;
+  }
+}
+
+/*
  * A vertex the editor has something to say about.
  *
  * `r` is animated in CSS rather than in React because the alternative is

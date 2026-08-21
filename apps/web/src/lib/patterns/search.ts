@@ -48,10 +48,14 @@ export function filterPatterns(
   });
 }
 
-/** Techniques present in the library, most common first, for the chip row. */
-export function techniqueFacets(
-  patterns: readonly PatternSummary[],
-): { technique: string; count: number }[] {
+/** One technique and how many patterns use it. */
+export interface TechniqueFacet {
+  readonly technique: string;
+  readonly count: number;
+}
+
+/** Techniques present in the library, most common first, for the filter bar. */
+export function techniqueFacets(patterns: readonly PatternSummary[]): TechniqueFacet[] {
   const counts = new Map<string, number>();
   for (const pattern of patterns) {
     for (const technique of pattern.techniques) {

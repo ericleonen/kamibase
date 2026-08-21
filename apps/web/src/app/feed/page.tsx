@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { FeedTabs, type FeedTab } from "@/components/social/FeedTabs";
 import { FoldGrid } from "@/components/social/FoldCard";
 import { PeopleList } from "@/components/social/PeopleList";
 import { SocialNotice } from "@/components/social/SocialNotice";
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
   description: "Folds from the people you follow.",
 };
 
-type Tab = "following" | "discover";
+type Tab = FeedTab;
 
 /**
  * Folds from the people you follow, with an explicit Discover tab beside it.
@@ -66,12 +67,7 @@ export default async function FeedPage({
     <div className="space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight">Feed</h1>
-        {user && (
-          <nav className="flex gap-1 rounded-full p-1" style={{ background: "var(--surface-sunken)" }}>
-            <TabLink label="Following" href="/feed" active={active === "following"} />
-            <TabLink label="Discover" href="/feed?tab=discover" active={active === "discover"} />
-          </nav>
-        )}
+        {user && <FeedTabs active={active} />}
       </header>
 
       {!user && (
@@ -109,26 +105,3 @@ export default async function FeedPage({
   );
 }
 
-function TabLink({
-  label,
-  href,
-  active,
-}: {
-  readonly label: string;
-  readonly href: string;
-  readonly active: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className="rounded-full px-4 py-1.5 text-sm font-semibold transition hover:opacity-80"
-      style={
-        active
-          ? { background: "var(--text)", color: "var(--surface)" }
-          : { color: "var(--text-muted)" }
-      }
-    >
-      {label}
-    </Link>
-  );
-}

@@ -8,6 +8,21 @@ const SIZES = {
   xl: "size-24 text-3xl",
 } as const;
 
+/**
+ * The ring, per size.
+ *
+ * A flat black hairline, not a shadow: avatars land on white cards, on white
+ * page and on brand amber, and a border is the one treatment that reads the
+ * same on all three. It scales with the avatar because 2px around a 28px
+ * circle is a frame, and 1.5px around a 96px one is a scratch.
+ */
+const BORDERS = {
+  sm: "1.5px",
+  md: "1.5px",
+  lg: "2px",
+  xl: "3px",
+} as const;
+
 export type AvatarSize = keyof typeof SIZES;
 
 /**
@@ -27,6 +42,7 @@ export function Avatar({
   readonly size?: AvatarSize;
 }) {
   const classes = `${SIZES[size]} shrink-0 overflow-hidden rounded-full`;
+  const ring = `${BORDERS[size]} solid var(--ink)`;
 
   if (profile.avatarUrl) {
     return (
@@ -36,7 +52,7 @@ export function Avatar({
         alt={`${nameOf(profile)}'s avatar`}
         className={`${classes} object-cover`}
         loading="lazy"
-        style={{ background: "var(--surface-sunken)" }}
+        style={{ background: "var(--surface-sunken)", border: ring }}
       />
     );
   }
@@ -45,7 +61,7 @@ export function Avatar({
     <span
       aria-hidden
       className={`${classes} flex items-center justify-center font-bold`}
-      style={{ background: "var(--brand)", color: "var(--ink)" }}
+      style={{ background: "var(--brand)", color: "var(--ink)", border: ring }}
     >
       {initialOf(profile)}
     </span>

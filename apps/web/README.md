@@ -36,8 +36,9 @@ following: see [SOCIAL.md](SOCIAL.md), which has the one SQL file to run.
 fills backgrounds only; `--brand-strong` (`#9C6206`) is the text-grade amber for
 links and focus rings, because the primary itself is 1.8:1 on white. `/` is the
 landing page. The Pinterest-style masonry feed lives at `/explore`: image-
-forward cards, chrome only on hover, a chip rail for techniques, and a search
-field in the sticky header.
+forward cards, chrome only on hover, a filter bar that navigates on every
+change rather than waiting for an Apply button, and a search field in the
+sticky header that takes its focus ring around the whole pill.
 
 Crease colours are **not** themed. Mountain red, valley blue and boundary black
 are the Origami Simulator convention and the de facto standard across the field
@@ -112,6 +113,11 @@ Mobile-first, and specifically:
   tall enough to cover the canvas outright.
 - The canvas is bounded to the viewport height, so it never runs off the
   bottom of a wide desktop window.
+- Both rails are drag-resizable between a floor and a ceiling, and the width
+  is remembered across sessions. The left one (what the paper is) collapses to
+  a thin icon bar from a button on its own edge; the right one (what the paper
+  does) is simply always open on a wide screen, because checks you have to
+  open a panel to see are closed at the moment they matter.
 
 Known limits: analysis pauses above 600 creases (crossing detection is O(n²)
 and would stall the canvas); autosave is localStorage rather than the IndexedDB

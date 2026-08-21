@@ -98,7 +98,13 @@ export function ImagePicker({
       <div className="flex items-center gap-4">
         <div
           className={`${frame} flex shrink-0 items-center justify-center overflow-hidden`}
-          style={{ background: "var(--surface-sunken)", border: "1px solid var(--border)" }}
+          style={{
+            background: "var(--surface-sunken)",
+            // The circle is an avatar, so it wears the same black ring the
+            // avatar will once it is saved. Anything else previews a picture
+            // that does not look like the one everybody else sees.
+            border: shape === "circle" ? "3px solid var(--ink)" : "1px solid var(--border)",
+          }}
         >
           {shown ? (
             // eslint-disable-next-line @next/next/no-img-element -- a local blob: or a Storage URL

@@ -12,8 +12,10 @@ import {
   Magnet,
   PaintBucket,
   Link2,
-  PanelLeft,
+  PanelLeftClose,
+  PanelLeftOpen,
   PanelRight,
+  PanelRightClose,
   PenLine,
   Redo2,
   Trash2,
@@ -30,6 +32,7 @@ import {
   type FoldDocument,
 } from "@kamibase/core";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { Spinner } from "@/components/Loading";
 import { Simulator } from "@/components/Simulator";
 import { ZoomControls } from "@/components/viewport/ZoomControls";
 import { analyse, LIVE_ANALYSIS_EDGE_LIMIT } from "@/lib/editor/analysis";
@@ -50,7 +53,6 @@ import {
   ANGLE_PRESETS,
   GRID_PRESETS,
   MAX_DIVISIONS,
-  describeDivisions,
   formatAngle,
   isGridVisible,
   normalizeGrid,
@@ -94,6 +96,23 @@ const TOOLS: {
 
 const DEFAULT_GRID: GridSpec = { x: 8, y: 8, angleDegrees: 0 };
 const GRID_KEY = "kamibase:editor:grid";
+const RAILS_KEY = "kamibase:editor:rails";
+
+/**
+ * How wide each rail may be, in pixels.
+ *
+ * The minimum is not a nicety. The left rail holds two number fields and a link
+ * button on one row, and the right holds a live simulator; below about 13rem
+ * either of those wraps into something unusable, so the drag stops there rather
+ * than letting somebody squeeze a panel into a state they then have to guess
+ * their way out of. The maximum is the other end of the same argument: this is
+ * a drawing tool, and the drawing is the middle.
+ */
+const LEFT_RAIL = { min: 208, max: 420, initial: 272 } as const;
+const RIGHT_RAIL = { min: 248, max: 520, initial: 304 } as const;
+
+/** A collapsed rail: one icon button wide, and nothing else. */
+const COLLAPSED_RAIL = 44;
 
 /** How long the 3D preview waits after the last change before re-solving. */
 const PREVIEW_DEBOUNCE_MS = 700;
@@ -128,7 +147,7 @@ export interface CreasePatternEditorProps {
  * It takes the whole screen, the way every drawing tool does, and it is three
  * columns: what the paper is on the left, the paper in the middle, what the
  * paper does on the right. The rails are rails and not floating cards: they
- * are always the same width, they never sit on top of the drawing, and the
+ * never sit on top of the drawing, they are as wide as you drag them, and the
  * canvas is simply what is left, which is the arrangement every tool that has
  * ever had a properties panel converged on.
  *
@@ -166,22 +185,64 @@ export function CreasePatternEditor({
   const [leavingTo, setLeavingTo] = useState<string | null>(null);
 
   /*
-   * The rails are in the flow on a wide screen and over the canvas on a narrow
-   * one, so on a phone they start closed: a 17rem rail over a 360px screen is
-   * the drawing surface.
+   * The rails.
+   *
+   * On a wide screen they are in the flow, they are as wide as you drag them,
+   * and the right one is simply there: the checks and the 3D fold are what the
+   * editor is telling you about what you are drawing, and a panel you have to
+   * open to find out whether the thing you just drew is broken is a panel that
+   * is closed at the moment it matters. The left one collapses, because "what
+   * the paper is" is a decision you make at the start and then leave alone.
+   *
+   * On a narrow screen a rail is over the canvas rather than beside it, and a
+   * 17rem panel over a 360px screen *is* the drawing surface, so both start
+   * collapsed to their thin bar and neither can be dragged: what a rail is
+   * worth there is one icon you can tap to get at it.
    */
-  const [showLeft, setShowLeft] = useState(false);
-  const [showRight, setShowRight] = useState(false);
+  const [wide, setWide] = useState(false);
+  const [leftCollapsed, setLeftCollapsed] = useState(true);
+  const [rightCollapsed, setRightCollapsed] = useState(true);
+  const [leftWidth, setLeftWidth] = useState<number>(LEFT_RAIL.initial);
+  const [rightWidth, setRightWidth] = useState<number>(RIGHT_RAIL.initial);
+
   useEffect(() => {
-    const wide = window.matchMedia("(min-width: 1024px)");
+    const query = window.matchMedia("(min-width: 1024px)");
     const sync = (): void => {
-      setShowLeft(wide.matches);
-      setShowRight(wide.matches);
+      setWide(query.matches);
+      setLeftCollapsed(!query.matches);
+      setRightCollapsed(!query.matches);
     };
     sync();
-    wide.addEventListener("change", sync);
-    return () => wide.removeEventListener("change", sync);
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
   }, []);
+
+  /*
+   * Rail widths are remembered, and remembered globally, for the same reason
+   * the grid is: how wide somebody wants their panels is a fact about them and
+   * their screen, not about the pattern they happen to have open.
+   */
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(RAILS_KEY);
+      if (!stored) return;
+      const parsed: unknown = JSON.parse(stored);
+      if (typeof parsed !== "object" || parsed === null) return;
+      const { left, right } = parsed as { left?: unknown; right?: unknown };
+      if (typeof left === "number") setLeftWidth(clamp(left, LEFT_RAIL.min, LEFT_RAIL.max));
+      if (typeof right === "number") setRightWidth(clamp(right, RIGHT_RAIL.min, RIGHT_RAIL.max));
+    } catch {
+      // Unparseable or unavailable. The default widths are a fine answer.
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(RAILS_KEY, JSON.stringify({ left: leftWidth, right: rightWidth }));
+    } catch {
+      // Private mode, or the quota is full. Not worth interrupting anyone.
+    }
+  }, [leftWidth, rightWidth]);
 
   const panZoom = usePanZoom({
     /*
@@ -364,7 +425,7 @@ export function CreasePatternEditor({
    */
   const [previewFold, setPreviewFold] = useState<FoldDocument | null>(null);
   useEffect(() => {
-    if (!showRight || analysis.skipped) return;
+    if (rightCollapsed || analysis.skipped) return;
     const timer = setTimeout(() => {
       try {
         const result = ingest(analysis.graph, { metadata: { title } });
@@ -375,7 +436,7 @@ export function CreasePatternEditor({
       }
     }, PREVIEW_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [analysis.graph, analysis.skipped, showRight, title]);
+  }, [analysis.graph, analysis.skipped, rightCollapsed, title]);
 
   const openSimulation = useCallback(() => {
     const result = ingest(analysis.graph, { metadata: { title } });
@@ -417,14 +478,9 @@ export function CreasePatternEditor({
           onClick={() => leave(backTo)}
         />
 
-        <IconButton
-          label={showLeft ? "Hide the paper settings" : "Show the paper settings"}
-          Icon={PanelLeft}
-          disabled={false}
-          pressed={showLeft}
-          onClick={() => setShowLeft((value) => !value)}
-        />
-
+        {/* The rails collapse from their own edges, not from up here: a button
+            in the top bar for a panel on the left of the screen is a control
+            that lives nowhere near the thing it controls. */}
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-sm font-bold leading-tight">{title}</h1>
           <p className="truncate text-[11px] leading-tight" style={{ color: "var(--text-muted)" }}>
@@ -459,155 +515,151 @@ export function CreasePatternEditor({
             <Box className="size-4" aria-hidden />
             <span className="hidden sm:inline">Fold in 3D</span>
           </button>
-
-          <IconButton
-            label={showRight ? "Hide the checks" : "Show the checks"}
-            Icon={PanelRight}
-            disabled={false}
-            pressed={showRight}
-            onClick={() => setShowRight((value) => !value)}
-          />
         </div>
       </header>
 
       <div className="relative flex min-h-0 flex-1">
-        {showLeft && (
-          <Rail side="left" label="Paper settings">
-            <Field label="Grid size" value={describeDivisions(grid)}>
-              <Presets
-                options={GRID_PRESETS.map((preset) => ({
-                  label: preset.label,
-                  active:
-                    preset.spec.x === grid.x &&
-                    preset.spec.y === grid.y &&
-                    preset.spec.angleDegrees === grid.angleDegrees,
-                  onSelect: () => setGrid(preset.spec),
-                }))}
+        <Rail
+          side="left"
+          label="Paper settings"
+          width={leftWidth}
+          min={LEFT_RAIL.min}
+          max={LEFT_RAIL.max}
+          onResize={setLeftWidth}
+          collapsed={leftCollapsed}
+          onToggle={() => setLeftCollapsed((value) => !value)}
+          floating={!wide}
+        >
+          <Field label="Grid size">
+            <Presets
+              options={GRID_PRESETS.map((preset) => ({
+                label: preset.label,
+                active:
+                  preset.spec.x === grid.x &&
+                  preset.spec.y === grid.y &&
+                  preset.spec.angleDegrees === grid.angleDegrees,
+                onSelect: () => setGrid(preset.spec),
+              }))}
+            />
+            <div className="flex items-end gap-1.5">
+              <NumberField
+                label="Across"
+                value={grid.x}
+                min={0}
+                max={MAX_DIVISIONS}
+                onChange={(value) =>
+                  setGrid(normalizeGrid(linkAxes ? { ...grid, x: value, y: value } : { ...grid, x: value }))
+                }
               />
-              <div className="flex items-end gap-1.5">
-                <NumberField
-                  label="Across"
-                  value={grid.x}
-                  min={0}
-                  max={MAX_DIVISIONS}
-                  onChange={(value) =>
-                    setGrid(normalizeGrid(linkAxes ? { ...grid, x: value, y: value } : { ...grid, x: value }))
-                  }
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    // Turning the link on squares the grid immediately, rather
-                    // than waiting for the next keystroke. Anything else leaves
-                    // the control claiming the axes are linked while they differ.
-                    if (!linkAxes) setGrid(normalizeGrid({ ...grid, y: grid.x }));
-                    setLinkAxes(!linkAxes);
-                  }}
-                  aria-pressed={linkAxes}
-                  title={linkAxes ? "Divisions are linked" : "Divisions are independent"}
-                  className="flex h-9 w-7 shrink-0 items-center justify-center rounded-lg transition"
-                  style={{
-                    color: linkAxes ? "var(--text)" : "var(--text-faint)",
-                    background: linkAxes ? "var(--surface-sunken)" : "transparent",
-                  }}
-                >
-                  {linkAxes ? (
-                    <Link2 className="size-4" aria-hidden />
-                  ) : (
-                    <Unlink className="size-4" aria-hidden />
-                  )}
-                </button>
-                <NumberField
-                  label="Down"
-                  value={grid.y}
-                  min={0}
-                  max={MAX_DIVISIONS}
-                  onChange={(value) =>
-                    setGrid(normalizeGrid(linkAxes ? { ...grid, x: value, y: value } : { ...grid, y: value }))
-                  }
-                />
-              </div>
-            </Field>
+              <button
+                type="button"
+                onClick={() => {
+                  // Turning the link on squares the grid immediately, rather
+                  // than waiting for the next keystroke. Anything else leaves
+                  // the control claiming the axes are linked while they differ.
+                  if (!linkAxes) setGrid(normalizeGrid({ ...grid, y: grid.x }));
+                  setLinkAxes(!linkAxes);
+                }}
+                aria-pressed={linkAxes}
+                title={linkAxes ? "Divisions are linked" : "Divisions are independent"}
+                className="flex h-9 w-7 shrink-0 items-center justify-center rounded-lg transition"
+                style={{
+                  color: linkAxes ? "var(--text)" : "var(--text-faint)",
+                  background: linkAxes ? "var(--surface-sunken)" : "transparent",
+                }}
+              >
+                {linkAxes ? (
+                  <Link2 className="size-4" aria-hidden />
+                ) : (
+                  <Unlink className="size-4" aria-hidden />
+                )}
+              </button>
+              <NumberField
+                label="Down"
+                value={grid.y}
+                min={0}
+                max={MAX_DIVISIONS}
+                onChange={(value) =>
+                  setGrid(normalizeGrid(linkAxes ? { ...grid, x: value, y: value } : { ...grid, y: value }))
+                }
+              />
+            </div>
+          </Field>
 
-            {isGridVisible(grid) && (
-              <Field label="Grid angle" value={`${formatAngle(grid.angleDegrees)}°`}>
-                <Presets
-                  options={ANGLE_PRESETS.map((angle) => ({
-                    label: `${formatAngle(angle)}°`,
-                    active: grid.angleDegrees === angle,
-                    onSelect: () => setGrid(normalizeGrid({ ...grid, angleDegrees: angle })),
-                  }))}
-                />
-                <NumberField
-                  value={grid.angleDegrees}
-                  min={0}
-                  max={180}
-                  step={0.5}
-                  onChange={(value) => setGrid(normalizeGrid({ ...grid, angleDegrees: value }))}
-                />
-              </Field>
-            )}
-
-            <Field
-              label="Paper angle"
-              value={`${formatAngle(paperAngle)}°`}
-              note="Turns the sheet on screen. The pattern is unchanged."
-            >
+          {isGridVisible(grid) && (
+            <Field label="Grid angle">
               <Presets
-                options={PAPER_ANGLE_PRESETS.map((angle) => ({
+                options={ANGLE_PRESETS.map((angle) => ({
                   label: `${formatAngle(angle)}°`,
-                  active: paperAngle === angle,
-                  onSelect: () => setPaperAngle(angle),
+                  active: grid.angleDegrees === angle,
+                  onSelect: () => setGrid(normalizeGrid({ ...grid, angleDegrees: angle })),
                 }))}
               />
               <NumberField
-                value={paperAngle}
+                value={grid.angleDegrees}
                 min={0}
-                max={359.5}
+                max={180}
                 step={0.5}
-                onChange={(value) => setPaperAngle(normalizePaperAngle(value))}
+                onChange={(value) => setGrid(normalizeGrid({ ...grid, angleDegrees: value }))}
               />
             </Field>
+          )}
 
-            <Field
-              label="Reference image"
-              value={reference ? `${Math.round(referenceOpacity * 100)}%` : "None"}
-            >
-              {reference ? (
-                <>
-                  <Presets
-                    options={[0.15, 0.35, 0.6, 0.8].map((value) => ({
-                      label: `${Math.round(value * 100)}%`,
-                      active: Math.abs(referenceOpacity - value) < 0.001,
-                      onSelect: () => setReferenceOpacity(value),
-                    }))}
+          <Field
+            label="Paper angle"
+            note="Turns the sheet on screen. The pattern is unchanged."
+          >
+            <Presets
+              options={PAPER_ANGLE_PRESETS.map((angle) => ({
+                label: `${formatAngle(angle)}°`,
+                active: paperAngle === angle,
+                onSelect: () => setPaperAngle(angle),
+              }))}
+            />
+            <NumberField
+              value={paperAngle}
+              min={0}
+              max={359.5}
+              step={0.5}
+              onChange={(value) => setPaperAngle(normalizePaperAngle(value))}
+            />
+          </Field>
+
+          <Field label="Reference image">
+            {reference ? (
+              <>
+                <Presets
+                  options={[0.15, 0.35, 0.6, 0.8].map((value) => ({
+                    label: `${Math.round(value * 100)}%`,
+                    active: Math.abs(referenceOpacity - value) < 0.001,
+                    onSelect: () => setReferenceOpacity(value),
+                  }))}
+                />
+                <div className="flex items-end gap-1.5">
+                  <NumberField
+                    label="Opacity"
+                    value={Math.round(referenceOpacity * 100)}
+                    min={0}
+                    max={100}
+                    onChange={(value) => setReferenceOpacity(value / 100)}
                   />
-                  <div className="flex items-end gap-1.5">
-                    <NumberField
-                      label="Opacity"
-                      value={Math.round(referenceOpacity * 100)}
-                      min={0}
-                      max={100}
-                      onChange={(value) => setReferenceOpacity(value / 100)}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setReference(null)}
-                      title="Remove the reference image"
-                      aria-label="Remove the reference image"
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition hover:opacity-60"
-                      style={{ color: "var(--text-muted)", border: "1px solid var(--border)" }}
-                    >
-                      <Trash2 className="size-4" aria-hidden />
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <ImagePicker onPick={chooseReference} />
-              )}
-            </Field>
-          </Rail>
-        )}
+                  <button
+                    type="button"
+                    onClick={() => setReference(null)}
+                    title="Remove the reference image"
+                    aria-label="Remove the reference image"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition hover:opacity-60"
+                    style={{ color: "var(--text-muted)", border: "1px solid var(--border)" }}
+                  >
+                    <Trash2 className="size-4" aria-hidden />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <ImagePicker onPick={chooseReference} />
+            )}
+          </Field>
+        </Rail>
 
         <div className="relative min-h-0 flex-1">
           <EditorCanvas
@@ -705,72 +757,95 @@ export function CreasePatternEditor({
           </div>
         </div>
 
-        {showRight && (
-          <Rail side="right" label="Checks and 3D fold">
-            <Field label={stale ? "Checks · updating" : "Checks"}>
-              <div className="rounded-xl p-3 text-xs" style={{ background: "var(--surface-sunken)" }}>
-                {analysis.skipped ? (
-                  <p style={{ color: "var(--text-muted)" }}>
-                    Paused above {LIVE_ANALYSIS_EDGE_LIMIT} creases.
-                  </p>
-                ) : (
-                  <ul className="space-y-1">
-                    <li>
-                      {analysis.errorCount === 0
-                        ? "No structural defects"
-                        : count(analysis.errorCount, "structural defect")}
+        <Rail
+          side="right"
+          label="Checks and 3D fold"
+          width={rightWidth}
+          min={RIGHT_RAIL.min}
+          max={RIGHT_RAIL.max}
+          onResize={setRightWidth}
+          collapsed={rightCollapsed}
+          /* Only where it has to be: see the note on the rail state above. */
+          {...(wide ? {} : { onToggle: () => setRightCollapsed((value) => !value) })}
+          floating={!wide}
+        >
+          <Field label={stale ? "Checks · updating" : "Checks"}>
+            <div className="rounded-xl p-3 text-xs" style={{ background: "var(--surface-sunken)" }}>
+              {analysis.skipped ? (
+                <p style={{ color: "var(--text-muted)" }}>
+                  Paused above {LIVE_ANALYSIS_EDGE_LIMIT} creases.
+                </p>
+              ) : (
+                <ul className="space-y-1">
+                  <li>
+                    {analysis.errorCount === 0
+                      ? "No structural defects"
+                      : count(analysis.errorCount, "structural defect")}
+                  </li>
+                  {analysis.warningCount > 0 && (
+                    <li>{count(analysis.warningCount, "warning")}</li>
+                  )}
+                  <li>{count(analysis.faceCount, "face")}</li>
+                  <li>{flatFoldabilityLine(analysis)}</li>
+                </ul>
+              )}
+              {analysis.defects.length > 0 && (
+                <ul className="mt-2.5 space-y-1.5" style={{ color: "var(--text-muted)" }}>
+                  {analysis.defects.slice(0, 4).map((defect, index) => (
+                    <li key={`${defect.code}-${index}`}>
+                      <strong style={{ color: "var(--text)" }}>{defect.rule}</strong>{" "}
+                      {defect.message}
                     </li>
-                    {analysis.warningCount > 0 && (
-                      <li>{count(analysis.warningCount, "warning")}</li>
-                    )}
-                    <li>{count(analysis.faceCount, "face")}</li>
-                    <li>{flatFoldabilityLine(analysis)}</li>
-                  </ul>
-                )}
-                {analysis.defects.length > 0 && (
-                  <ul className="mt-2.5 space-y-1.5" style={{ color: "var(--text-muted)" }}>
-                    {analysis.defects.slice(0, 4).map((defect, index) => (
-                      <li key={`${defect.code}-${index}`}>
-                        <strong style={{ color: "var(--text)" }}>{defect.rule}</strong>{" "}
-                        {defect.message}
-                      </li>
-                    ))}
-                  </ul>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <Check
+              label="Mark the vertices that fail"
+              checked={showMarks}
+              onChange={setShowMarks}
+            />
+          </Field>
+
+          <Field label="3D fold" note="Click to open it full size.">
+            {previewFold ? (
+              <Simulator
+                fold={previewFold}
+                // Stable, so new geometry is pushed into the running
+                // simulator rather than remounting the iframe.
+                patternId="editor-preview"
+                title={title}
+                flatFoldable={analysis.flatFoldable}
+                variant="preview"
+                onOpen={openSimulation}
+                fallback={null}
+              />
+            ) : (
+              <div
+                className="flex items-center gap-2.5 rounded-xl p-3 text-xs"
+                style={{ background: "var(--surface-sunken)", color: "var(--text-muted)" }}
+              >
+                {/*
+                 * Three states, and the difference between them matters. An
+                 * empty sheet is waiting for you; a sheet with creases on it
+                 * is waiting for the solver, and a spinner is what says so
+                 * during the debounce and the first solve; a pattern past the
+                 * live limit is not coming at all.
+                 */}
+                {analysis.skipped ? (
+                  <span>Paused above {LIVE_ANALYSIS_EDGE_LIMIT} creases.</span>
+                ) : creaseCount > 0 ? (
+                  <>
+                    <Spinner size="sm" />
+                    <span role="status">Warming up the 3D fold…</span>
+                  </>
+                ) : (
+                  <span>Draw a crease and the fold appears here.</span>
                 )}
               </div>
-              <Check
-                label="Mark the vertices that fail"
-                checked={showMarks}
-                onChange={setShowMarks}
-              />
-            </Field>
-
-            <Field label="3D fold" note="Click to open it full size.">
-              {previewFold ? (
-                <Simulator
-                  fold={previewFold}
-                  // Stable, so new geometry is pushed into the running
-                  // simulator rather than remounting the iframe.
-                  patternId="editor-preview"
-                  title={title}
-                  flatFoldable={analysis.flatFoldable}
-                  variant="preview"
-                  onOpen={openSimulation}
-                  fallback={null}
-                />
-              ) : (
-                <p
-                  className="rounded-xl p-3 text-xs"
-                  style={{ background: "var(--surface-sunken)", color: "var(--text-muted)" }}
-                >
-                  {analysis.skipped
-                    ? `Paused above ${LIVE_ANALYSIS_EDGE_LIMIT} creases.`
-                    : "Draw a crease and the fold appears here."}
-                </p>
-              )}
-            </Field>
-          </Rail>
-        )}
+            )}
+          </Field>
+        </Rail>
 
         {simulation && (
           <div
@@ -846,74 +921,238 @@ function flatFoldabilityLine(analysis: ReturnType<typeof analyse>): string {
     : `${failing} vertices fail Maekawa or Kawasaki`;
 }
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
 /**
  * A rail.
  *
  * In the flow on a wide screen, over the canvas on a narrow one. Same element
  * either way, so nothing inside it is mounted twice, which matters, because
  * one of the things inside it is a WebGL simulator in an iframe.
+ *
+ * It is as wide as it was last dragged to, within limits, and it collapses to a
+ * bar holding the button that brings it back. The button is on the rail rather
+ * than in the toolbar because that is where the rail is: a panel that opens
+ * from its own edge is a door, and a panel that opens from a switch across the
+ * room is a light.
  */
 function Rail({
   side,
   label,
+  width,
+  min,
+  max,
+  onResize,
+  collapsed,
+  onToggle,
+  floating,
   children,
 }: {
   readonly side: "left" | "right";
   readonly label: string;
+  /** Expanded width, in pixels. Ignored while collapsed. */
+  readonly width: number;
+  readonly min: number;
+  readonly max: number;
+  readonly onResize: (width: number) => void;
+  readonly collapsed: boolean;
+  /** Omit for a rail that is simply always open. */
+  readonly onToggle?: () => void;
+  /** True on a narrow screen, where the rail sits over the canvas. */
+  readonly floating: boolean;
   readonly children: React.ReactNode;
 }) {
+  const left = side === "left";
+  const Icon = collapsed
+    ? left
+      ? PanelLeftOpen
+      : PanelRight
+    : left
+      ? PanelLeftClose
+      : PanelRightClose;
+
   return (
     <aside
       aria-label={label}
-      className={`absolute inset-y-0 z-20 flex w-[17rem] shrink-0 flex-col gap-5 overflow-y-auto p-4 lg:relative lg:z-auto ${
-        side === "left" ? "left-0" : "right-0 lg:w-[19rem]"
-      }`}
+      className={`z-20 flex shrink-0 flex-col ${
+        floating ? "absolute inset-y-0" : "relative"
+      } ${left ? "left-0" : "right-0"}`}
       style={{
+        width: collapsed ? COLLAPSED_RAIL : width,
         background: "var(--surface-raised)",
-        [side === "left" ? "borderRight" : "borderLeft"]: "1px solid var(--border)",
+        [left ? "borderRight" : "borderLeft"]: "1px solid var(--border)",
       }}
     >
-      {children}
+      {onToggle && (
+        <div
+          className={`flex shrink-0 p-1.5 ${
+            collapsed ? "justify-center" : left ? "justify-end" : "justify-start"
+          }`}
+        >
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-expanded={!collapsed}
+            title={collapsed ? `Show the ${label.toLowerCase()}` : `Hide the ${label.toLowerCase()}`}
+            aria-label={
+              collapsed ? `Show the ${label.toLowerCase()}` : `Hide the ${label.toLowerCase()}`
+            }
+            className="flex size-8 items-center justify-center rounded-lg transition hover:opacity-60"
+            style={{ color: "var(--text-muted)" }}
+          >
+            <Icon className="size-4" aria-hidden />
+          </button>
+        </div>
+      )}
+
+      {/*
+       * Collapsed, the contents are not rendered at all rather than hidden.
+       * The right rail holds a running simulator, and a WebGL context solving a
+       * pattern nobody can see is a fan spinning for nothing.
+       */}
+      {!collapsed && (
+        <div
+          className={`flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4 ${
+            onToggle ? "pt-1" : "pt-4"
+          }`}
+        >
+          {children}
+        </div>
+      )}
+
+      {/* Dragging a rail that is over the canvas would resize a panel by
+          drawing on the paper underneath it, so the handle is for the wide
+          layout only. */}
+      {!collapsed && !floating && (
+        <ResizeHandle
+          side={side}
+          label={`Resize the ${label.toLowerCase()}`}
+          width={width}
+          min={min}
+          max={max}
+          onResize={onResize}
+        />
+      )}
     </aside>
+  );
+}
+
+/**
+ * The drag handle between a rail and the canvas.
+ *
+ * A window splitter: `role="separator"` with a tab stop and arrow keys, because
+ * "make the panel wider" should not be a mouse-only idea. The pointer listeners
+ * go on the window rather than the handle, since the pointer leaves a six pixel
+ * strip on the first frame of any real drag, and the body's cursor and
+ * selection are pinned for the duration so the drag does not paint a blue
+ * streak across the panel it is resizing.
+ */
+function ResizeHandle({
+  side,
+  label,
+  width,
+  min,
+  max,
+  onResize,
+}: {
+  readonly side: "left" | "right";
+  readonly label: string;
+  readonly width: number;
+  readonly min: number;
+  readonly max: number;
+  readonly onResize: (width: number) => void;
+}) {
+  /** Positive is "wider", whichever edge of the screen the rail is on. */
+  const widen = (delta: number): number => (side === "left" ? delta : -delta);
+
+  const startDrag = (event: React.PointerEvent<HTMLDivElement>): void => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    const startX = event.clientX;
+    const startWidth = width;
+
+    const move = (moveEvent: PointerEvent): void => {
+      onResize(clamp(startWidth + widen(moveEvent.clientX - startX), min, max));
+    };
+    const stop = (): void => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", stop);
+      window.removeEventListener("pointercancel", stop);
+      document.body.style.removeProperty("cursor");
+      document.body.style.removeProperty("user-select");
+    };
+
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", stop);
+    window.addEventListener("pointercancel", stop);
+    document.body.style.setProperty("cursor", "col-resize");
+    document.body.style.setProperty("user-select", "none");
+  };
+
+  return (
+    <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-label={label}
+      aria-valuenow={Math.round(width)}
+      aria-valuemin={min}
+      aria-valuemax={max}
+      tabIndex={0}
+      onPointerDown={startDrag}
+      onKeyDown={(event) => {
+        if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+        event.preventDefault();
+        const step = (event.shiftKey ? 48 : 16) * (event.key === "ArrowLeft" ? -1 : 1);
+        onResize(clamp(width + widen(step), min, max));
+      }}
+      title={label}
+      className={`group absolute inset-y-0 z-30 w-1.5 cursor-col-resize ${
+        side === "left" ? "-right-[3px]" : "-left-[3px]"
+      }`}
+    >
+      {/* Invisible until it is wanted: a permanent line down both sides of the
+          canvas is two more things to look at while drawing. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 rounded-full opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100"
+        style={{ background: "var(--brand)" }}
+      />
+    </div>
   );
 }
 
 /**
  * One setting, in the shape every setting takes.
  *
- * A name, what it currently says, the two or three answers worth one tap, and
- * the field for every other answer. The grid used to be chips and the angle
- * used to be a field with chips wedged beside it, which made two controls that
- * did the same job look like two different kinds of thing. This is the job,
- * once, and each setting fills it in.
+ * A name, the two or three answers worth one tap, and the field for every other
+ * answer. The grid used to be chips and the angle used to be a field with chips
+ * wedged beside it, which made two controls that did the same job look like two
+ * different kinds of thing. This is the job, once, and each setting fills it in.
+ *
+ * There is no readout at the end of the label row any more. It said "8 × 8" one
+ * line above a pair of fields reading 8 and 8, and "45°" one line above a field
+ * reading 45: a second, smaller, less precise copy of the control's own value,
+ * which is a thing to keep in sync and nothing to read.
  */
 function Field({
   label,
-  value,
   note,
   children,
 }: {
   readonly label: string;
-  /** What the setting reads as right now, shown at the end of the label row. */
-  readonly value?: string;
   /** One line under the controls, for a setting that is not self-evident. */
   readonly note?: string;
   readonly children: React.ReactNode;
 }) {
   return (
     <section className="space-y-2">
-      <h2 className="flex items-baseline justify-between gap-2">
-        <span
-          className="text-xs font-bold uppercase tracking-wide"
-          style={{ color: "var(--text-muted)" }}
-        >
-          {label}
-        </span>
-        {value && (
-          <span className="text-xs tabular-nums" style={{ color: "var(--text-faint)" }}>
-            {value}
-          </span>
-        )}
+      <h2
+        className="text-xs font-bold uppercase tracking-wide"
+        style={{ color: "var(--text-muted)" }}
+      >
+        {label}
       </h2>
       {children}
       {note && (

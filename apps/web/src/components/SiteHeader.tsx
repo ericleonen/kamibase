@@ -67,8 +67,10 @@ export async function SiteHeader({ query }: { readonly query?: string }) {
           <label className="sr-only" htmlFor="site-search">
             Search patterns
           </label>
+          {/* `kami-search` moves the focus ring onto the whole pill; see
+              globals.css. */}
           <div
-            className="flex items-center gap-2 rounded-full px-4 py-2"
+            className="kami-search flex items-center gap-2 rounded-full px-4 py-2"
             style={{ background: "var(--surface-sunken)" }}
           >
             <svg viewBox="0 0 24 24" className="size-4 shrink-0" fill="none" aria-hidden>

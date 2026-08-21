@@ -12,6 +12,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import type { FoldDocument } from "@kamibase/core";
+import { Spinner } from "@/components/Loading";
 import {
   attachSimulator,
   hasWebGl2,
@@ -303,14 +304,7 @@ export function Simulator({
             className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 text-sm"
             style={{ background: "var(--surface)", color: "var(--text-muted)" }}
           >
-            <span
-              className="size-7 animate-spin rounded-full border-2"
-              style={{
-                borderColor: "var(--border-strong)",
-                borderTopColor: "var(--brand-strong)",
-              }}
-              aria-hidden
-            />
+            <Spinner size={preview ? "md" : "lg"} />
             <span role="status">Warming up the solver…</span>
           </div>
         )}
