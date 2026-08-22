@@ -9,11 +9,7 @@ import type { PatternSummary } from "@/lib/patterns";
  * changed aspect per card was mat, not content: the same drawing sat in a
  * randomly taller or shorter box, which read as inconsistent rather than
  * deliberate. One size means one size for the pattern too, so cards are
- * comparable at a glance.
- *
- * The stagger the varying frames used to provide comes from `.masonry-stagger`
- * instead: every other card carries extra vertical margin, which offsets the
- * columns without touching how big anything is drawn. See globals.css.
+ * comparable at a glance, and `.pattern-grid` can lay them in real rows.
  */
 export function PatternCard({ pattern }: { readonly pattern: PatternSummary }) {
   return (

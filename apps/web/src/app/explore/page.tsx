@@ -85,9 +85,9 @@ export default async function ExplorePage({
           </Link>
         </div>
       ) : (
-        // `masonry-stagger` because these tiles are all one square: the offset
-        // has to come from margin, since nothing here varies in height.
-        <div className="masonry masonry-stagger">
+        // A grid, not a masonry: every tile is the same square, so every row
+        // should hold the same number of them. See globals.css.
+        <div className="pattern-grid">
           {results.map((pattern) => (
             <PatternCard key={pattern.id} pattern={pattern} />
           ))}

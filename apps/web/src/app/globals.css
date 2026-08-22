@@ -265,28 +265,39 @@ body {
 }
 
 /*
- * The stagger, for grids whose tiles are all one size.
+ * The pattern grid. A real grid, not the masonry above.
  *
- * `PatternCard` used to vary its frame's aspect ratio so the columns did not
- * line up. That made the pattern inside it vary in size too, which is the wrong
- * thing to trade away: the drawing is the content. So the tiles are uniform
- * squares and the offset comes from margin instead, every other card gets
- * extra room above and below, which pushes its column out of phase with its
- * neighbours while every pattern stays the same size.
+ * Crease patterns are all square and every card draws one at the same size, so
+ * there is nothing here for a masonry to solve: given uniform tiles, CSS
+ * columns fill top-to-bottom and *balance*, which puts a different number of
+ * cards in each column and reads on screen as a row of four followed by rows of
+ * three. That is the layout apologising for a problem it does not have.
  *
- * Applied per-column-item rather than per-row: `columns` fills top-to-bottom,
- * so alternating in DOM order alternates down each column, which is exactly the
- * axis the offset needs to be on.
+ * `grid` instead: every row is the same number of cards, every card is the same
+ * size, and the last row is simply shorter. The breakpoints match the masonry's
+ * so the two surfaces still feel like one site.
  */
-.masonry-stagger > *:nth-child(even) {
-  margin-top: 1.5rem;
-  margin-bottom: 2.5rem;
+.pattern-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 @media (min-width: 768px) {
-  .masonry-stagger > *:nth-child(even) {
-    margin-top: 2rem;
-    margin-bottom: 3rem;
+  .pattern-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .pattern-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1500px) {
+  .pattern-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
 

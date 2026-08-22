@@ -88,15 +88,16 @@ export function PatternCardSkeleton() {
 }
 
 /**
- * A masonry of them, staggered the way the real grid is.
+ * The pattern grid, before the patterns. Same class the real one uses, so the
+ * tiles land in the same places.
  *
- * `count` is a guess at how many will land above the fold rather than how many
+ * `count` is a guess at how many will be above the fold rather than how many
  * there are; a skeleton that undershoots is a short page for one frame, and one
  * that overshoots is a promise the data cannot keep.
  */
 export function PatternGridSkeleton({ count = 10 }: { readonly count?: number }) {
   return (
-    <div className="masonry masonry-stagger" role="status" aria-label="Loading patterns">
+    <div className="pattern-grid" role="status" aria-label="Loading patterns">
       {Array.from({ length: count }, (_, index) => (
         <PatternCardSkeleton key={index} />
       ))}

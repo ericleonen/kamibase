@@ -100,14 +100,9 @@ export function UserMenu({
           >
             Your feed
           </Link>
-          <Link
-            href="/explore"
-            role="menuitem"
-            className="block rounded-xl px-3 py-2 hover:opacity-70"
-            onClick={close}
-          >
-            Explore patterns
-          </Link>
+          {/* No "Explore" here. It is a permanent link in the header two
+              inches to the left, and a menu that repeats the toolbar is a menu
+              you have to read past. */}
           <Link
             href="/settings/profile"
             role="menuitem"

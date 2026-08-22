@@ -282,13 +282,25 @@ function Editor({
     }
   }, [leftWidth, rightWidth]);
 
+  /*
+   * The angle the sheet is actually drawn at, which chases the angle it has
+   * been asked for.
+   *
+   * The turn is animated in React rather than in CSS because it is not only a
+   * transform: a turned square needs a bigger box, so the viewport's fit
+   * depends on the angle too. Easing one and stepping the other would give a
+   * sheet that swings round while the zoom jumps under it. One eased number
+   * feeds both, and they move together.
+   */
+  const turnedAngle = useTurn(paperAngle);
+
   const panZoom = usePanZoom({
     /*
      * The turned sheet, not the sheet. A square on the diagonal spans √2, and
      * fitting the untuned 1 would crop its corners off the screen.
      */
-    contentWidth: rotatedExtent(paperAngle),
-    contentHeight: rotatedExtent(paperAngle),
+    contentWidth: rotatedExtent(turnedAngle),
+    contentHeight: rotatedExtent(turnedAngle),
     // The dock floats over the bottom of the canvas; the rails do not float
     // over anything, so they need no allowance here.
     padding: { top: 24, left: 24, bottom: 96, right: 24 },
@@ -317,20 +329,33 @@ function Editor({
   }, []);
 
   /*
-   * The grid is remembered across sessions, and remembered globally rather
-   * than per document.
+   * The divisions are remembered across sessions, and remembered globally
+   * rather than per document. The angle is not.
    *
-   * Globally because it is a property of how somebody works, not of the file:
-   * a designer who lays out on a 32 grid lays out every pattern on one, and
-   * having to say so again in each new document would be worse than the five
-   * fixed buttons this replaced. It is read after mount rather than in the
-   * initial state so that the server-rendered markup and the first client
-   * render agree.
+   * Divisions are a property of how somebody works, not of the file: a designer
+   * who lays out on a 32 grid lays out every pattern on one, and having to say
+   * so again in each new document would be worse than the five fixed buttons
+   * this replaced. A lattice angle is the opposite — it belongs to the design
+   * in front of you. Remembering it means the 60° you needed once for one
+   * pattern is waiting, unasked for and unexplained, on top of the next blank
+   * sheet you open. So every document starts square, and turning the lattice is
+   * a thing you do on purpose.
+   *
+   * Read after mount rather than in the initial state, so the server-rendered
+   * markup and the first client render agree.
    */
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem(GRID_KEY);
-      if (stored) setGrid(normalizeGrid({ ...DEFAULT_GRID, ...JSON.parse(stored) }));
+      if (!stored) return;
+      const { x, y } = JSON.parse(stored) as { x?: unknown; y?: unknown };
+      setGrid(
+        normalizeGrid({
+          ...DEFAULT_GRID,
+          ...(typeof x === "number" ? { x } : {}),
+          ...(typeof y === "number" ? { y } : {}),
+        }),
+      );
     } catch {
       // Unparseable or unavailable. The default grid is a fine answer.
     }
@@ -338,11 +363,11 @@ function Editor({
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(GRID_KEY, JSON.stringify(grid));
+      window.localStorage.setItem(GRID_KEY, JSON.stringify({ x: grid.x, y: grid.y }));
     } catch {
       // Private mode, or the quota is full. Not worth interrupting anyone.
     }
-  }, [grid]);
+  }, [grid.x, grid.y]);
 
   /* Autosave. localStorage rather than the IndexedDB §4 asks for: this is a
    * single small document, and a synchronous key/value store is the right size
@@ -706,7 +731,7 @@ function Editor({
             snap={{ grid, snapToVertices }}
             vertexMarks={analysis.vertexMarks}
             showMarks={showMarks}
-            paperAngle={paperAngle}
+            paperAngle={turnedAngle}
             panZoom={panZoom}
             {...(reference === null
               ? {}
@@ -959,6 +984,63 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+/** How long a quarter turn takes, and the floor for a nudge of half a degree. */
+const TURN_MS_PER_DEGREE = 2.6;
+const TURN_MIN_MS = 110;
+const TURN_MAX_MS = 340;
+
+/**
+ * An angle that eases toward its target instead of jumping to it.
+ *
+ * Paper does not teleport. Tapping 45° used to replace the drawing with the
+ * same drawing at a different angle, and the eye had to work out what had
+ * happened; a sheet that swings round tells you before you have thought about
+ * it. Duration scales with the distance, so nudging half a degree in the number
+ * field is not the same gesture as a quarter turn, and it always goes the short
+ * way round: 350° to 0° is ten degrees forward, not three hundred and fifty
+ * back.
+ *
+ * Every frame is a render of the canvas, which is why this is capped in the
+ * third of a second: the alternative, a CSS transition, cannot also ease the
+ * viewport's fit, and a sheet turning inside a box that resizes in one step
+ * looks worse than no animation at all.
+ */
+function useTurn(target: number): number {
+  const [shown, setShown] = useState(target);
+  const shownRef = useRef(target);
+  shownRef.current = shown;
+
+  useEffect(() => {
+    const from = shownRef.current;
+    // The short way round, in (-180, 180].
+    const delta = ((((target - from) % 360) + 540) % 360) - 180;
+    if (Math.abs(delta) < 0.01) {
+      setShown(target);
+      return;
+    }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setShown(target);
+      return;
+    }
+
+    const duration = clamp(Math.abs(delta) * TURN_MS_PER_DEGREE, TURN_MIN_MS, TURN_MAX_MS);
+    const started = performance.now();
+    let frame = 0;
+
+    const step = (now: number): void => {
+      const t = Math.min(1, (now - started) / duration);
+      // Ease out cubic: quick to leave, gentle to arrive.
+      const eased = 1 - (1 - t) ** 3;
+      setShown(t === 1 ? target : from + delta * eased);
+      if (t < 1) frame = requestAnimationFrame(step);
+    };
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
+  }, [target]);
+
+  return shown;
+}
+
 /**
  * A rail: a column beside the canvas, as wide as it was last dragged to.
  *
@@ -999,22 +1081,48 @@ function Rail({
       ? PanelLeftClose
       : PanelRightClose;
 
+  /*
+   * A drag has to be instant and a collapse has to be smooth, and they are the
+   * same property. So the transition is on unless the pointer is on the handle:
+   * easing a width that is following a finger would leave the rail lagging
+   * behind the edge you are holding.
+   */
+  const [dragging, setDragging] = useState(false);
+
+  /*
+   * The contents outlive the collapse by one animation.
+   *
+   * Unmounting them on the click would empty the panel and *then* narrow it,
+   * which is two events where there was one gesture. Kept mounted at their full
+   * width inside an `overflow-hidden` rail, they slide out behind the edge
+   * instead. They are unmounted when the transition lands, because the right
+   * rail holds a running simulator and a WebGL context solving a pattern nobody
+   * can see is a fan spinning for nothing.
+   */
+  const [showContents, setShowContents] = useState(!collapsed);
+  useEffect(() => {
+    if (!collapsed) setShowContents(true);
+  }, [collapsed]);
+
   return (
     <aside
       aria-label={label}
-      className="relative z-20 flex shrink-0 flex-col"
+      className="relative z-20 flex shrink-0 flex-col overflow-hidden"
       style={{
         width: collapsed ? COLLAPSED_RAIL : width,
         background: "var(--surface-raised)",
         [left ? "borderRight" : "borderLeft"]: "1px solid var(--border)",
+        transition: dragging ? "none" : "width 240ms cubic-bezier(0.2, 0, 0, 1)",
+      }}
+      onTransitionEnd={(event) => {
+        if (event.propertyName === "width" && collapsed) setShowContents(false);
       }}
     >
       {onToggle && (
-        <div
-          className={`flex shrink-0 p-1.5 ${
-            collapsed ? "justify-center" : left ? "justify-end" : "justify-start"
-          }`}
-        >
+        // Always against the inner edge, never centred: a collapsed rail is
+        // exactly one button wide, so "end" and "centre" are the same place,
+        // and the button has nowhere to jump to on the way there.
+        <div className={`flex shrink-0 p-1.5 ${left ? "justify-end" : "justify-start"}`}>
           <button
             type="button"
             onClick={onToggle}
@@ -1023,7 +1131,7 @@ function Rail({
             aria-label={
               collapsed ? `Show the ${label.toLowerCase()}` : `Hide the ${label.toLowerCase()}`
             }
-            className="flex size-8 items-center justify-center rounded-lg transition hover:opacity-60"
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg transition hover:opacity-60"
             style={{ color: "var(--text-muted)" }}
           >
             <Icon className="size-4" aria-hidden />
@@ -1031,16 +1139,19 @@ function Rail({
         </div>
       )}
 
-      {/*
-       * Collapsed, the contents are not rendered at all rather than hidden.
-       * The right rail holds a running simulator, and a WebGL context solving a
-       * pattern nobody can see is a fan spinning for nothing.
-       */}
-      {!collapsed && (
+      {showContents && (
         <div
-          className={`flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4 ${
+          aria-hidden={collapsed}
+          className={`flex min-h-0 flex-1 shrink-0 flex-col gap-5 overflow-y-auto px-4 pb-4 ${
             onToggle ? "pt-1" : "pt-4"
           }`}
+          // Pinned to the open width so the settings inside do not reflow into
+          // a 44px column on their way out of view.
+          style={{
+            width,
+            opacity: collapsed ? 0 : 1,
+            transition: dragging ? "none" : "opacity 160ms ease-out",
+          }}
         >
           {children}
         </div>
@@ -1055,6 +1166,7 @@ function Rail({
           min={min}
           max={max}
           onResize={onResize}
+          onDraggingChange={setDragging}
         />
       )}
     </aside>
@@ -1078,6 +1190,7 @@ function ResizeHandle({
   min,
   max,
   onResize,
+  onDraggingChange,
 }: {
   readonly side: "left" | "right";
   readonly label: string;
@@ -1085,6 +1198,8 @@ function ResizeHandle({
   readonly min: number;
   readonly max: number;
   readonly onResize: (width: number) => void;
+  /** So the rail can drop its width transition for the duration of a drag. */
+  readonly onDraggingChange?: (dragging: boolean) => void;
 }) {
   /** Positive is "wider", whichever edge of the screen the rail is on. */
   const widen = (delta: number): number => (side === "left" ? delta : -delta);
@@ -1104,8 +1219,10 @@ function ResizeHandle({
       window.removeEventListener("pointercancel", stop);
       document.body.style.removeProperty("cursor");
       document.body.style.removeProperty("user-select");
+      onDraggingChange?.(false);
     };
 
+    onDraggingChange?.(true);
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", stop);
     window.addEventListener("pointercancel", stop);
@@ -1186,7 +1303,18 @@ function Field({
   );
 }
 
-/** The one-tap answers. Even columns, however many there are. */
+/**
+ * The one-tap answers.
+ *
+ * Even columns, as many per row as fit. Not one row of `options.length`, which
+ * is what this used to be: five angle presets in a rail dragged down to its
+ * 13rem minimum leaves 30 pixels a button, and "22.5°" is wider than that, so
+ * the longest label on the panel was the one hanging out of its own border.
+ * `auto-fit` with a floor wide enough for that label wraps to a second row
+ * instead, which is the honest thing for a row that has run out of room.
+ */
+const PRESET_MIN_WIDTH = "3.1rem";
+
 function Presets({
   options,
 }: {
@@ -1199,7 +1327,7 @@ function Presets({
   return (
     <div
       className="grid gap-1.5"
-      style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+      style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${PRESET_MIN_WIDTH}, 1fr))` }}
     >
       {options.map((option) => (
         <button
@@ -1207,7 +1335,7 @@ function Presets({
           type="button"
           onClick={option.onSelect}
           aria-pressed={option.active}
-          className="min-h-9 rounded-lg px-1 text-xs font-bold tabular-nums transition"
+          className="min-h-9 overflow-hidden rounded-lg px-1 text-xs font-bold tabular-nums transition"
           style={{
             background: option.active ? "var(--surface-sunken)" : "transparent",
             border: `1px solid ${option.active ? "var(--border-strong)" : "var(--border)"}`,

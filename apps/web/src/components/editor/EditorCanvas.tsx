@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ORIGAMI_SIMULATOR_PALETTE, type EdgeAssignment } from "@kamibase/core";
 import type { VertexMark } from "@/lib/editor/analysis";
 import { gridLines, type GridSpec } from "@/lib/editor/grid";
@@ -89,6 +89,19 @@ export function EditorCanvas({
 }: EditorCanvasProps) {
   const [start, setStart] = useState<[number, number] | null>(null);
   const [cursor, setCursor] = useState<[number, number] | null>(null);
+
+  /*
+   * The snap dot is where the pointer is, not a mark on the paper, so it does
+   * not come round with the sheet. Turning the paper leaves it stale anyway —
+   * the pointer has not moved, so the paper coordinate under it is a different
+   * one — and a dot swinging away from the cursor during the turn reads as the
+   * canvas losing track of the mouse. It comes back on the next pointer move,
+   * in the right place. Same argument for a half-drawn crease.
+   */
+  useEffect(() => {
+    setStart(null);
+    setCursor(null);
+  }, [paperAngle]);
 
   const { view } = panZoom;
   const px = useCallback((pixels: number): number => pixels / view.scale, [view.scale]);

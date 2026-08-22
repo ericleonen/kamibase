@@ -45,10 +45,13 @@ are the Origami Simulator convention and the de facto standard across the field
 (DESIGN.md §3.3). Restyling them to match a brand would make our patterns
 misread everywhere else. The yellow is chrome; the pattern is data.
 
-Card frames vary in aspect so the masonry actually staggers. Crease patterns
-are all square, and a grid of identical squares reads as a table rather than a
-feed. The pattern inside stays `object-contain`, so only the mat around it
-changes; the geometry is never distorted.
+Patterns lay out in a real grid (`.pattern-grid`), not a masonry. Crease
+patterns are all square and every card draws one at the same size, so there is
+nothing for a masonry to solve: CSS columns fill top-to-bottom and *balance*,
+which puts a different number of cards in each column and reads as a row of four
+followed by rows of three. Folds are the opposite case — a photograph is
+whatever shape the camera was — so `FoldGrid` keeps the masonry. The pattern
+inside a card stays `object-contain`; the geometry is never distorted.
 
 ## Routes
 
@@ -70,6 +73,30 @@ changes; the geometry is never distorted.
 | `/feed` | Folds from people you follow, with a Discover tab |
 | `/u/:handle` | Profile, with followers and following beside it |
 | `/settings/profile` | Edit your own |
+| `/about` · `/credits` · `/terms` | What this is, whose work it stands on, the rules |
+| `/help` | Write in. The four links in the footer are these last two rows |
+
+## The help form
+
+`/help` posts to a server action that sends the message on by email. The
+address it goes to never appears in any page, which is the entire reason the
+form exists rather than a `mailto:` link.
+
+Resend, over its HTTP API rather than an SDK: one `fetch` is the whole
+integration, so there is no dependency to keep current and nothing to bundle.
+Three environment variables, all optional, all read at call time so adding them
+to a running deployment needs no rebuild:
+
+| Variable | |
+|---|---|
+| `RESEND_API_KEY` | Without it the form renders, says plainly that it is not connected, and refuses to pretend it sent |
+| `CONTACT_EMAIL` | Where messages land. Defaults to the maintainer's |
+| `CONTACT_FROM` | The envelope sender. Defaults to Resend's `onboarding@resend.dev`, which needs no verified domain but only delivers to the Resend account's own address |
+
+The sender's address goes in `reply_to`, never in `from`: sending as somebody
+else is a forgery that SPF and DMARC exist to bounce. A hidden field catches the
+indiscriminate half of the spam, and a bot that fills it in is told the message
+sent, because one that is told it failed simply tries again.
 
 ## The editor
 
