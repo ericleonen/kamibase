@@ -354,7 +354,7 @@ export function Simulator({
       */}
       {controllable && !preview && (
         <div className="border-t" style={{ borderColor: "var(--border)" }}>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-3 px-4 py-3">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-3 px-4 pb-2 pt-3">
             <div className="flex min-w-[15rem] flex-1 items-center gap-3">
               <button
                 type="button"
@@ -445,10 +445,16 @@ export function Simulator({
             </div>
           </div>
 
-          <p
-            className="border-t px-4 py-2 text-xs"
-            style={{ borderColor: "var(--border)", color: "var(--text-faint)" }}
-          >
+          {/*
+            A caption under the controls, not a strip of its own.
+            It used to carry a `border-t`, which put a rule about two dozen
+            pixels above the card's own bottom edge: two parallel lines with a
+            line of six point type trapped between them, which reads as a
+            mistake rather than as a division. The bar it belongs to is already
+            separated from the model by one border, and one border is the
+            number this needs.
+          */}
+          <p className="px-4 pb-3 text-xs" style={{ color: "var(--text-faint)" }}>
             Drag to rotate · scroll to zoom
             {!flatFoldable &&
               " · this pattern fails a local flat-foldability check, so the solver may not settle, which is normal for 3D designs"}

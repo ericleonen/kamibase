@@ -113,11 +113,16 @@ export function UserMenu({
           </Link>
 
           <div className="my-1 h-px" style={{ background: "var(--border)" }} />
+          {/* In red, because it is the one item here that undoes something. It
+              sits under a rule and at the bottom, where every menu on the web
+              keeps the way out, and the colour is what stops it reading as a
+              fourth place to go. */}
           <form action={signOutAction}>
             <button
               type="submit"
               role="menuitem"
-              className="w-full rounded-xl px-3 py-2 text-left hover:opacity-70"
+              className="w-full rounded-xl px-3 py-2 text-left font-semibold hover:opacity-70"
+              style={{ color: "var(--danger)" }}
             >
               Log out
             </button>

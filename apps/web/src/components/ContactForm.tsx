@@ -124,7 +124,7 @@ export function ContactForm({ configured }: { readonly configured: boolean }) {
       />
 
       {state.error && (
-        <p className="flex items-start gap-2 text-sm" style={{ color: "#b42318" }} role="alert">
+        <p className="flex items-start gap-2 text-sm" style={{ color: "var(--danger)" }} role="alert">
           <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
           {state.error}
         </p>

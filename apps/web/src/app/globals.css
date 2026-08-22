@@ -54,6 +54,17 @@
   --text-muted: #6b6862;
   --text-faint: #97948d;
 
+  /*
+   * Red, for text that is a warning or a way out: a validation error, "log
+   * out". Dark enough to read on white (6.6:1), which the obvious brighter reds
+   * are not.
+   *
+   * Not the red the editor marks a failing vertex with. That is a four-pixel
+   * dot on paper rather than a word on a page, and it wants the brighter value
+   * for the same reason the crease palette does.
+   */
+  --danger: #b42318;
+
   --radius-card: 1rem;
   /* Cards are white on a white page, so the shadow carries a hairline ring.
    * Without it the card edge disappears entirely in light mode. */
