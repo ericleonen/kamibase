@@ -66,6 +66,7 @@ import {
 import { renderDownload, DOWNLOAD_FORMATS, FORMAT_LABELS } from "@/lib/downloads";
 import { ZOOM_STEP, usePanZoom } from "@/lib/viewport/use-pan-zoom";
 import { EditorCanvas, type EditorTool } from "./EditorCanvas";
+import { EDITOR_MIN_WIDTH_QUERY, EditorTooSmall } from "./EditorTooSmall";
 
 const ASSIGNMENTS: { key: EdgeAssignment; label: string; hotkey: string }[] = [
   { key: "M", label: "Mountain", hotkey: "m" },
@@ -136,6 +137,58 @@ export interface CreasePatternEditorProps {
 }
 
 /**
+ * The door to the editor: wide enough, or a note explaining why not.
+ *
+ * Every way into the editor — `/edit`, `/edit/import`, `/p/:id/edit` — comes
+ * through this component, so the check belongs here rather than in three pages
+ * that could each forget it.
+ *
+ * Two mechanisms, doing two different jobs. The CSS one (`lg:hidden` on the
+ * notice) is what a phone sees in its first paint, before any JavaScript has
+ * run and whether or not any ever does. The `matchMedia` one decides whether to
+ * mount the editor at all, which is the part that matters: the editor is a live
+ * analysis loop and a WebGL simulator in an iframe, and hiding that with CSS
+ * would leave a phone solving crease patterns it will never show anybody.
+ *
+ * Entry latches. Once somebody is in, narrowing the window does not throw them
+ * out, because the thing on the other side of that unmount is their drawing.
+ * They get cramped rails, which they can drag, and that is their business.
+ */
+export function CreasePatternEditor(props: CreasePatternEditorProps) {
+  const [entered, setEntered] = useState(false);
+
+  useEffect(() => {
+    if (entered) return;
+    const query = window.matchMedia(EDITOR_MIN_WIDTH_QUERY);
+    const sync = (): void => {
+      if (query.matches) setEntered(true);
+    };
+    sync();
+    // Rotating a tablet is the common way across this line.
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, [entered]);
+
+  if (entered) return <Editor {...props} />;
+
+  return (
+    <>
+      <EditorTooSmall
+        className="lg:hidden"
+        {...(props.backHref === undefined ? {} : { backHref: props.backHref })}
+      />
+      {/* A wide screen that has not hydrated yet: the editor's own background,
+          so the frame before it mounts is not a flash of white. */}
+      <div
+        aria-hidden
+        className="fixed inset-0 -z-10 hidden lg:block"
+        style={{ background: "var(--surface-sunken)" }}
+      />
+    </>
+  );
+}
+
+/**
  * The simple crease pattern editor of DESIGN.md §4.
  *
  * The bar it aims at is the one the design sets: "fix a converted file and make
@@ -155,7 +208,7 @@ export interface CreasePatternEditorProps {
  * the point of §9: the editor's rules and the server's rules cannot drift,
  * because they are the same code.
  */
-export function CreasePatternEditor({
+function Editor({
   initialDoc,
   title,
   slug,
@@ -185,37 +238,22 @@ export function CreasePatternEditor({
   const [leavingTo, setLeavingTo] = useState<string | null>(null);
 
   /*
-   * The rails.
+   * The rails: in the flow beside the canvas, never over it, and as wide as
+   * they were last dragged to.
    *
-   * On a wide screen they are in the flow, they are as wide as you drag them,
-   * and the right one is simply there: the checks and the 3D fold are what the
-   * editor is telling you about what you are drawing, and a panel you have to
-   * open to find out whether the thing you just drew is broken is a panel that
-   * is closed at the moment it matters. The left one collapses, because "what
-   * the paper is" is a decision you make at the start and then leave alone.
+   * The right one has no collapse, because the checks and the 3D fold are the
+   * editor telling you about what you are drawing, and a panel you have to open
+   * to find out whether the thing you just drew is broken is a panel that is
+   * closed at the moment it matters. The left one does, because "what the paper
+   * is" is a decision you make at the start and then leave alone.
    *
-   * On a narrow screen a rail is over the canvas rather than beside it, and a
-   * 17rem panel over a 360px screen *is* the drawing surface, so both start
-   * collapsed to their thin bar and neither can be dragged: what a rail is
-   * worth there is one icon you can tap to get at it.
+   * There is no narrow-screen arrangement of any of this, because there is no
+   * narrow screen: `CreasePatternEditor` above does not mount the editor below
+   * 64rem.
    */
-  const [wide, setWide] = useState(false);
-  const [leftCollapsed, setLeftCollapsed] = useState(true);
-  const [rightCollapsed, setRightCollapsed] = useState(true);
+  const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [leftWidth, setLeftWidth] = useState<number>(LEFT_RAIL.initial);
   const [rightWidth, setRightWidth] = useState<number>(RIGHT_RAIL.initial);
-
-  useEffect(() => {
-    const query = window.matchMedia("(min-width: 1024px)");
-    const sync = (): void => {
-      setWide(query.matches);
-      setLeftCollapsed(!query.matches);
-      setRightCollapsed(!query.matches);
-    };
-    sync();
-    query.addEventListener("change", sync);
-    return () => query.removeEventListener("change", sync);
-  }, []);
 
   /*
    * Rail widths are remembered, and remembered globally, for the same reason
@@ -425,7 +463,7 @@ export function CreasePatternEditor({
    */
   const [previewFold, setPreviewFold] = useState<FoldDocument | null>(null);
   useEffect(() => {
-    if (rightCollapsed || analysis.skipped) return;
+    if (analysis.skipped) return;
     const timer = setTimeout(() => {
       try {
         const result = ingest(analysis.graph, { metadata: { title } });
@@ -436,7 +474,7 @@ export function CreasePatternEditor({
       }
     }, PREVIEW_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [analysis.graph, analysis.skipped, rightCollapsed, title]);
+  }, [analysis.graph, analysis.skipped, title]);
 
   const openSimulation = useCallback(() => {
     const result = ingest(analysis.graph, { metadata: { title } });
@@ -528,7 +566,6 @@ export function CreasePatternEditor({
           onResize={setLeftWidth}
           collapsed={leftCollapsed}
           onToggle={() => setLeftCollapsed((value) => !value)}
-          floating={!wide}
         >
           <Field label="Grid size">
             <Presets
@@ -764,10 +801,7 @@ export function CreasePatternEditor({
           min={RIGHT_RAIL.min}
           max={RIGHT_RAIL.max}
           onResize={setRightWidth}
-          collapsed={rightCollapsed}
-          /* Only where it has to be: see the note on the rail state above. */
-          {...(wide ? {} : { onToggle: () => setRightCollapsed((value) => !value) })}
-          floating={!wide}
+          /* No `onToggle`: this one does not close. See the note above. */
         >
           <Field label={stale ? "Checks · updating" : "Checks"}>
             <div className="rounded-xl p-3 text-xs" style={{ background: "var(--surface-sunken)" }}>
@@ -926,17 +960,12 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 /**
- * A rail.
+ * A rail: a column beside the canvas, as wide as it was last dragged to.
  *
- * In the flow on a wide screen, over the canvas on a narrow one. Same element
- * either way, so nothing inside it is mounted twice, which matters, because
- * one of the things inside it is a WebGL simulator in an iframe.
- *
- * It is as wide as it was last dragged to, within limits, and it collapses to a
- * bar holding the button that brings it back. The button is on the rail rather
- * than in the toolbar because that is where the rail is: a panel that opens
- * from its own edge is a door, and a panel that opens from a switch across the
- * room is a light.
+ * Given an `onToggle`, it also collapses to a bar holding the button that
+ * brings it back. The button is on the rail rather than in the toolbar because
+ * that is where the rail is: a panel that opens from its own edge is a door,
+ * and a panel that opens from a switch across the room is a light.
  */
 function Rail({
   side,
@@ -945,9 +974,8 @@ function Rail({
   min,
   max,
   onResize,
-  collapsed,
+  collapsed = false,
   onToggle,
-  floating,
   children,
 }: {
   readonly side: "left" | "right";
@@ -957,11 +985,9 @@ function Rail({
   readonly min: number;
   readonly max: number;
   readonly onResize: (width: number) => void;
-  readonly collapsed: boolean;
+  readonly collapsed?: boolean;
   /** Omit for a rail that is simply always open. */
   readonly onToggle?: () => void;
-  /** True on a narrow screen, where the rail sits over the canvas. */
-  readonly floating: boolean;
   readonly children: React.ReactNode;
 }) {
   const left = side === "left";
@@ -976,9 +1002,7 @@ function Rail({
   return (
     <aside
       aria-label={label}
-      className={`z-20 flex shrink-0 flex-col ${
-        floating ? "absolute inset-y-0" : "relative"
-      } ${left ? "left-0" : "right-0"}`}
+      className="relative z-20 flex shrink-0 flex-col"
       style={{
         width: collapsed ? COLLAPSED_RAIL : width,
         background: "var(--surface-raised)",
@@ -1022,10 +1046,8 @@ function Rail({
         </div>
       )}
 
-      {/* Dragging a rail that is over the canvas would resize a panel by
-          drawing on the paper underneath it, so the handle is for the wide
-          layout only. */}
-      {!collapsed && !floating && (
+      {/* Nothing to drag while it is a 44px bar; the button is the control. */}
+      {!collapsed && (
         <ResizeHandle
           side={side}
           label={`Resize the ${label.toLowerCase()}`}

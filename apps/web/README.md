@@ -104,20 +104,32 @@ and a segment list gives exactly that. Every edit returns a new array, undo is
 keeping the old one, and the graph is derived through `graphFromSegments`, the
 same function the parsers use.
 
-Mobile-first, and specifically:
+**The editor needs a window at least 64rem (1024px) wide.** Below that,
+`CreasePatternEditor` does not mount at all and every door into it — `/edit`,
+`/edit/import`, `/p/:id/edit` — shows a note saying so, with links onward to
+the library. A canvas with paper settings down one side and live checks down
+the other has no honest 390px arrangement, and a squeezed one would still look
+like it worked right up until somebody had spent twenty minutes drawing into
+it. The notice is CSS-gated (`lg:hidden`) so it lands in the first paint, and
+the `matchMedia` check is what keeps a phone from booting an analysis loop and
+a WebGL iframe it will never show. Entry latches: narrowing the window after
+you are in does not throw you out, because on the other side of that unmount is
+somebody's drawing.
+
+Given the room, then:
 
 - One Pointer Events path for finger, stylus and mouse; two fingers pinch-zoom
-  in any tool.
-- The control panel is pinned to the bottom of the viewport on phones, where
-  thumbs are, and collapsed to two rows by default, because an expanded one is
-  tall enough to cover the canvas outright.
+  in any tool. A touchscreen laptop or a tablet in landscape draws fine.
+- The tool dock floats at the bottom of the canvas, within reach of the
+  pointer and never between you and the paper the way a top toolbar is.
 - The canvas is bounded to the viewport height, so it never runs off the
   bottom of a wide desktop window.
-- Both rails are drag-resizable between a floor and a ceiling, and the width
-  is remembered across sessions. The left one (what the paper is) collapses to
-  a thin icon bar from a button on its own edge; the right one (what the paper
-  does) is simply always open on a wide screen, because checks you have to
-  open a panel to see are closed at the moment they matter.
+- Both rails are drag-resizable between a floor and a ceiling, with a
+  keyboard-operable splitter, and the width is remembered across sessions. The
+  left one (what the paper is) collapses to a thin icon bar from a button on
+  its own edge; the right one (what the paper does) does not collapse at all,
+  because checks you have to open a panel to see are closed at the moment they
+  matter.
 
 Known limits: analysis pauses above 600 creases (crossing detection is O(n²)
 and would stall the canvas); autosave is localStorage rather than the IndexedDB
