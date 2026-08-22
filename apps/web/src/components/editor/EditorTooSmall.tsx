@@ -12,9 +12,6 @@ import { Monitor } from "lucide-react";
  */
 export const EDITOR_MIN_WIDTH_QUERY = "(min-width: 64rem)";
 
-/** The same number, for saying out loud. */
-const EDITOR_MIN_WIDTH_PX = 1024;
-
 /**
  * What a phone gets instead of the editor.
  *
@@ -25,9 +22,10 @@ const EDITOR_MIN_WIDTH_PX = 1024;
  * cramped version still looks like it works right up until somebody has spent
  * twenty minutes drawing into it.
  *
- * So this is a door, and a door should say where else to go. Back to where they
- * came from, or into the library, which is the part of Kamibase that is genuinely
- * good on a phone.
+ * One line, though. Nobody turned away from a tool reads a paragraph about why,
+ * and the only part that helps is what to do instead, so the sentence carries
+ * that and the buttons carry the rest: back where they came from, or into the
+ * library, which is the part of Kamibase that is genuinely good on a phone.
  */
 export function EditorTooSmall({
   backHref,
@@ -51,18 +49,11 @@ export function EditorTooSmall({
           <Monitor className="size-7" style={{ color: "var(--brand-strong)" }} />
         </span>
 
-        <h1 className="text-xl font-black tracking-tight">The editor needs a bigger screen</h1>
+        <h1 className="text-xl font-black tracking-tight">Not enough desk</h1>
 
         <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-          Drawing a crease pattern means a canvas with the paper settings down one
-          side and the live checks and 3D fold down the other. That does not fit on
-          a phone, and a squeezed version would waste your time rather than save
-          it.
-        </p>
-        <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-          Open this on a laptop or desktop — a window at least{" "}
-          {EDITOR_MIN_WIDTH_PX} pixels wide. Turning a tablet on its side is often
-          enough.
+          Folding needs elbow room, so come back on a laptop — or turn your tablet
+          on its side.
         </p>
 
         <div className="flex flex-wrap justify-center gap-2 pt-1">
