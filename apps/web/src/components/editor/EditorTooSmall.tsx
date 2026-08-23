@@ -49,11 +49,10 @@ export function EditorTooSmall({
           <Monitor className="size-7" style={{ color: "var(--brand-strong)" }} />
         </span>
 
-        <h1 className="text-xl font-black tracking-tight">Not enough desk</h1>
+        <h1 className="text-xl font-black tracking-tight">The editor needs a wider screen</h1>
 
         <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-          Folding needs elbow room, so come back on a laptop — or turn your tablet
-          on its side.
+          Open Kamibase on a laptop or desktop, or turn your tablet to landscape.
         </p>
 
         <div className="flex flex-wrap justify-center gap-2 pt-1">

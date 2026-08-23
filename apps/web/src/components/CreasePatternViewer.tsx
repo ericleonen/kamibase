@@ -223,7 +223,17 @@ export function CreasePatternViewer({
   const cursor = panZoom.panning ? "grabbing" : "grab";
 
   return (
-    <figure className="m-0">
+    /*
+     * No `m-0` here, however much a `<figure>` looks like it needs one.
+     *
+     * Preflight already zeroes the user agent's `1em 40px`, so it was doing
+     * nothing it was meant to do and one thing it was not: Tailwind's
+     * `space-y-*` is a zero-specificity `:where()` rule, so a class on the child
+     * outranks it, and the viewer sat flush against whatever the page put under
+     * it. On a pattern page that was "Fold it in 3D" touching the layer
+     * toggles.
+     */
+    <figure>
       <style>{hiddenRules}</style>
 
       <div

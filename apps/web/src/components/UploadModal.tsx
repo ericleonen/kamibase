@@ -3,8 +3,19 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Upload, X } from "lucide-react";
+import { FILE_ACCEPT } from "@/lib/upload/convert";
 import { ACCEPTED, prepareUpload } from "@/lib/upload/prepare";
 import { IMPORT_STORAGE_KEY } from "@/lib/upload/handoff";
+
+/**
+ * Everything the drop zone takes, listed.
+ *
+ * Read off `FILE_ACCEPT` rather than typed out again, so the list on screen
+ * cannot drift from the list the file dialog filters by. Photographs and video
+ * are the other half of `ACCEPTED` and have no extension to name, since the
+ * accept string is `image/*` and `video/*`.
+ */
+const ACCEPTED_TYPES: readonly string[] = [...FILE_ACCEPT.split(","), "photo", "video"];
 
 /**
  * Pick a file, get an editor.
@@ -148,16 +159,18 @@ export function UploadModal({
           </button>
         </div>
 
-        <dl className="mt-5 space-y-2 text-sm">
-          <Row
-            terms=".fold .kami .cp .opx .svg"
-            detail="Converted exactly, creases and all."
-          />
-          <Row
-            terms="Photo or video"
-            detail="Creases are found automatically and the photo sits under the canvas to trace."
-          />
-        </dl>
+        {/* What it takes, and nothing about what it does with each. */}
+        <ul className="mt-4 flex flex-wrap justify-center gap-x-2 gap-y-1.5 font-mono text-xs">
+          {ACCEPTED_TYPES.map((type) => (
+            <li
+              key={type}
+              className="rounded-md px-2 py-1"
+              style={{ background: "var(--surface-sunken)", color: "var(--text-muted)" }}
+            >
+              {type}
+            </li>
+          ))}
+        </ul>
 
         {error && (
           <p
@@ -186,13 +199,3 @@ export function UploadModal({
   );
 }
 
-function Row({ terms, detail }: { readonly terms: string; readonly detail: string }) {
-  return (
-    <div className="flex flex-wrap items-baseline gap-x-2">
-      <dt className="font-mono text-xs font-bold">{terms}</dt>
-      <dd className="text-xs" style={{ color: "var(--text-muted)" }}>
-        {detail}
-      </dd>
-    </div>
-  );
-}
