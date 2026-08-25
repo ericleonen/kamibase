@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ImportedEditor } from "@/components/editor/ImportedEditor";
+import { getCurrentUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Edit a converted pattern",
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
  * Where `/upload` hands a converted pattern to the editor: the review step of
  * DESIGN.md §8.2, "editor opens, defects highlighted".
  */
-export default function ImportedEditorPage() {
-  return <ImportedEditor />;
+export default async function ImportedEditorPage() {
+  const user = await getCurrentUser();
+  return <ImportedEditor signedIn={user !== null} />;
 }

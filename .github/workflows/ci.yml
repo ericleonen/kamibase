@@ -70,12 +70,12 @@ jobs:
             exit 1
           fi
 
-  # The social schema is the one part of the app TypeScript cannot check, and
+  # The schema is the one part of the app TypeScript cannot check, and
   # row-level security is the part of it worth checking hardest: a policy that
   # is a little too permissive looks exactly like a correct one right up until
   # somebody writes a row they should not be able to.
   migration:
-    name: social migration (against real Postgres)
+    name: migrations (against real Postgres)
     runs-on: ubuntu-latest
     services:
       postgres:

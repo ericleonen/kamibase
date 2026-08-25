@@ -16,15 +16,20 @@ put the Supabase keys in yet. Then:
 2. Paste the whole of
    [`supabase/migrations/0001_social.sql`](supabase/migrations/0001_social.sql)
    and press **Run**.
-3. That is it. There are no new environment variables.
+3. Do the same with
+   [`supabase/migrations/0002_patterns.sql`](supabase/migrations/0002_patterns.sql),
+   which is what lets the editor save a crease pattern to the site.
+4. That is it. There are no new environment variables.
 
-The migration creates four tables, their row-level security policies, two
-storage buckets, and a trigger that gives every new account a profile. It is
-safe to run twice: every object is created with a guard, and existing accounts
-are backfilled with profiles on the way through.
+The first migration creates four tables, their row-level security policies, two
+storage buckets, and a trigger that gives every new account a profile. The
+second adds `patterns`. Both are safe to run twice: every object is created with
+a guard, and existing accounts are backfilled with profiles on the way through.
 
 **Check it worked:** sign in and open `/settings/profile`. If the tables are
 missing you get a note saying so with the file name in it, not an error page.
+Then draw something at `/edit` and press **Save**; it should land on its own
+page at `/p/…`.
 
 ### Buckets and image sizes
 

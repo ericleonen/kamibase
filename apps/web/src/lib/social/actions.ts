@@ -354,8 +354,8 @@ async function uploadImage({
       return {
         ok: false,
         error:
-          "Image storage is not set up yet. Run the migration in " +
-          "apps/web/supabase/migrations/0001_social.sql, which creates the buckets.",
+          "Image storage is not set up yet. Run apps/web/supabase/migrations/" +
+          "0001_social.sql, which creates the buckets.",
       };
     }
     return { ok: false, error: `Could not upload that image. ${error.message}` };

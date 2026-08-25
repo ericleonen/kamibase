@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# Apply the social migration to a real Postgres and check it behaves.
+# Apply the migrations to a real Postgres and check they behave.
 #
-# The migration is the one part of the social layer TypeScript cannot check.
-# Row-level security especially: a policy that is a little too permissive is
+# The schema is the one part of the app TypeScript cannot check. Row-level
+# security especially: a policy that is a little too permissive is
 # indistinguishable from a correct one until somebody writes a row they should
 # not be able to. So this runs the real DDL against a real server and then tries
 # what a hostile client would try.
@@ -28,23 +28,40 @@ run() {
   psql -v ON_ERROR_STOP=1 -q -d "$DB" -f "$1"
 }
 
+# Every migration, in the order a project applies them. Adding one here is the
+# whole of wiring it into CI.
+MIGRATIONS=(
+  "$HERE/supabase/migrations/0001_social.sql"
+  "$HERE/supabase/migrations/0002_patterns.sql"
+)
+
+apply_all() {
+  for migration in "${MIGRATIONS[@]}"; do
+    run "$migration"
+  done
+}
+
 echo "--- Supabase stubs (auth.users, storage.objects, auth.uid) ---"
 run "$HERE/supabase/test/00-supabase-stub.sql"
 
-echo "--- applying the migration ---"
-run "$HERE/supabase/migrations/0001_social.sql"
+echo "--- applying the migrations ---"
+apply_all
 
-echo "--- applying it a second time, which has to be a no-op ---"
-run "$HERE/supabase/migrations/0001_social.sql"
+echo "--- applying them a second time, which has to be a no-op ---"
+apply_all
 
-echo "--- behaviour ---"
+echo "--- behaviour: social ---"
 run "$HERE/supabase/test/01-behaviour.sql"
 
+echo "--- behaviour: patterns ---"
+run "$HERE/supabase/test/02-patterns.sql"
+
 echo "--- a third run, now that there is data to preserve ---"
-run "$HERE/supabase/migrations/0001_social.sql"
+apply_all
 psql -v ON_ERROR_STOP=1 -tAq -d "$DB" \
   -c "select 'after re-running: ' || count(*) || ' profiles, '
-             || (select count(*) from public.folds) || ' folds still here'
+             || (select count(*) from public.folds) || ' folds, '
+             || (select count(*) from public.patterns) || ' patterns still here'
       from public.profiles;"
 
 psql -q -d postgres -c "drop database if exists $DB;"
