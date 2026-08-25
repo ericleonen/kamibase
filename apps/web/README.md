@@ -110,12 +110,20 @@ Three ways in, one for each thing people actually want to do:
 - **`/edit`**, from **+ New → Draw from scratch**. A fresh square of paper.
 - **`/edit/import`**, from **Open in the editor** on `/upload`. The pattern a
   file was just converted into, ready to be checked and repaired.
-- **`/p/:id/edit`**, **Open in the editor** on any pattern page. The seeded
-  library is read-only, so this opens a *working copy*: draw on it, check it,
-  export it. The original is untouched, which is also the honest behaviour for
-  someone else's design. Saving back needs the accounts and storage of Phase 4.
+- **`/p/:id/edit`**, **Open in the editor** on any pattern page. This opens a
+  *working copy*: draw on it, check it, export it, save it as a pattern of your
+  own. The original is untouched, which is the honest behaviour for someone
+  else's design and the only possible one for a seeded pattern, since those are
+  files in the repository rather than rows anybody owns.
 
-Neither needs an account (§8.4).
+None of that needs an account (§8.4). **Save** does, and it is the only thing
+that does: it puts the pattern on the site under a name, at its own `/p/:slug`.
+The dialog shows the pattern as `@kamibase/core` renders it, next to a short
+form (title, designer, notes, licence, difficulty, tags), and a button back to
+the editor. What reaches the database is the segments, not a file: the server
+runs the same `ingest` the seed script runs, so the stored document is
+canonicalized, planarized, face-counted, hashed and graded server-side. See
+[SOCIAL.md](SOCIAL.md) for the migration it needs.
 
 **Every check on screen is `@kamibase/core` running in the browser**: the same
 planarize, the same §2.4 rules, the same Maekawa and Kawasaki the server
@@ -248,12 +256,21 @@ honest list.
 
 ## The pattern store
 
-Phase 1 has no accounts and no uploads. It is a seeded library, so patterns
-live on disk as `.kami` files behind a `PatternRepository` interface. Every
-file is parsed, validated and graded by `@kamibase/core` on read, exactly as an
-upload would be, so a seeded pattern earns its badge rather than being handed
-one. Swapping the single binding in `src/lib/patterns/index.ts` for a
-Postgres-backed implementation is the whole of the Phase 4 migration.
+Patterns come from two places behind one `PatternRepository` interface: the
+hand-seeded `.kami` files on disk, and the rows anybody has saved from the
+editor. `src/lib/patterns/index.ts` composes them, database first, and nothing
+else in the app knows which store a pattern came from. A deploy with no
+Supabase keys serves the seeded library and nothing breaks.
+
+Both go through `patternFromDocument`, so a saved pattern is parsed, validated
+and graded by `@kamibase/core` on read exactly as a seeded one is, and earns its
+badge rather than being handed one. The row's `document` column is the source of
+truth; the count and grade columns beside it exist so that listing a hundred
+patterns does not mean grading a hundred documents.
+
+Reads use a session-less Supabase client. Patterns are public, and a
+cookie-bound client would opt every page that lists them out of static
+rendering and make `generateStaticParams` fail outright.
 
 `content/patterns/*.kami` is **generated**: canonical bytes with real content
 hashes. Edit `scripts/seeds/` and re-run `pnpm seed`. The script refuses to
@@ -337,3 +354,7 @@ from somewhere else instead.
   right size; a real `.pdf` export is a Phase 2 item.
 - **No search.** `/explore` groups by technique. Semantic and visual search are
   Phase 5 and need a corpus first.
+- **A saved pattern cannot yet be changed or removed from the site.** Opening
+  one in the editor and pressing Save creates a second pattern rather than
+  replacing the first. The update and delete policies are in the migration, so
+  this is a missing screen rather than a missing permission.

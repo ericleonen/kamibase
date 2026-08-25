@@ -1,5 +1,6 @@
 import {
   graphFromSegments,
+  isEdgeAssignment,
   projectOntoSegment,
   type CreaseGraph,
   type EdgeAssignment,
@@ -63,6 +64,47 @@ export function docFromGraph(graph: CreaseGraph): EditorDoc {
 /** The derived graph, via the same builder the parsers use. */
 export function graphFromDoc(doc: EditorDoc): CreaseGraph {
   return graphFromSegments(doc as readonly Segment[]).graph;
+}
+
+/**
+ * Read a document back out of JSON, checking every field.
+ *
+ * The editor posts its segments to the save action, so this parses input that
+ * arrived over the wire from a browser: anything that is not four finite
+ * numbers and an assignment `@kamibase/core` recognises is dropped rather than
+ * trusted. Coordinates are clamped to a sane range for the same reason, since
+ * a single vertex at 1e30 would scale the whole pattern into a dot.
+ *
+ * `null` means the value was not a segment list at all. An empty array means it
+ * was, and had nothing in it, which is a different problem and the caller's to
+ * describe.
+ */
+export function readEditorDoc(value: unknown): EditorDoc | null {
+  if (!Array.isArray(value)) return null;
+
+  const segments: EditorSegment[] = [];
+  for (const entry of value) {
+    if (typeof entry !== "object" || entry === null) continue;
+    const { x1, y1, x2, y2, assignment } = entry as Record<string, unknown>;
+    if (![x1, y1, x2, y2].every(isCoordinate)) continue;
+    if (!isEdgeAssignment(assignment)) continue;
+    const segment: EditorSegment = {
+      x1: x1 as number,
+      y1: y1 as number,
+      x2: x2 as number,
+      y2: y2 as number,
+      assignment,
+    };
+    if (isDrawable(segment)) segments.push(segment);
+  }
+  return segments;
+}
+
+/** Room for a pattern drawn outside its own paper, and nothing beyond that. */
+const COORDINATE_LIMIT = 1e4;
+
+function isCoordinate(value: unknown): boolean {
+  return typeof value === "number" && Number.isFinite(value) && Math.abs(value) <= COORDINATE_LIMIT;
 }
 
 /* -------------------------------------------------------------------------- */

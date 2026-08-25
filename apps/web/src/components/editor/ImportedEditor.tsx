@@ -13,7 +13,7 @@ import { IMPORT_STORAGE_KEY, readImportPayload, type ImportPayload } from "@/lib
  * its mind. That keeps `CreasePatternEditor` free of any notion of importing:
  * it takes a document, as it always did.
  */
-export function ImportedEditor() {
+export function ImportedEditor({ signedIn }: { readonly signedIn: boolean }) {
   const [payload, setPayload] = useState<ImportPayload | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "empty">("loading");
 
@@ -78,6 +78,7 @@ export function ImportedEditor() {
       initialDoc={payload.doc}
       title={payload.title}
       slug={payload.slug}
+      signedIn={signedIn}
       {...(payload.backdrop === undefined ? {} : { backdrop: payload.backdrop })}
     />
   );

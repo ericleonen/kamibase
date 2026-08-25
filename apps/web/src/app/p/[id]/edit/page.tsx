@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { CreasePatternEditor } from "@/components/editor/CreasePatternEditor";
 import { docFromGraph } from "@/lib/editor/model";
 import { patterns } from "@/lib/patterns";
+import { getCurrentUser } from "@/lib/supabase/server";
 
 export async function generateMetadata({
   params,
@@ -17,10 +18,11 @@ export async function generateMetadata({
 /**
  * Edit an existing pattern.
  *
- * The seeded library is read-only. Patterns live as files on disk, and saving
- * back needs the accounts and storage of Phase 4. So this opens a working
- * copy: draw on it, check it, export it, and it is yours. The original is left
- * alone, which is also the honest thing to do with someone else's design.
+ * This opens a working copy rather than the pattern itself: draw on it, check
+ * it, export it, and saving puts it on the site as a pattern of your own. The
+ * original is left alone, which is the honest thing to do with someone else's
+ * design and the only possible thing to do with a seeded one, since those are
+ * files in the repository rather than rows anybody owns.
  */
 export default async function EditPatternPage({
   params,
@@ -28,7 +30,7 @@ export default async function EditPatternPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const pattern = await patterns.get(id);
+  const [pattern, user] = await Promise.all([patterns.get(id), getCurrentUser()]);
   if (!pattern) notFound();
 
   return (
@@ -37,6 +39,7 @@ export default async function EditPatternPage({
       title={pattern.title}
       slug={pattern.id}
       backHref={`/p/${pattern.id}`}
+      signedIn={user !== null}
     />
   );
 }

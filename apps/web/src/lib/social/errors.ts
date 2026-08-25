@@ -48,12 +48,13 @@ export function classifySupabaseError(error: SupabaseErrorLike | null): SocialFa
   return "error";
 }
 
-/** The migration's path, quoted in every "not set up yet" message. */
-export const MIGRATION_PATH = "apps/web/supabase/migrations/0001_social.sql";
+/** Where the migrations live, quoted in every "not set up yet" message. */
+export const MIGRATION_PATH = "apps/web/supabase/migrations";
 
 export const NOT_MIGRATED_HINT =
-  `Run ${MIGRATION_PATH} in your Supabase project's SQL editor to create the ` +
-  "profiles, follows, folds and comments tables. See apps/web/SOCIAL.md.";
+  `Run the files in ${MIGRATION_PATH}, in order, in your Supabase project's ` +
+  "SQL editor. They create the profiles, follows, folds, comments and patterns " +
+  "tables. See apps/web/SOCIAL.md.";
 
 /** A sentence for a failure, aimed at whoever can actually fix it. */
 export function socialFailureMessage(

@@ -134,8 +134,8 @@ Two details worth keeping:
 
 ## What an account gets you
 
-Profiles, folds, comments and following, all built on this. They need one more
-setup step: the SQL in `supabase/migrations/0001_social.sql`. See
-[SOCIAL.md](SOCIAL.md).
+Profiles, folds, comments and following, all built on this, plus saving a
+crease pattern from the editor to the site. They need one more setup step: the
+SQL in `supabase/migrations/`. See [SOCIAL.md](SOCIAL.md).
 
-Collections, saving patterns and uploading your own are still ahead.
+Collections are still ahead.

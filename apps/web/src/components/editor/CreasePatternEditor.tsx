@@ -18,6 +18,7 @@ import {
   PanelRightClose,
   PenLine,
   Redo2,
+  Save,
   Trash2,
   Undo2,
   Unlink,
@@ -67,6 +68,7 @@ import { renderDownload, DOWNLOAD_FORMATS, FORMAT_LABELS } from "@/lib/downloads
 import { ZOOM_STEP, usePanZoom } from "@/lib/viewport/use-pan-zoom";
 import { EditorCanvas, type EditorTool } from "./EditorCanvas";
 import { EDITOR_MIN_WIDTH_QUERY, EditorTooSmall } from "./EditorTooSmall";
+import { SavePatternDialog } from "./SavePatternDialog";
 
 const ASSIGNMENTS: { key: EdgeAssignment; label: string; hotkey: string }[] = [
   { key: "M", label: "Mountain", hotkey: "m" },
@@ -129,6 +131,15 @@ export interface CreasePatternEditorProps {
   readonly slug: string;
   /** When editing an existing pattern, where to go back to. */
   readonly backHref?: string;
+  /**
+   * Whether anybody is logged in.
+   *
+   * Only the save dialog cares: drawing, checking, folding and exporting all
+   * work signed out, and DESIGN.md §8.4 asks that they keep working. Saving is
+   * the one thing that puts a pattern on the site under a name, so it is the
+   * one thing that needs an account.
+   */
+  readonly signedIn?: boolean;
   /**
    * A rectified image of what this was made from, as a data URL, shown under
    * the paper to trace over. Set when the pattern came from a photograph.
@@ -214,6 +225,7 @@ function Editor({
   slug,
   backHref,
   backdrop,
+  signedIn = false,
 }: CreasePatternEditorProps) {
   const router = useRouter();
   const [history, setHistory] = useState(() => initHistory(initialDoc ?? emptyPaper()));
@@ -232,6 +244,7 @@ function Editor({
   const [snapToVertices, setSnapToVertices] = useState(true);
   const [showMarks, setShowMarks] = useState(true);
   const [simulation, setSimulation] = useState<{ fold: FoldDocument; key: number } | null>(null);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState<string | null>(null);
   const [reference, setReference] = useState<string | null>(backdrop ?? null);
   const [referenceOpacity, setReferenceOpacity] = useState(0.35);
@@ -569,14 +582,32 @@ function Editor({
 
           <ExportMenu onPick={download} />
 
+          {/*
+           * Fold and Save, in that order, and only one of them filled in.
+           * Folding is what you do while drawing and saving is what you do
+           * when you have finished, so saving is the end of the row and the
+           * one that looks like the end.
+           */}
           <button
             type="button"
             onClick={openSimulation}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-bold transition hover:opacity-85"
-            style={{ background: "var(--brand)", color: "var(--ink)" }}
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-bold transition hover:opacity-70"
+            style={{ border: "1px solid var(--border-strong)" }}
           >
             <Box className="size-4" aria-hidden />
             <span className="hidden sm:inline">Fold in 3D</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSaving(true)}
+            disabled={creaseCount === 0}
+            title="Save this pattern to Kamibase"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-bold transition hover:opacity-85 disabled:opacity-40"
+            style={{ background: "var(--brand)", color: "var(--ink)" }}
+          >
+            <Save className="size-4" aria-hidden />
+            <span className="hidden sm:inline">Save</span>
           </button>
         </div>
       </header>
@@ -949,10 +980,19 @@ function Editor({
         )}
       </div>
 
+      {saving && (
+        <SavePatternDialog
+          doc={doc}
+          defaultTitle={title}
+          signedIn={signedIn}
+          onClose={() => setSaving(false)}
+        />
+      )}
+
       {leavingTo !== null && (
         <ConfirmDialog
           title="Leave the editor?"
-          body="This pattern has not been exported. It stays as a draft in this browser, but nothing else keeps it."
+          body="This pattern has not been saved or exported. It stays as a draft in this browser, but nothing else keeps it."
           confirmLabel="Leave"
           cancelLabel="Keep drawing"
           onCancel={() => setLeavingTo(null)}
