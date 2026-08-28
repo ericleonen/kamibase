@@ -1,4 +1,16 @@
-import { renderSvg, type CreaseGraph, type EdgeAssignment } from "@kamibase/core";
+import {
+  KAMIBASE_DISPLAY_PALETTE,
+  renderSvg,
+  type CreaseGraph,
+  type EdgeAssignment,
+} from "@kamibase/core";
+
+/*
+ * Everything rendered for a person to look at uses the softened palette; the
+ * download routes call `renderSvg` without it and get the canonical
+ * full-gamut colours, which is what other tools read. See the note beside
+ * `KAMIBASE_DISPLAY_PALETTE`.
+ */
 
 /** Assignments actually used by a pattern, in the viewer's toggle order. */
 export function presentAssignments(graph: CreaseGraph): EdgeAssignment[] {
@@ -14,6 +26,7 @@ export function renderThumbnail(graph: CreaseGraph, title: string): string {
     padding: 12,
     strokeWidth: 1.2,
     background: null,
+    palette: KAMIBASE_DISPLAY_PALETTE,
     title: `${title} crease pattern`,
     xmlDeclaration: true,
   });
@@ -26,6 +39,7 @@ export function renderViewerSvg(graph: CreaseGraph, title: string): string {
     padding: 8,
     strokeWidth: 1.6,
     background: null,
+    palette: KAMIBASE_DISPLAY_PALETTE,
     title: `${title} crease pattern`,
   });
 }

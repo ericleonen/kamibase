@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ORIGAMI_SIMULATOR_PALETTE, type EdgeAssignment } from "@kamibase/core";
+import { KAMIBASE_DISPLAY_PALETTE, type EdgeAssignment } from "@kamibase/core";
 import type { VertexMark } from "@/lib/editor/analysis";
 import { gridLines, type GridSpec } from "@/lib/editor/grid";
 import { paperTransform, toPaperPoint } from "@/lib/editor/paper";
@@ -266,7 +266,7 @@ export function EditorCanvas({
             y1={1 - segment.y1}
             x2={segment.x2}
             y2={1 - segment.y2}
-            stroke={ORIGAMI_SIMULATOR_PALETTE[segment.assignment]}
+            stroke={KAMIBASE_DISPLAY_PALETTE[segment.assignment]}
             strokeWidth={px(CREASE_PX)}
             strokeLinecap="round"
           />
@@ -279,7 +279,7 @@ export function EditorCanvas({
             y1={1 - start[1]}
             x2={cursor[0]}
             y2={1 - cursor[1]}
-            stroke={ORIGAMI_SIMULATOR_PALETTE[assignment]}
+            stroke={KAMIBASE_DISPLAY_PALETTE[assignment]}
             strokeWidth={px(CREASE_PX)}
             strokeDasharray={`${px(8)} ${px(6)}`}
             strokeLinecap="round"

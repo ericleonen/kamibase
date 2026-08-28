@@ -22,6 +22,34 @@ export const ORIGAMI_SIMULATOR_PALETTE: Readonly<Record<EdgeAssignment, string>>
   J: "#00ffff",
 };
 
+/**
+ * The same convention, easier to look at.
+ *
+ * Full-gamut `#ff0000` and `#0000ff` are what the format means and what other
+ * tools read, and they are also two of the harshest colours a screen can make.
+ * Side by side at hairline widths they vibrate, and a tessellation drawn in
+ * them is genuinely tiring to study — which is a problem, because studying it
+ * is the entire activity.
+ *
+ * So the wire and the window are separated. Files exported from Kamibase keep
+ * the palette above, exactly; everything drawn for a person to look at uses
+ * this one. Nothing is reinterpreted: these are the same hues, pulled in from
+ * the corners of the gamut, so red still means mountain to every eye and to
+ * every parser that matches on hue (ours does; see `parse/svg/classify`).
+ *
+ * Black softens to a warm near-black for the same reason a book is not printed
+ * in `#000000`.
+ */
+export const KAMIBASE_DISPLAY_PALETTE: Readonly<Record<EdgeAssignment, string>> = {
+  M: "#d93b30",
+  V: "#2b62d9",
+  B: "#26241f",
+  F: "#c99a06",
+  C: "#2e9e4f",
+  U: "#b23fc4",
+  J: "#1f8fa8",
+};
+
 /** Draw order: faint construction lines first, the paper edge on top. */
 const DRAW_ORDER: readonly EdgeAssignment[] = ["F", "U", "J", "C", "V", "M", "B"];
 

@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import {
-  ORIGAMI_SIMULATOR_PALETTE,
+  KAMIBASE_DISPLAY_PALETTE,
   ingest,
   toFold,
   type EdgeAssignment,
@@ -824,7 +824,7 @@ function Editor({
                   <span
                     aria-hidden
                     className="h-1.5 w-5 rounded-full"
-                    style={{ background: ORIGAMI_SIMULATOR_PALETTE[entry.key] }}
+                    style={{ background: KAMIBASE_DISPLAY_PALETTE[entry.key] }}
                   />
                   <span className="text-[10px] font-bold">{entry.key}</span>
                 </DockButton>

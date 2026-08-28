@@ -2,17 +2,17 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Expand, Shrink } from "lucide-react";
-import type { EdgeAssignment } from "@kamibase/core";
+import { KAMIBASE_DISPLAY_PALETTE, type EdgeAssignment } from "@kamibase/core";
 import { ZoomControls } from "@/components/viewport/ZoomControls";
 import { useModifierLabel } from "@/lib/viewport/platform";
 import { ZOOM_STEP, usePanZoom } from "@/lib/viewport/use-pan-zoom";
 
-const LAYERS: { key: EdgeAssignment; label: string; swatch: string }[] = [
-  { key: "M", label: "Mountain", swatch: "#ff0000" },
-  { key: "V", label: "Valley", swatch: "#0000ff" },
-  { key: "B", label: "Boundary", swatch: "#000000" },
-  { key: "F", label: "Flat", swatch: "#ffff00" },
-  { key: "U", label: "Unassigned", swatch: "#ff00ff" },
+const LAYERS: { key: EdgeAssignment; label: string }[] = [
+  { key: "M", label: "Mountain" },
+  { key: "V", label: "Valley" },
+  { key: "B", label: "Boundary" },
+  { key: "F", label: "Flat" },
+  { key: "U", label: "Unassigned" },
 ];
 
 /**
@@ -337,7 +337,7 @@ export function CreasePatternViewer({
               <span
                 aria-hidden
                 className="inline-block size-3 rounded-sm border"
-                style={{ background: layer.swatch, borderColor: "var(--border)" }}
+                style={{ background: KAMIBASE_DISPLAY_PALETTE[layer.key], borderColor: "var(--border)" }}
               />
               {layer.label}
             </label>

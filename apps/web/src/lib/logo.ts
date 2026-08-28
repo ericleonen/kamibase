@@ -1,82 +1,88 @@
-import type { EditorSegment } from "@/lib/editor/model";
-
 /**
- * The mark: a crease pattern that folds, and reads as a K.
+ * The mark: a K drawn on the editor's gridded paper.
  *
- * It is a real pattern, not a drawing of one, which is the whole point of a
- * logo for this site. Three things had to be true at once, and the geometry is
- * what is left after all three.
+ * It is a drawing, and it is worth saying why, because the obvious idea — make
+ * the logo an actual foldable crease pattern — was tried first and does not
+ * work.
  *
- * **It has to fold.** Flat-foldability is a condition on interior vertices, and
- * this pattern has exactly one, where the arm and the leg meet the stem. A
- * letter K on its own can never fold: Kawasaki's theorem says the alternate
- * angles around a vertex must each sum to 180°, and a stem with two arms gives
- * four creases whose alternate angles come to 90° and 270°. Worse, no
- * four-crease K works at any angle at all — the algebra comes out as "the arm
- * would have to be 360° from itself". So the letter needs a fifth and sixth
- * crease, and there are only two families that work: a pair pointing away
- * behind the stem, or one straight line passing through the vertex between the
- * arm and the leg. This is the second. Both were drawn; the pair behind the
- * stem turns the mark into an asterisk at sixteen pixels, and a single line
- * does not.
+ * A letter K cannot fold flat. Kawasaki's theorem says the alternate angles
+ * around an interior vertex must each sum to 180°, and a stem with an arm and a
+ * leg meeting it gives four creases whose alternate angles come to 90° and
+ * 270°. It is not a matter of picking better angles: solving the condition for
+ * a four-crease K asks the arm to be 360° from itself. Six creases can be made
+ * to work, and exactly two families do — a pair pointing away behind the stem,
+ * or a straight line through the vertex between the arm and the leg. Both were
+ * built and photographed at 20, 32, 48 and 120 pixels. The first turns the mark
+ * into an asterisk; the second puts a bar through the letter's counter, which is
+ * the one piece of white space a K needs to be a K.
  *
- * **It has to have mountains and valleys.** Maekawa says they differ by two at
- * every flat-foldable vertex. Six creases, so four of one and two of the other,
- * which is exactly the split the letter suggests: the K is four creases, and
- * the line that makes it foldable is two.
- *
- * **It has to read as a K.** Which is why the stem is at 0.26 rather than on a
- * strict 2×2 lattice at 0.5. Centred, the mark is symmetrical and reads as an
- * emblem; pushed left, with the arm and leg reaching across, it reads as a
- * letter. That is the one place where the eye won an argument against the grid.
- *
- * Coordinates are the unit square, y up, the same convention as everything else
- * in the editor. `test/logo.test.ts` runs it through the real validator, so
- * this comment cannot quietly stop being true.
+ * So the mark shows what the editor shows: a sheet of paper ruled with the
+ * reference grid, and a shape drawn on it. The grid is the same lattice
+ * `EditorCanvas` draws in `--paper-line`, and the two colours are the two that
+ * matter, mountain red and valley blue. What it is not is a pattern that folds,
+ * and it does not claim to be one.
  */
 
-/** Where the stem stands, and where the arm and leg reach the right edge. */
-const STEM_X = 0.26;
-const ARM_Y = 0.9;
-
-export const LOGO_CREASES: readonly EditorSegment[] = [
-  // The paper.
-  { x1: 0, y1: 0, x2: 1, y2: 0, assignment: "B" },
-  { x1: 1, y1: 0, x2: 1, y2: 1, assignment: "B" },
-  { x1: 1, y1: 1, x2: 0, y2: 1, assignment: "B" },
-  { x1: 0, y1: 1, x2: 0, y2: 0, assignment: "B" },
-
-  // The letter: a stem, an arm and a leg. Mountains, all four.
-  { x1: STEM_X, y1: 0, x2: STEM_X, y2: 0.5, assignment: "M" },
-  { x1: STEM_X, y1: 0.5, x2: STEM_X, y2: 1, assignment: "M" },
-  { x1: STEM_X, y1: 0.5, x2: 1, y2: ARM_Y, assignment: "M" },
-  { x1: STEM_X, y1: 0.5, x2: 1, y2: 1 - ARM_Y, assignment: "M" },
-
-  // What makes it fold: one line through the vertex, valleys both halves.
-  { x1: 0, y1: 0.5, x2: STEM_X, y2: 0.5, assignment: "V" },
-  { x1: STEM_X, y1: 0.5, x2: 1, y2: 0.5, assignment: "V" },
-];
+/** Divisions of the reference grid behind the letter. */
+export const LOGO_GRID = 8;
 
 /**
- * The same thing as SVG path data, in a 24-unit box with y down.
+ * The letter, in grid units, origin bottom-left.
  *
- * Hand-built rather than run through `renderSvg`, because the mark is drawn at
- * twenty pixels in a header and wants stroke widths and line caps chosen for
- * that, not the viewer's. The geometry is the geometry above, mirrored in y.
+ * On the lattice, to the half cell. The stem's ends and the arm's tips are
+ * inset half a cell from the paper's edge so the letter sits *on* the sheet
+ * rather than running off it, which is what a drawn stroke's round cap wants.
  */
-export interface LogoStroke {
-  readonly d: string;
-  readonly kind: "boundary" | "mountain" | "valley";
+export const LOGO_LETTER = {
+  /** The stem's column, and how far up and down it runs. */
+  stemX: 2,
+  stemBottom: 0.5,
+  stemTop: 7.5,
+  /** Where the arm and leg meet the stem. */
+  junctionY: 4,
+  /**
+   * Where they reach, mirrored about the junction.
+   *
+   * Level with the stem's ends, so the arm and the leg carry the letter's full
+   * cap height rather than stopping short of it. That is what stops a K from
+   * reading as a bar with a small chevron beside it.
+   */
+  armX: 7,
+  armY: 7.5,
+} as const;
+
+/** Stroke weight, in grid units. Bold enough to read at twenty pixels. */
+export const LOGO_STROKE = 0.78;
+
+/**
+ * The letter as two SVG paths, in a box `size` across with y down.
+ *
+ * Two rather than four, because the arm and the leg are one polyline through
+ * the junction: drawn as separate strokes their round caps stack up at the
+ * meeting point and thicken it.
+ */
+export function logoPaths(size: number): { stem: string; wedge: string } {
+  const unit = size / LOGO_GRID;
+  const x = (u: number): string => (u * unit).toFixed(2);
+  const y = (u: number): string => ((LOGO_GRID - u) * unit).toFixed(2);
+  const { stemX, stemBottom, stemTop, junctionY, armX, armY } = LOGO_LETTER;
+
+  return {
+    stem: `M${x(stemX)} ${y(stemBottom)}L${x(stemX)} ${y(stemTop)}`,
+    wedge:
+      `M${x(armX)} ${y(armY)}` +
+      `L${x(stemX)} ${y(junctionY)}` +
+      `L${x(armX)} ${y(2 * junctionY - armY)}`,
+  };
 }
 
-const BOX = 24;
-
-function toBox(x: number, y: number): string {
-  return `${(x * BOX).toFixed(2)} ${((1 - y) * BOX).toFixed(2)}`;
+/** The reference grid's lines, in a box `size` across. */
+export function logoGridLines(size: number): readonly string[] {
+  const unit = size / LOGO_GRID;
+  const lines: string[] = [];
+  for (let i = 1; i < LOGO_GRID; i += 1) {
+    const at = (i * unit).toFixed(2);
+    lines.push(`M${at} 0V${size}`, `M0 ${at}H${size}`);
+  }
+  return lines;
 }
-
-export const LOGO_STROKES: readonly LogoStroke[] = LOGO_CREASES.map((crease) => ({
-  d: `M${toBox(crease.x1, crease.y1)}L${toBox(crease.x2, crease.y2)}`,
-  kind:
-    crease.assignment === "M" ? "mountain" : crease.assignment === "V" ? "valley" : "boundary",
-}));

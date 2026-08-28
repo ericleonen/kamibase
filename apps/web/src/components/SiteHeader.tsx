@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { KamiMark } from "@/components/KamiMark";
+import { KamiK } from "@/components/KamiMark";
 import { SearchField } from "@/components/SearchField";
 import { signOut } from "@/app/auth/actions";
 import { getCurrentProfile } from "@/lib/social";
@@ -22,9 +22,18 @@ export async function SiteHeader({ query }: { readonly query?: string }) {
       }}
     >
       <nav className="mx-auto flex max-w-[1600px] items-center gap-2 px-4 py-2.5 sm:gap-3">
-        <Link href="/" className="flex items-center gap-2 font-bold tracking-tight">
-          <KamiMark className="size-8 shrink-0" />
-          <span className="hidden sm:inline">Kamibase</span>
+        {/*
+         * The K of "Kamibase" is the mark. It is set as a glyph, on the
+         * baseline and sized in `em`, so it is the word's first letter rather
+         * than a badge sitting next to the word. The real word goes to screen
+         * readers, which cannot be asked to read an SVG.
+         */}
+        <Link href="/" className="shrink-0 text-lg font-black tracking-tight">
+          <span className="sr-only">Kamibase</span>
+          <span aria-hidden className="flex items-baseline">
+            <KamiK className="mr-[0.04em]" />
+            <span className="hidden sm:inline">amibase</span>
+          </span>
         </Link>
 
         <Link

@@ -110,6 +110,7 @@ export { toFold, toFoldJson, type ToFoldOptions } from "./export/fold.js";
 
 export {
   renderSvg,
+  KAMIBASE_DISPLAY_PALETTE,
   ORIGAMI_SIMULATOR_PALETTE,
   type RenderSvgOptions,
 } from "./render/svg.js";

@@ -40,11 +40,9 @@ forward cards, chrome only on hover, a filter bar that navigates on every
 change rather than waiting for an Apply button, and a search field in the
 sticky header that takes its focus ring around the whole pill.
 
-Crease colours are **not** themed, and neither is the paper under them. Mountain
-red, valley blue and boundary black are the Origami Simulator convention and the
-de facto standard across the field (DESIGN.md §3.3). Restyling them to match a
-brand — or to match dark mode — would make our patterns misread everywhere else.
-The yellow is chrome; the pattern is data. See **Themes** below.
+Crease colours keep their meaning and the paper under them stays white in both
+themes. The yellow is chrome; the pattern is data. See **Crease colours** and
+**Themes** below.
 
 Patterns lay out in a real grid (`.pattern-grid`), not a masonry. Crease
 patterns are all square and every card draws one at the same size, so there is
@@ -79,20 +77,37 @@ inside a card stays `object-contain`; the geometry is never distorted.
 
 ## The mark
 
-`src/lib/logo.ts` is a crease pattern, not a drawing of one, and
-`test/logo.test.ts` runs it through the same validator every pattern on the site
-goes through. Six creases and one interior vertex: four mountains tracing a K,
-and one valley line through the vertex that is what makes it fold.
+A K drawn on the editor's own gridded paper: `src/lib/logo.ts` holds the
+geometry, `KamiMark` draws the tile, and `KamiK` draws the letter alone so it
+can stand in for the K of "Kamibase" in the header — set as a glyph, on the
+baseline, sized in `em`, rather than as a badge parked beside the word.
 
-That last line is not decoration. A letter K cannot fold flat on its own —
-Kawasaki's theorem puts the alternate angles at a stem-plus-two-arms vertex at
-90° and 270°, and no choice of arm angle fixes it. Exactly two families of
-sixth-and-fifth crease do: a pair pointing away behind the stem, or one straight
-line through the vertex between the arm and the leg. The first turns the mark
-into an asterisk at sixteen pixels. The second is the one you see.
+It is a drawing, not a foldable pattern, and that is worth stating because the
+obvious idea was tried first. **A letter K cannot fold flat.** Kawasaki's
+theorem puts the alternate angles at a stem-with-arm-and-leg vertex at 90° and
+270°, and it is not a matter of choosing better angles: solving the condition
+for a four-crease K asks the arm to be 360° from itself. Six creases can work,
+and exactly two families do — a pair pointing away behind the stem, or a
+straight line through the vertex between the arm and the leg. Both were built
+and photographed at 20, 32, 48 and 120 pixels. The first is an asterisk; the
+second puts a bar through the letter's counter, which is the one piece of white
+space a K needs to be a K. So the mark shows what the editor shows: ruled
+paper, and a shape drawn on it.
 
-It stays red, blue and black in the header and in the favicon, on white paper,
-because those are the crease colours and this is a crease pattern.
+## Crease colours
+
+Mountain red, valley blue, boundary black — the Origami Simulator convention
+(DESIGN.md §3.3), which is what the file formats mean and what other tools read.
+Full-gamut `#ff0000` and `#0000ff` are also two of the harshest colours a screen
+can make: at hairline widths they vibrate, and a tessellation drawn in them is
+tiring to study, which is a problem when studying it is the entire activity.
+
+So the wire and the window are separated. `ORIGAMI_SIMULATOR_PALETTE` is what
+Kamibase *exports*, exactly as before. `KAMIBASE_DISPLAY_PALETTE` is what it
+*draws*: the same hues pulled in from the corners of the gamut, used by the
+viewer, the thumbnails, the editor canvas, the legend and the mark. Nothing is
+reinterpreted — red still means mountain to every eye and to every parser that
+matches on hue, which includes ours (`parse/svg/classify`).
 
 ## Themes
 
