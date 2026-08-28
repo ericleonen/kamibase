@@ -67,8 +67,9 @@ export function UserMenu({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-2xl p-1.5 text-sm"
+          className="kami-pop absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-2xl p-1.5 text-sm"
           style={{
+            transformOrigin: "top right",
             background: "var(--surface-raised)",
             border: "1px solid var(--border)",
             boxShadow: "var(--shadow-card-hover)",
@@ -109,7 +110,7 @@ export function UserMenu({
             className="block rounded-xl px-3 py-2 hover:opacity-70"
             onClick={close}
           >
-            Edit profile
+            Settings
           </Link>
 
           <div className="my-1 h-px" style={{ background: "var(--border)" }} />

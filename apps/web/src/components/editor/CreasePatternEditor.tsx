@@ -939,11 +939,11 @@ function Editor({
 
         {simulation && (
           <div
-            className="absolute inset-0 z-40 flex items-center justify-center p-3 sm:p-6"
+            className="kami-scrim absolute inset-0 z-40 flex items-center justify-center p-3 sm:p-6"
             style={{ background: "rgb(27 26 23 / 0.45)" }}
           >
             <section
-              className="flex max-h-full w-full max-w-3xl flex-col gap-3 overflow-y-auto rounded-2xl p-4"
+              className="kami-pop flex max-h-full w-full max-w-3xl flex-col gap-3 overflow-y-auto rounded-2xl p-4"
               style={{ background: "var(--surface-raised)", boxShadow: "var(--shadow-card-hover)" }}
             >
               <div className="flex items-center justify-between gap-3">
@@ -1510,8 +1510,9 @@ function ExportMenu({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 z-40 mt-1 w-44 overflow-hidden rounded-xl p-1.5"
+          className="kami-pop absolute right-0 z-40 mt-1 w-44 overflow-hidden rounded-xl p-1.5"
           style={{
+            transformOrigin: "top right",
             background: "var(--surface-raised)",
             border: "1px solid var(--border)",
             boxShadow: "var(--shadow-card-hover)",

@@ -226,7 +226,7 @@ export function EditorCanvas({
           y="0"
           width="1"
           height="1"
-          fill="var(--surface)"
+          fill="var(--paper)"
           style={{ filter: "drop-shadow(0 2px 10px rgb(27 26 23 / 0.14))" }}
         />
 
@@ -247,7 +247,7 @@ export function EditorCanvas({
         {/* The lattice. Drawn in paper coordinates like everything else, so a
             rotated grid needs no special case: `gridLines` has already turned
             it into segments clipped to the sheet. */}
-        <g stroke="var(--border)" strokeWidth={px(GRID_PX)}>
+        <g stroke="var(--paper-line)" strokeWidth={px(GRID_PX)}>
           {lattice.map((line, index) => (
             <line
               key={`${index}-${line.x1},${line.y1}`}

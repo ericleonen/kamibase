@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { SettingsNav } from "@/components/settings/SettingsNav";
 import { ProfileForm } from "@/components/social/ProfileForm";
 import { SocialNotice } from "@/components/social/SocialNotice";
 import { ensureProfile } from "@/lib/social";
@@ -29,9 +30,14 @@ export default async function ProfileSettingsPage() {
   const profile = await ensureProfile();
 
   return (
-    <div className="mx-auto max-w-xl space-y-6 py-4">
+    <div className="mx-auto max-w-2xl space-y-6 py-8">
+      <div className="space-y-4">
+        <h1 className="text-2xl font-black tracking-tight">Settings</h1>
+        <SettingsNav current="/settings/profile" />
+      </div>
+
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">Your profile</h1>
+        <h2 className="text-lg font-bold tracking-tight">Your profile</h2>
         <p className="text-sm" style={{ color: "var(--text-muted)" }}>
           {profile.ok && (
             <>

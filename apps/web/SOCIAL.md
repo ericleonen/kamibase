@@ -19,7 +19,12 @@ put the Supabase keys in yet. Then:
 3. Do the same with
    [`supabase/migrations/0002_patterns.sql`](supabase/migrations/0002_patterns.sql),
    which is what lets the editor save a crease pattern to the site.
-4. That is it. There are no new environment variables.
+4. Then `supabase/migrations/0003_settings.sql`, which adds private accounts and
+   notification preferences and moves the read policies behind them.
+5. That is it, unless you want the notification emails or account deletion, both
+   of which need `SUPABASE_SERVICE_ROLE_KEY` (and `RESEND_API_KEY` for the
+   mail). Neither is required: without them the site simply does not offer
+   them. See the web README's **Settings and notifications**.
 
 The first migration creates four tables, their row-level security policies, two
 storage buckets, and a trigger that gives every new account a profile. The

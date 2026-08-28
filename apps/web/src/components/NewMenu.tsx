@@ -61,8 +61,9 @@ export function NewMenu({ signedIn }: { readonly signedIn: boolean }) {
         {open && (
           <div
             role="menu"
-            className="absolute left-0 z-30 mt-2 w-60 overflow-hidden rounded-2xl p-1.5"
+            className="kami-pop absolute left-0 z-30 mt-2 w-60 overflow-hidden rounded-2xl p-1.5"
             style={{
+              transformOrigin: "top left",
               background: "var(--surface-raised)",
               border: "1px solid var(--border)",
               boxShadow: "var(--shadow-card-hover)",

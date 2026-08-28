@@ -17,7 +17,7 @@ export function PatternCard({ pattern }: { readonly pattern: PatternSummary }) {
       <Link href={`/p/${pattern.id}`} className="block">
         <div
           className="relative aspect-square overflow-hidden rounded-2xl"
-          style={{ background: "var(--surface-raised)", boxShadow: "var(--shadow-card)" }}
+          style={{ background: "var(--paper)", boxShadow: "var(--shadow-card)" }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- SVG from our own renderer */}
           <img

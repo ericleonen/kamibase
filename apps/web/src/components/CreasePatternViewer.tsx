@@ -247,7 +247,9 @@ export function CreasePatternViewer({
         }`}
         style={{
           borderColor: "var(--border)",
-          background: "var(--surface-raised)",
+          // Paper, not a card: the crease colours only read on white. See
+          // the note at the top of globals.css.
+          background: "var(--paper)",
           cursor,
           touchAction: expanded ? "none" : "pan-y",
           ...(printSizeMm ? { ["--print-size-mm" as string]: `${printSizeMm}mm` } : {}),

@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { classifySupabaseError, reportedMessage, socialFailureMessage } from "./errors";
 import { getFold } from "./folds";
-import { ensureProfile, getProfileById } from "./profiles";
+import { notifyComment, notifyFollowed, notifyNewFold } from "./notify";
+import { ensureProfile, getProfileById, listFollowerIds } from "./profiles";
 import { socialClient } from "./supabase";
 import {
   AVATAR_MAX_BYTES,
@@ -176,6 +177,11 @@ export async function createFoldAction(
     };
   }
 
+  // Everyone who asked to hear about this person's folds. Fired off rather
+  // than awaited: the fold is posted, and the redirect below should not wait on
+  // a mail provider.
+  notifyNewFold(await listFollowerIds(profile.data.id), profile.data, data.id, patternId);
+
   revalidatePath(`/p/${patternId}`);
   revalidatePath(`/p/${patternId}/folds`);
   revalidatePath(`/u/${profile.data.handle}`);
@@ -249,6 +255,22 @@ export async function createCommentAction(
     };
   }
 
+  // A comment on a fold reaches whoever posted the fold. A comment on a pattern
+  // reaches nobody: the seeded library has no author with an inbox, and
+  // emailing every previous commenter would be a mailing list nobody joined.
+  if (foldId !== "") {
+    const fold = await getFold(foldId);
+    if (fold.ok && fold.data) {
+      notifyComment(
+        fold.data.author.id,
+        profile.data,
+        "your fold",
+        `/f/${foldId}`,
+        body.value,
+      );
+    }
+  }
+
   revalidatePath(patternId === "" ? `/f/${foldId}` : `/p/${patternId}`);
   return {};
 }
@@ -297,9 +319,12 @@ export async function toggleFollowAction(formData: FormData): Promise<void> {
       .eq("follower_id", profile.data.id)
       .eq("following_id", targetId);
   } else {
-    await supabase
+    const { error } = await supabase
       .from("follows")
       .insert({ follower_id: profile.data.id, following_id: targetId });
+    // Only on a follow that actually landed, and only once: re-following
+    // somebody you already follow hits the primary key and mails nobody.
+    if (!error) notifyFollowed(target.data, profile.data);
   }
 
   revalidatePath(`/u/${target.data.handle}`);

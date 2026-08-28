@@ -3,6 +3,7 @@ import { AppShell } from "@/components/AppShell";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { metadataSiteUrl } from "@/lib/site-url";
+import { THEME_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,9 +15,9 @@ export const metadata: Metadata = {
   description:
     "Share, search, fold and simulate crease patterns. A crease pattern is " +
     "structured data, not a picture.",
-  /* Light-only, so a visitor whose OS is dark still gets light form controls
-   * and scrollbars. See the note in globals.css. */
-  other: { "color-scheme": "light" },
+  /* Both, so the browser paints form controls and scrollbars to match whichever
+   * theme the root ends up stamped with. See the note in globals.css. */
+  other: { "color-scheme": "light dark" },
 };
 
 export default function RootLayout({
@@ -25,7 +26,17 @@ export default function RootLayout({
   readonly children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/*
+         * Before anything paints. The root has no `data-theme` in the HTML the
+         * server sends, because the server does not know what this browser
+         * remembered, so the attribute is stamped here and React is told not to
+         * be surprised that the DOM it is hydrating differs from the markup it
+         * shipped. See lib/theme.ts.
+         */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="min-h-screen">
         {/*
          * The chrome is passed in rather than rendered here, so the shell can

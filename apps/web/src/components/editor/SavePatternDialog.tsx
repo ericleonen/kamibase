@@ -94,7 +94,7 @@ export function SavePatternDialog({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      className="kami-scrim fixed inset-0 z-[60] flex items-center justify-center p-4"
       style={{ background: "rgb(27 26 23 / 0.45)" }}
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) onClose();
@@ -104,7 +104,7 @@ export function SavePatternDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="save-pattern-title"
-        className="flex max-h-full w-full max-w-2xl flex-col overflow-y-auto rounded-2xl p-5"
+        className="kami-pop flex max-h-full w-full max-w-2xl flex-col overflow-y-auto rounded-2xl p-5"
         style={{ background: "var(--surface-raised)", boxShadow: "var(--shadow-card-hover)" }}
       >
         <h2 id="save-pattern-title" className="text-lg font-black tracking-tight">

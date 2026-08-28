@@ -94,7 +94,7 @@ export function UploadModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="kami-scrim fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: "rgb(27 26 23 / 0.45)" }}
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) onClose();
@@ -106,7 +106,7 @@ export function UploadModal({
         aria-modal="true"
         aria-labelledby="upload-title"
         tabIndex={-1}
-        className="w-full max-w-lg rounded-3xl p-6 outline-none"
+        className="kami-pop w-full max-w-lg rounded-3xl p-6 outline-none"
         style={{ background: "var(--surface-raised)", boxShadow: "var(--shadow-card-hover)" }}
       >
         <div className="mb-5 flex items-start justify-between gap-4">

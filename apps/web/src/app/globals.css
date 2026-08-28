@@ -29,6 +29,20 @@
   --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
 }
 
+/*
+ * Two themes, and one surface that belongs to neither.
+ *
+ * Paper is paper. A crease pattern is red mountains, blue valleys and a black
+ * edge on a white sheet, which is the Origami Simulator convention and the de
+ * facto standard across the field (DESIGN.md §3.3); those three colours only
+ * mean what they mean on white. So `--paper` and the ink drawn on it are the
+ * same in both themes, and a pattern in dark mode reads as a lit sheet on a
+ * dark table rather than as a hole punched in the page. That is also how every
+ * physical folder sees it: the room can be dark, the paper is not.
+ *
+ * Everything else themes normally. Selection is three-state: an explicit choice
+ * stamps `data-theme` on the root, and with nothing stamped the OS decides.
+ */
 :root {
   color-scheme: light;
   --brand: #f5b72e;
@@ -65,6 +79,12 @@
    */
   --danger: #b42318;
 
+  /*
+   * The sheet, and the grey ruled on it. Never themed: see the note above.
+   */
+  --paper: #ffffff;
+  --paper-line: #e6e5e1;
+
   --radius-card: 1rem;
   /* Cards are white on a white page, so the shadow carries a hairline ring.
    * Without it the card edge disappears entirely in light mode. */
@@ -73,17 +93,54 @@
 }
 
 /*
- * There is deliberately no `prefers-color-scheme: dark` block.
+ * Dark.
  *
- * Kamibase is a light-only surface: amber on white, dark text. `color-scheme:
- * light` above is what tells the browser so. Without it, a visitor whose OS is
- * set to dark gets dark-tinted form controls and scrollbars on our white page.
+ * Warm greys rather than blue-black, because the amber is warm and the paper is
+ * warm-white: a cool grey page under both reads as two different sites stapled
+ * together. The amber itself does not change — it is the brand, it is already
+ * dark-text-on-amber in both themes, and it has more than enough contrast
+ * against a dark page.
  *
- * Crease patterns are the reason. They render as red/blue/black strokes on
- * white paper (the Origami Simulator convention, DESIGN.md §3.3) and cannot be
- * recoloured without making them misread everywhere else, so a dark theme
- * would leave every card as a white rectangle punched out of a dark page.
+ * `--brand-strong` is the exception. It is the text-grade amber, chosen to be
+ * legible *on white*, and at 4.8:1 there it is 2.2:1 on a dark page. Dark mode
+ * needs the opposite end of the ramp, so it lightens.
+ *
+ * Cards stop being white-on-white and become a lighter grey than the page, so
+ * the shadow can go back to being a shadow instead of a hairline ring.
  */
+/*
+ * One block, not two, because the root is always stamped.
+ *
+ * The usual arrangement is a `prefers-color-scheme` block plus a `[data-theme]`
+ * block carrying the same twelve values, so an explicit choice can beat the OS
+ * in both directions. Two copies of a palette is two things to keep in sync and
+ * one of them will drift. Instead the inline script in `layout.tsx` resolves
+ * "system" itself, stamps the answer before first paint and re-stamps when the
+ * OS flips, so CSS only ever has to know about the attribute.
+ *
+ * The cost is that with JavaScript off everybody gets the light theme. That is
+ * the right way round: light is the theme the crease colours were chosen for.
+ */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --brand-strong: #f0bd5a;
+  --brand-soft: #3a2f18;
+
+  --surface: #171614;
+  --surface-raised: #211f1c;
+  --surface-sunken: #2b2926;
+
+  --border: #35322e;
+  --border-strong: #4a4640;
+
+  --text: #f4f2ee;
+  --text-muted: #a8a49c;
+  --text-faint: #7d7972;
+  --danger: #ff8079;
+
+  --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.06), 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-card-hover: 0 0 0 1px rgb(255 255 255 / 0.1), 0 12px 28px -8px rgb(0 0 0 / 0.6);
+}
 
 body {
   background: var(--surface);
@@ -140,6 +197,57 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .kami-search {
     transition: none;
+  }
+}
+
+/*
+ * Popups arriving.
+ *
+ * Menus, dialogs and dropdowns all appear the same way: a short rise and a
+ * scale from just under full size, anchored at the edge they hang from. The
+ * point is not decoration, it is that a thing which grows out of a place tells
+ * you where it came from, and a thing that is simply there next frame does not.
+ *
+ * 8% is deliberately small. A popup that starts at half size is a cartoon, and
+ * the eye reads the overshoot as the interface being slow.
+ *
+ * Set `transform-origin` per popup, since only the popup knows which corner it
+ * hangs from. `--kami-pop-from` is the rise, for a dropdown that should come up
+ * rather than down.
+ */
+@keyframes kami-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--kami-pop-from, -0.35rem)) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes kami-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.kami-pop {
+  animation: kami-pop-in 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* The dimmed sheet behind a modal. It has no direction, so it only fades. */
+.kami-scrim {
+  animation: kami-fade-in 150ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kami-pop,
+  .kami-scrim {
+    animation: kami-fade-in 1ms linear;
   }
 }
 

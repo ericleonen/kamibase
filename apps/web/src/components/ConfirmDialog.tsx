@@ -50,7 +50,7 @@ export function ConfirmDialog({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      className="kami-scrim fixed inset-0 z-[60] flex items-center justify-center p-4"
       style={{ background: "rgb(27 26 23 / 0.45)" }}
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) onCancel();
@@ -61,7 +61,7 @@ export function ConfirmDialog({
         aria-modal="true"
         aria-labelledby="confirm-title"
         aria-describedby="confirm-body"
-        className="w-full max-w-sm rounded-2xl p-5"
+        className="kami-pop w-full max-w-sm rounded-2xl p-5"
         style={{ background: "var(--surface-raised)", boxShadow: "var(--shadow-card-hover)" }}
       >
         <h2 id="confirm-title" className="text-lg font-black tracking-tight">

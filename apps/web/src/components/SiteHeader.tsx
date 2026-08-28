@@ -1,25 +1,11 @@
 import Link from "next/link";
+import { KamiMark } from "@/components/KamiMark";
+import { SearchField } from "@/components/SearchField";
 import { signOut } from "@/app/auth/actions";
 import { getCurrentProfile } from "@/lib/social";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { NewMenu } from "./NewMenu";
 import { UserMenu } from "./UserMenu";
-
-/** The folded-square mark. Same geometry language as the patterns themselves. */
-function Logo() {
-  return (
-    <span
-      aria-hidden
-      className="flex size-8 shrink-0 items-center justify-center rounded-xl"
-      style={{ background: "var(--brand)" }}
-    >
-      <svg viewBox="0 0 24 24" className="size-5" fill="none" strokeLinecap="round">
-        <path d="M4 4h16v16H4z" stroke="var(--ink)" strokeWidth="1.6" />
-        <path d="M4 4l16 16M12 4v16M4 12h16" stroke="var(--ink)" strokeWidth="1.1" opacity="0.55" />
-      </svg>
-    </span>
-  );
-}
 
 export async function SiteHeader({ query }: { readonly query?: string }) {
   const user = await getCurrentUser();
@@ -37,7 +23,7 @@ export async function SiteHeader({ query }: { readonly query?: string }) {
     >
       <nav className="mx-auto flex max-w-[1600px] items-center gap-2 px-4 py-2.5 sm:gap-3">
         <Link href="/" className="flex items-center gap-2 font-bold tracking-tight">
-          <Logo />
+          <KamiMark className="size-8 shrink-0" />
           <span className="hidden sm:inline">Kamibase</span>
         </Link>
 
@@ -62,31 +48,9 @@ export async function SiteHeader({ query }: { readonly query?: string }) {
         {/* Bring a file or start blank. Either way the editor is the next screen. */}
         <NewMenu signedIn={user !== null} />
 
-        {/* A plain GET form, so search works with JavaScript disabled. */}
-        <form action="/explore" className="min-w-0 flex-1">
-          <label className="sr-only" htmlFor="site-search">
-            Search patterns
-          </label>
-          {/* `kami-search` moves the focus ring onto the whole pill; see
-              globals.css. */}
-          <div
-            className="kami-search flex items-center gap-2 rounded-full px-4 py-2"
-            style={{ background: "var(--surface-sunken)" }}
-          >
-            <svg viewBox="0 0 24 24" className="size-4 shrink-0" fill="none" aria-hidden>
-              <circle cx="11" cy="11" r="7" stroke="var(--text-muted)" strokeWidth="2" />
-              <path d="M16.5 16.5L21 21" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-            <input
-              id="site-search"
-              name="q"
-              type="search"
-              defaultValue={query ?? ""}
-              placeholder="Search bases, tessellations, designers…"
-              className="w-full bg-transparent text-sm outline-none placeholder:text-[color:var(--text-faint)]"
-            />
-          </div>
-        </form>
+        {/* Still a plain GET form inside, so search works with JavaScript
+            disabled; see SearchField for what JavaScript adds. */}
+        <SearchField query={query ?? ""} />
 
         {user ? (
           <UserMenu

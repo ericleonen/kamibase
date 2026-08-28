@@ -40,10 +40,11 @@ forward cards, chrome only on hover, a filter bar that navigates on every
 change rather than waiting for an Apply button, and a search field in the
 sticky header that takes its focus ring around the whole pill.
 
-Crease colours are **not** themed. Mountain red, valley blue and boundary black
-are the Origami Simulator convention and the de facto standard across the field
-(DESIGN.md §3.3). Restyling them to match a brand would make our patterns
-misread everywhere else. The yellow is chrome; the pattern is data.
+Crease colours are **not** themed, and neither is the paper under them. Mountain
+red, valley blue and boundary black are the Origami Simulator convention and the
+de facto standard across the field (DESIGN.md §3.3). Restyling them to match a
+brand — or to match dark mode — would make our patterns misread everywhere else.
+The yellow is chrome; the pattern is data. See **Themes** below.
 
 Patterns lay out in a real grid (`.pattern-grid`), not a masonry. Crease
 patterns are all square and every card draws one at the same size, so there is
@@ -72,9 +73,82 @@ inside a card stays `object-contain`; the geometry is never distorted.
 | `/f/:id` | One fold: photo, notes, the pattern it came from, comments |
 | `/feed` | Folds from people you follow, with a Discover tab |
 | `/u/:handle` | Profile, with followers and following beside it |
-| `/settings/profile` | Edit your own |
+| `/settings/profile` · `/settings/account` · `/settings/appearance` | Who you are, how the account behaves, how the site looks |
 | `/about` · `/credits` · `/terms` | What this is, whose work it stands on, the rules |
 | `/help` | Write in. The four links in the footer are these last two rows |
+
+## The mark
+
+`src/lib/logo.ts` is a crease pattern, not a drawing of one, and
+`test/logo.test.ts` runs it through the same validator every pattern on the site
+goes through. Six creases and one interior vertex: four mountains tracing a K,
+and one valley line through the vertex that is what makes it fold.
+
+That last line is not decoration. A letter K cannot fold flat on its own —
+Kawasaki's theorem puts the alternate angles at a stem-plus-two-arms vertex at
+90° and 270°, and no choice of arm angle fixes it. Exactly two families of
+sixth-and-fifth crease do: a pair pointing away behind the stem, or one straight
+line through the vertex between the arm and the leg. The first turns the mark
+into an asterisk at sixteen pixels. The second is the one you see.
+
+It stays red, blue and black in the header and in the favicon, on white paper,
+because those are the crease colours and this is a crease pattern.
+
+## Themes
+
+Light, dark, or the machine's. Stored in `localStorage` rather than on the
+account: it is a fact about the device you are reading on, and syncing a laptop
+at night with a phone outdoors would make both wrong half the time.
+
+The root element is *always* stamped with `data-theme`, by an inline script in
+`<head>` that resolves "system" itself before the first paint. That is why
+globals.css has one dark block instead of the usual two (a
+`prefers-color-scheme` copy plus a `[data-theme]` copy that has to beat it in
+both directions) — one palette, one place. With JavaScript off everybody gets
+light, which is the right way round.
+
+**Paper does not theme.** `--paper` and `--paper-line` are white and pale grey
+in both themes, and every surface a crease pattern is drawn on uses them: the
+viewer, the editor canvas, the cards, the mark. Red mountains, blue valleys and
+a black edge only mean what they mean on white, and that convention is shared
+with every other origami tool there is. In dark mode a pattern reads as a lit
+sheet on a dark table, which is also what folding one at night looks like.
+
+## Search history
+
+The header's dropdown is ours, not Chrome's. A named field inside a form gets
+the browser's own autofill list — its font, its width, and whatever you have
+ever typed into a field with that name on any site — so `autocomplete="off"`
+turns it off and `SearchField` puts a real recent-search list in its place,
+wired as a combobox so `aria-activedescendant` moves through the options while
+focus stays in the input.
+
+Kept in `localStorage`, eight deep, and never sent anywhere. A list of what
+somebody searched for is a small confession, and the server does not need one to
+draw a dropdown.
+
+## Settings and notifications
+
+Three pages, split by who the setting is about. `/settings/profile` is what
+other people see. `/settings/appearance` is this browser and works signed out.
+`/settings/account` is the machinery: the sign-in address, a password reset,
+private mode, which emails you want, and deleting the account.
+
+`supabase/migrations/0003_settings.sql` adds four columns to `profiles` and
+moves the read policies on `folds` and `comments` behind a `can_see_profile()`
+check, so a private account's work is withheld by row-level security rather than
+by the app remembering to. The profile row itself stays readable: hiding it
+would turn "this account is private" into "this account does not exist".
+
+Three emails go out — a new follower, a fold from somebody you follow, a comment
+on your fold — through the same Resend helper the help form uses. All of them
+are best-effort and none can fail the write they are about: a follow that landed
+is a follow that landed, whether or not a mail provider was reachable a moment
+later.
+
+| Variable | |
+|---|---|
+| `SUPABASE_SERVICE_ROLE_KEY` | Needed for notifications (email addresses live in `auth.users`, which the publishable key cannot read) and for account deletion. Without it neither is offered, and nothing breaks. **Never** `NEXT_PUBLIC_`-prefixed: that would publish a key that can read every row of every user's data to every visitor. |
 
 ## The help form
 

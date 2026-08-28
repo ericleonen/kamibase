@@ -28,6 +28,7 @@ export {
   ensureProfile,
   getProfileStats,
   isFollowing,
+  listFollowerIds,
   listFollowingIds,
   listFollows,
   suggestedProfiles,

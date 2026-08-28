@@ -150,6 +150,20 @@ export async function listFollowingIds(profileId: string): Promise<readonly stri
   return data.map((row) => (row as { following_id: string }).following_id);
 }
 
+/** The ids following `profileId`. Who a new fold is announced to. */
+export async function listFollowerIds(profileId: string): Promise<readonly string[]> {
+  const supabase = await socialClient();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("follows")
+    .select("follower_id")
+    .eq("following_id", profileId);
+
+  if (error || !data) return [];
+  return data.map((row) => (row as { follower_id: string }).follower_id);
+}
+
 type FollowDirection = "followers" | "following";
 
 /** The people following `profileId`, or the people they follow. */

@@ -6,6 +6,7 @@ import { Avatar } from "@/components/social/Avatar";
 import { FoldGrid } from "@/components/social/FoldCard";
 import { FollowButton } from "@/components/social/FollowButton";
 import { SocialNotice } from "@/components/social/SocialNotice";
+import { getAccountSettings } from "@/lib/social/account";
 import { patternTitles } from "@/lib/patterns";
 import {
   compactCount,
@@ -87,6 +88,18 @@ export default async function ProfilePage({
   const isSelf = user?.id === profile.id;
   const following = user && !isSelf ? await isFollowing(user.id, profile.id) : false;
 
+  /*
+   * A private account keeps its name, its handle and its counts.
+   *
+   * Row-level security is what actually withholds the folds (see
+   * `supabase/migrations/0003_settings.sql`); this only decides what to say in
+   * the space where they would have been. Hiding the profile row as well would
+   * turn "this account is private" into "this account does not exist", which
+   * breaks every link anybody ever shared and tells a follower nothing.
+   */
+  const account = await getAccountSettings(profile.id);
+  const hidden = account.isPrivate && !isSelf && !following;
+
   return (
     <div className="space-y-8">
       <header className="flex flex-col items-center gap-4 pt-4 text-center">
@@ -152,7 +165,17 @@ export default async function ProfilePage({
       <section className="space-y-4">
         <h2 className="text-lg font-semibold tracking-tight">Folds</h2>
 
-        {!folds.ok ? (
+        {hidden ? (
+          <div
+            className="rounded-2xl px-6 py-10 text-center"
+            style={{ background: "var(--surface-sunken)" }}
+          >
+            <p className="font-semibold">This account is private.</p>
+            <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+              Follow {nameOf(profile)} to see their folds.
+            </p>
+          </div>
+        ) : !folds.ok ? (
           <SocialNotice reason={folds.reason} message={folds.message} />
         ) : folds.data.length === 0 ? (
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>
