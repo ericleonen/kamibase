@@ -4,6 +4,7 @@ import {
   LOGO_LETTER,
   LOGO_STROKE,
   logoGridLines,
+  logoGridLinesIn,
   logoPaths,
 } from "@/lib/logo";
 
@@ -54,7 +55,12 @@ export function KamiMark({ className = "size-8" }: { readonly className?: string
       <path d={paths.stem} stroke={KAMIBASE_DISPLAY_PALETTE.M} strokeWidth={STROKE} />
       <path d={paths.wedge} stroke={KAMIBASE_DISPLAY_PALETTE.V} strokeWidth={STROKE} />
 
-      {/* The paper's edge last, so the grid ends cleanly against it. */}
+      {/*
+        The sheet's edge last, so the grid ends cleanly against it, and thin.
+        A heavy black frame competes with the letter and turns the tile into an
+        icon of a box; a hairline is only there so a white sheet is still a
+        sheet on a white page.
+      */}
       <rect
         x="0"
         y="0"
@@ -62,7 +68,7 @@ export function KamiMark({ className = "size-8" }: { readonly className?: string
         height={BOX}
         rx={BOX * 0.18}
         stroke={KAMIBASE_DISPLAY_PALETTE.B}
-        strokeWidth={STROKE}
+        strokeWidth={STROKE * 0.3}
       />
     </svg>
   );
@@ -77,9 +83,10 @@ export function KamiMark({ className = "size-8" }: { readonly className?: string
  * sits on the text baseline. That is what makes it read as the first letter of
  * a word instead of a badge parked next to one.
  *
- * The grid and the paper edge are dropped on purpose. At the size a capital
- * letter is set, ruled lines behind it are noise, and a box around it would be
- * a box around one letter of a word.
+ * It keeps the grid and loses the paper edge. The lattice behind the letter is
+ * what ties the wordmark to the mark and to the editor's own ruled sheet, and
+ * at a hairline it reads as texture rather than as lines. A border would not:
+ * a box around one letter of a word is a box around one letter of a word.
  */
 export function KamiK({ className = "" }: { readonly className?: string }) {
   const paths = logoPaths(BOX);
@@ -118,6 +125,18 @@ export function KamiK({ className = "" }: { readonly className?: string }) {
       aria-hidden
       focusable="false"
     >
+      {/*
+        `--border` rather than `--paper-line`: the tile's grid is ruled on white
+        paper and can be a fixed grey, but this one is ruled on whatever the
+        page is, and a paper-coloured lattice on a dark header would be the
+        loudest thing in it.
+      */}
+      <g stroke="var(--border)" strokeWidth={stroke * 0.2}>
+        {logoGridLinesIn(BOX, { left, top, right, bottom }).map((d) => (
+          <path key={d} d={d} />
+        ))}
+      </g>
+
       <path d={paths.stem} stroke={KAMIBASE_DISPLAY_PALETTE.M} strokeWidth={stroke} />
       <path d={paths.wedge} stroke={KAMIBASE_DISPLAY_PALETTE.V} strokeWidth={stroke} />
     </svg>

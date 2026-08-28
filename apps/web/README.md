@@ -78,9 +78,17 @@ inside a card stays `object-contain`; the geometry is never distorted.
 ## The mark
 
 A K drawn on the editor's own gridded paper: `src/lib/logo.ts` holds the
-geometry, `KamiMark` draws the tile, and `KamiK` draws the letter alone so it
-can stand in for the K of "Kamibase" in the header — set as a glyph, on the
+geometry, `KamiMark` draws the tile, and `KamiK` draws the letter so it can
+stand in for the K of "Kamibase" in the header — set as a glyph, on the
 baseline, sized in `em`, rather than as a badge parked beside the word.
+
+Both keep the grey lattice behind the letter, because that is what makes it look
+like it came off the editor's canvas rather than out of a logo generator. The
+glyph's is trimmed arithmetically to its own box (`logoGridLinesIn`) rather than
+with a `clipPath`, which would need a `useId` and therefore a client component
+to draw some grey lines, and it rules in `--border` rather than the tile's fixed
+`--paper-line`: the tile's grid sits on white paper, the glyph's sits on
+whatever colour the header happens to be.
 
 It is a drawing, not a foldable pattern, and that is worth stating because the
 obvious idea was tried first. **A letter K cannot fold flat.** Kawasaki's

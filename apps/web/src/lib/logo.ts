@@ -86,3 +86,41 @@ export function logoGridLines(size: number): readonly string[] {
   }
   return lines;
 }
+
+export interface Rect {
+  readonly left: number;
+  readonly top: number;
+  readonly right: number;
+  readonly bottom: number;
+}
+
+/**
+ * The same lattice, trimmed to a rectangle.
+ *
+ * The glyph version of the mark has no paper to bound the grid, and its own
+ * `overflow: visible` (which is what lets the stroke caps hang over the
+ * baseline) means nothing gets clipped for free. Trimming the lines
+ * arithmetically avoids the alternative, a `clipPath`, which would need a
+ * unique id and therefore `useId`, and therefore a client component, to draw
+ * some grey lines.
+ *
+ * Whole lines only: a lattice cut off mid-cell reads as a rendering bug, so a
+ * line outside the rectangle is dropped rather than shortened past its
+ * neighbours.
+ */
+export function logoGridLinesIn(size: number, rect: Rect): readonly string[] {
+  const unit = size / LOGO_GRID;
+  const lines: string[] = [];
+  const fix = (value: number): string => value.toFixed(2);
+
+  for (let i = 1; i < LOGO_GRID; i += 1) {
+    const at = i * unit;
+    if (at > rect.left && at < rect.right) {
+      lines.push(`M${fix(at)} ${fix(rect.top)}V${fix(rect.bottom)}`);
+    }
+    if (at > rect.top && at < rect.bottom) {
+      lines.push(`M${fix(rect.left)} ${fix(at)}H${fix(rect.right)}`);
+    }
+  }
+  return lines;
+}
