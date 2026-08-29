@@ -26,23 +26,6 @@ export default function AppearanceSettingsPage() {
       <section className="space-y-3">
         <h2 className="text-lg font-bold tracking-tight">Theme</h2>
         <ThemePicker />
-        <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-          Kept in this browser, not on your account, so each device can be
-          different.
-        </p>
-      </section>
-
-      <section
-        className="space-y-2 rounded-2xl p-4"
-        style={{ background: "var(--surface-sunken)" }}
-      >
-        <h2 className="text-sm font-bold">Crease patterns stay on white paper</h2>
-        <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-          Red mountains, blue valleys and a black edge only mean what they mean
-          on white, and that convention is shared with every other origami tool
-          there is. So in dark mode a pattern reads as a lit sheet on a dark
-          table, which is also what folding one at night actually looks like.
-        </p>
       </section>
     </div>
   );
