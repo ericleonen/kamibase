@@ -27,6 +27,25 @@ type Status = "checking" | "loading" | "ready" | "unavailable";
 /** The simulator boots at 60% folded; our slider has to agree from the start. */
 const DEFAULT_FOLD = 0.6;
 
+/**
+ * The two sides of the paper.
+ *
+ * Upstream ships magenta and light grey. Magenta belongs to nobody and is the
+ * loudest thing on the page; this is the brand amber, taken a step darker
+ * because a Phong-lit surface washes out under the key light and `#f5b72e`
+ * renders as almost white where it faces you. The reverse is the off-white of a
+ * real sheet rather than a neutral grey, so a half-folded model reads as paper
+ * with a coloured face and not as two materials.
+ *
+ * Amber is the *back* face in the simulator's terms because that is the one the
+ * default camera looks at: the sheet is built facing away, so `color1` (the
+ * `FrontSide` material) is the side you see only through the folds. Naming them
+ * after which side of the kami they are, rather than after which THREE material
+ * carries them, is the only way this stays readable.
+ */
+const PAPER_COLORED = "#d99a1e";
+const PAPER_WHITE = "#f4f1e8";
+
 const CAMERA_VIEWS: { readonly view: CameraView; readonly label: string }[] = [
   { view: "iso", label: "3/4" },
   { view: "z", label: "Front" },
@@ -52,6 +71,15 @@ export interface SimulatorProps {
   readonly variant?: "full" | "preview";
   /** Preview only: what clicking the frame does. */
   readonly onOpen?: () => void;
+  /**
+   * Stretch to the parent instead of choosing a height.
+   *
+   * For `FoldViewer`, which already owns the screen: the frame becomes a
+   * column, the model takes whatever is left after the control bar, and the
+   * browser-fullscreen button goes away because there is nothing left to make
+   * fullscreen.
+   */
+  readonly fill?: boolean;
 }
 
 /**
@@ -78,6 +106,7 @@ export function Simulator({
   flatFoldable = true,
   variant = "full",
   onOpen,
+  fill = false,
 }: SimulatorProps) {
   const preview = variant === "preview";
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -149,6 +178,7 @@ export function Simulator({
         setFoldAmount(DEFAULT_FOLD);
         setRunning(true);
         setColorMode("color");
+        handle.setPaperColors(PAPER_WHITE, PAPER_COLORED);
         setStatus("ready");
       })
       .catch((error: unknown) => {
@@ -257,20 +287,26 @@ export function Simulator({
   return (
     <div
       ref={frameRef}
-      className="overflow-hidden rounded-[var(--radius-card)] bg-white"
-      style={{ boxShadow: "var(--shadow-card)" }}
+      className={
+        fill
+          ? "flex h-full min-h-0 flex-col overflow-hidden bg-white"
+          : "overflow-hidden rounded-[var(--radius-card)] bg-white"
+      }
+      style={fill ? {} : { boxShadow: "var(--shadow-card)" }}
     >
-      <div className="relative">
+      <div className={fill ? "relative min-h-0 flex-1" : "relative"}>
         <iframe
           ref={iframeRef}
           src={SIMULATOR_URL}
           title={`3D fold simulation of ${title}`}
           className={`block w-full border-0 ${
-            preview
-              ? "h-52"
-              : fullscreen
-                ? "h-[calc(100vh-5.5rem)]"
-                : "h-[58vh] min-h-[22rem]"
+            fill
+              ? "h-full"
+              : preview
+                ? "h-52"
+                : fullscreen
+                  ? "h-[calc(100vh-5.5rem)]"
+                  : "h-[58vh] min-h-[22rem]"
           }`}
           allow="fullscreen"
         />
@@ -328,7 +364,7 @@ export function Simulator({
           </div>
         )}
 
-        {!busy && !preview && (
+        {!busy && !preview && !fill && (
           <button
             type="button"
             onClick={toggleFullscreen}
@@ -353,7 +389,7 @@ export function Simulator({
         rule about not pretending, applied to the chrome as well as the solve.
       */}
       {controllable && !preview && (
-        <div className="border-t" style={{ borderColor: "var(--border)" }}>
+        <div className="shrink-0 border-t" style={{ borderColor: "var(--border)" }}>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-3 px-4 pb-2 pt-3">
             <div className="flex min-w-[15rem] flex-1 items-center gap-3">
               <button
@@ -446,19 +482,21 @@ export function Simulator({
           </div>
 
           {/*
-            A caption under the controls, not a strip of its own.
-            It used to carry a `border-t`, which put a rule about two dozen
-            pixels above the card's own bottom edge: two parallel lines with a
-            line of six point type trapped between them, which reads as a
-            mistake rather than as a division. The bar it belongs to is already
-            separated from the model by one border, and one border is the
-            number this needs.
+            "Drag to rotate · scroll to zoom" used to live here. Nobody who has
+            met a 3D view on the web needs telling, and a permanent line of
+            instructions under a control bar is the tell of an interface that
+            does not trust itself.
+
+            What stays is the one thing that is not obvious: a pattern that
+            fails a flat-foldability check may never settle, and a model that
+            goes on twitching reads as a bug rather than as the answer.
           */}
-          <p className="px-4 pb-3 text-xs" style={{ color: "var(--text-faint)" }}>
-            Drag to rotate · scroll to zoom
-            {!flatFoldable &&
-              " · this pattern fails a local flat-foldability check, so the solver may not settle, which is normal for 3D designs"}
-          </p>
+          {!flatFoldable && (
+            <p className="px-4 pb-3 text-xs" style={{ color: "var(--text-faint)" }}>
+              This pattern fails a local flat-foldability check, so the solver
+              may not settle. That is normal for 3D designs.
+            </p>
+          )}
         </div>
       )}
     </div>

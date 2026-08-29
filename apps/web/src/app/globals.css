@@ -436,11 +436,47 @@ body {
     display: none !important;
   }
 
+  /*
+   * Nothing between the sheet and the page.
+   *
+   * On paper every wrapper the pattern sits in is doing a job that no longer
+   * exists: a reading measure, a two-column grid, a sticky column, a gap
+   * between sections. The page is the measure, and everything beside the sheet
+   * is `print-hidden`, so the ancestors flatten and the sheet gets the width.
+   */
+  .print-plain {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
   .print-sheet {
     display: block !important;
-    width: var(--print-size-mm, 150mm) !important;
-    height: var(--print-size-mm, 150mm) !important;
+    /*
+     * At the recommended size, or as large as the page allows.
+     *
+     * Printing to scale is the point of the button, but a 250mm sheet on A4 is
+     * 40mm wider than the printable width, and a browser's answer to that is to
+     * slice the overflow off rather than to shrink it: the pattern came out
+     * missing its right-hand quarter. `min()` keeps the promise where the paper
+     * can keep it and falls back to the biggest square that fits where it
+     * cannot, which is a usable pattern rather than a cropped one.
+     *
+     * The height comes from `aspect-ratio` instead of a second `min()`, so the
+     * sheet is square whichever of the two won. Both `max-*` caps go: the
+     * frame carries `max-h-[32rem]` on screen, which is 512px against even a
+     * 150mm sheet's 567 and sliced the bottom off.
+     */
+    width: min(var(--print-size-mm, 150mm), 100%) !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important;
     max-width: none !important;
+    max-height: none !important;
+    min-height: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;

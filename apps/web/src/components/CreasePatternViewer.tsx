@@ -243,7 +243,7 @@ export function CreasePatternViewer({
         className={`print-sheet relative touch-pan-y overflow-hidden border outline-none ${
           overlay ? "fixed inset-0 z-50 h-[100dvh] w-screen rounded-none" : ""
         } ${expanded && !overlay ? "h-screen w-screen rounded-none" : ""} ${
-          expanded ? "" : "aspect-square w-full rounded-[var(--radius-card)]"
+          expanded ? "" : `${frameClassName} rounded-[var(--radius-card)]`
         }`}
         style={{
           borderColor: "var(--border)",

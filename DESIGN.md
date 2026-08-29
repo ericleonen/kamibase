@@ -395,6 +395,12 @@ import/export makes us a hub rather than a walled garden.
 - **Grid**: n×n, 22.5°, hex, or none. Snap-to-grid and snap-to-intersection.
 - **Tools**: line, ray (extend to boundary), rectangle, polygon, erase,
   select-and-reassign.
+- **Bisection**: the two Huzita–Justin axioms a designer uses by hand. Axiom 2
+  is a tool — pick two points, get the crease that folds one onto the other,
+  which is how you halve a distance without measuring it. Axiom 3 is a snap:
+  a line drawn from a vertex within a few degrees of bisecting the angle
+  already there jumps to it, with the equal-angle marks drawn so it is visible
+  that it did.
 - **Assignment**: click-cycle or hotkey M / V / B / F / U / C. Standard colors.
 - **Symmetry**: mirror (H/V/diagonal) and rotational (2/4/n-fold) — a huge time
   saver, since most CPs are symmetric.

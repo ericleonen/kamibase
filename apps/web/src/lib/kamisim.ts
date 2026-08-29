@@ -85,6 +85,9 @@ export type CameraView = "iso" | "x" | "y" | "z";
  */
 interface SimulatorGlobals {
   creasePercent?: number;
+  /** Front and back face colours, as hex *without* the leading `#`. */
+  color1?: string;
+  color2?: string;
   shouldChangeCreasePercent?: boolean;
   simulationRunning?: boolean;
   colorMode?: string;
@@ -98,7 +101,7 @@ interface SimulatorGlobals {
     setCameraY?: (sign: number) => void;
     setCameraZ?: (sign: number) => void;
   };
-  model?: { reset?: () => void };
+  model?: { reset?: () => void; setMeshMaterial?: () => void };
   controls?: { updateCreasePercent?: () => void };
 }
 
@@ -117,6 +120,15 @@ export interface KamiSimHandle {
   setRunning(running: boolean): void;
   /** Colour the mesh by material or by axial strain. */
   setColorMode(mode: ColorMode): void;
+  /**
+   * The two sides of the paper, as `#rrggbb`.
+   *
+   * Upstream ships magenta and light grey. Magenta is a fine default for a tool
+   * that has no brand; here it is the one thing on the page that belongs to
+   * nobody, so the coloured side becomes Kamibase's amber and the reverse
+   * becomes the off-white of an actual sheet.
+   */
+  setPaperColors(front: string, back: string): void;
   /** Re-run the solve from the flat sheet, discarding the current state. */
   resetSimulation(): void;
   /** Point the camera at a preset and undo any dragging. */
@@ -318,6 +330,17 @@ function createHandle(iframe: HTMLIFrameElement, targetOrigin: string): KamiSimH
     setColorMode(mode: ColorMode): void {
       withGlobals((globals) => {
         globals.colorMode = mode;
+      });
+    },
+
+    setPaperColors(front: string, back: string): void {
+      withGlobals((globals) => {
+        // Hex without the `#`: the simulator prepends one before handing the
+        // string to three.js.
+        globals.color1 = front.replace(/^#/, "");
+        globals.color2 = back.replace(/^#/, "");
+        // The colours are read when the material is built, not per frame.
+        globals.model?.setMeshMaterial?.();
       });
     },
 

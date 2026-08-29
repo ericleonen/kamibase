@@ -1,14 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { KAMIBASE_DISPLAY_PALETTE, type EdgeAssignment } from "@kamibase/core";
 import type { VertexMark } from "@/lib/editor/analysis";
 import { gridLines, type GridSpec } from "@/lib/editor/grid";
 import { paperTransform, toPaperPoint } from "@/lib/editor/paper";
 import { segmentAt, snapPoint, type EditorDoc } from "@/lib/editor/model";
+import {
+  perpendicularBisector,
+  snapToBisector,
+  type BisectorHit,
+} from "@/lib/editor/bisect";
 import type { PanZoom } from "@/lib/viewport/use-pan-zoom";
 
-export type EditorTool = "draw" | "erase" | "assign" | "pan";
+export type EditorTool = "draw" | "bisect" | "erase" | "assign" | "pan";
 
 export interface EditorCanvasProps {
   readonly doc: EditorDoc;
@@ -53,6 +58,10 @@ const GRID_PX = 1;
 const HIT_PX = 10;
 const SNAP_PX = 14;
 const MARK_PX = 7;
+/** Further than this between press and release and it was a drag, not a click. */
+const CLICK_SLOP_PX = 5;
+/** Radius of the equal-angle arcs drawn when a crease snaps to a bisector. */
+const ARC_PX = 26;
 
 /**
  * The drawing surface.
@@ -89,6 +98,19 @@ export function EditorCanvas({
 }: EditorCanvasProps) {
   const [start, setStart] = useState<[number, number] | null>(null);
   const [cursor, setCursor] = useState<[number, number] | null>(null);
+  /**
+   * Where the pointer went down, so a press-move-release can still draw.
+   *
+   * Click-to-start and click-to-finish is the primary way now: it is what every
+   * CAD tool does, it does not ask anybody to hold a button steady across a
+   * screen, and it is the only one that works with a trackpad without the line
+   * escaping halfway. Dragging still works, because it is what a hand reaches
+   * for on a touchscreen and because muscle memory is not something to take
+   * away. The distance the pointer travelled between down and up is what tells
+   * the two apart.
+   */
+  const pressed = useRef<{ x: number; y: number; fresh: boolean } | null>(null);
+  const [bisector, setBisector] = useState<BisectorHit | null>(null);
 
   /*
    * The snap dot is where the pointer is, not a mark on the paper, so it does
@@ -101,7 +123,33 @@ export function EditorCanvas({
   useEffect(() => {
     setStart(null);
     setCursor(null);
+    setBisector(null);
   }, [paperAngle]);
+
+  /*
+   * Reaching for another tool is an answer to "what do I want to do next", and
+   * a half-drawn crease is the previous answer. Left alone it would land on the
+   * first click made with the new tool, in a place chosen for a different one.
+   */
+  useEffect(() => {
+    setStart(null);
+    setCursor(null);
+    setBisector(null);
+  }, [tool]);
+
+  // Escape abandons a line in progress. Without it a click-to-start line can
+  // only be got rid of by finishing it somewhere and undoing.
+  useEffect(() => {
+    if (!start) return;
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key !== "Escape") return;
+      setStart(null);
+      setCursor(null);
+      setBisector(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [start]);
 
   const { view } = panZoom;
   const px = useCallback((pixels: number): number => pixels / view.scale, [view.scale]);
@@ -132,6 +180,38 @@ export function EditorCanvas({
   // smooth canvas into a stuttering one.
   const lattice = useMemo(() => gridLines(grid), [grid]);
 
+  const clearStroke = useCallback((): void => {
+    setStart(null);
+    setCursor(null);
+    setBisector(null);
+  }, []);
+
+  /**
+   * Where the line being drawn currently ends, and what pulled it there.
+   *
+   * One function for both the preview and the commit, so what gets drawn is
+   * exactly what was shown. Three things can claim the endpoint, in order of
+   * how deliberate they are: a held shift (an explicit 45° step), the bisector
+   * of the creases already at the start point (a thing the designer means; a
+   * lattice point near it is a coincidence), then the lattice itself.
+   */
+  const resolve = useCallback(
+    (
+      clientX: number,
+      clientY: number,
+      shiftKey: boolean,
+      from: readonly [number, number] | null,
+    ): { point: [number, number]; hit: BisectorHit | null } => {
+      const raw = toPaper(clientX, clientY);
+      if (!from) return { point: snapWith(raw, doc), hit: null };
+      if (shiftKey) return { point: constrain(from, raw), hit: null };
+      const hit = tool === "draw" ? snapToBisector(from, raw, doc) : null;
+      if (hit) return { point: [hit.point[0], hit.point[1]], hit };
+      return { point: snapWith(raw, doc), hit: null };
+    },
+    [doc, snapWith, toPaper, tool],
+  );
+
   const onPointerDown = useCallback(
     (event: React.PointerEvent<SVGSVGElement>) => {
       // Middle-drag pans everywhere on the web; without this the browser
@@ -142,8 +222,7 @@ export function EditorCanvas({
       // or the hand tool outranks whatever tool is selected, and a stroke in
       // progress is abandoned rather than finished where the pointer never went.
       if (panZoom.onPointerDown(event)) {
-        setStart(null);
-        setCursor(null);
+        clearStroke();
         return;
       }
       if (event.button !== 0) return;
@@ -161,11 +240,17 @@ export function EditorCanvas({
       }
 
       event.currentTarget.setPointerCapture(event.pointerId);
+      pressed.current = { x: event.clientX, y: event.clientY, fresh: start === null };
+      // A second press lands on a line that is already in progress; what
+      // happens to it is decided on release, where the pointer finally is.
+      if (start) return;
+
       const snapped = snapWith(point, doc);
       setStart(snapped);
       setCursor(snapped);
+      setBisector(null);
     },
-    [doc, onAssign, onErase, panZoom, px, snapWith, toPaper, tool],
+    [clearStroke, doc, onAssign, onErase, panZoom, px, snapWith, start, toPaper, tool],
   );
 
   const onPointerMove = useCallback(
@@ -173,32 +258,67 @@ export function EditorCanvas({
       if (panZoom.onPointerMove(event)) {
         // A pinch that begins mid-stroke cancels it rather than dragging the
         // crease along with the gesture.
-        if (start) setStart(null);
-        setCursor(null);
+        clearStroke();
         return;
       }
-      if (tool !== "draw") return;
-      const point = toPaper(event.clientX, event.clientY);
-      setCursor(event.shiftKey && start ? constrain(start, point) : snapWith(point, doc));
+      if (tool !== "draw" && tool !== "bisect") return;
+      const { point, hit } = resolve(event.clientX, event.clientY, event.shiftKey, start);
+      setCursor(point);
+      setBisector(hit);
     },
-    [doc, panZoom, snapWith, start, toPaper, tool],
+    [clearStroke, panZoom, resolve, start, tool],
   );
 
   const finishPointer = useCallback(
     (event: React.PointerEvent<SVGSVGElement>) => {
       const wasViewport = panZoom.onPointerUp(event);
-      if (wasViewport || tool !== "draw" || !start) {
-        setStart(null);
+      const press = pressed.current;
+      pressed.current = null;
+
+      if (wasViewport) {
+        clearStroke();
         return;
       }
-      const raw = toPaper(event.clientX, event.clientY);
-      const end = event.shiftKey ? constrain(start, raw) : snapWith(raw, doc);
-      onDraw({ x1: start[0], y1: start[1], x2: end[0], y2: end[1], assignment });
-      setStart(null);
-      setCursor(null);
+      if ((tool !== "draw" && tool !== "bisect") || !start) return;
+
+      const travelled = press
+        ? Math.hypot(event.clientX - press.x, event.clientY - press.y)
+        : Infinity;
+      // The click that began the line is not also the click that ends it: this
+      // is the release of the opening click, so the line stays in progress and
+      // follows the pointer until the next one.
+      if (press?.fresh && travelled <= CLICK_SLOP_PX) return;
+
+      const { point: end } = resolve(event.clientX, event.clientY, event.shiftKey, start);
+      // Finished where it began, which is how you take it back.
+      if (Math.hypot(end[0] - start[0], end[1] - start[1]) <= px(HIT_PX)) {
+        clearStroke();
+        return;
+      }
+
+      if (tool === "bisect") {
+        const crease = perpendicularBisector(start, end);
+        if (crease) onDraw({ ...crease, assignment });
+      } else {
+        onDraw({ x1: start[0], y1: start[1], x2: end[0], y2: end[1], assignment });
+      }
+      clearStroke();
     },
-    [assignment, doc, onDraw, panZoom, snapWith, start, toPaper, tool],
+    [assignment, clearStroke, onDraw, panZoom, px, resolve, start, tool],
   );
+
+  /**
+   * The crease as it would land if the pointer stopped here.
+   *
+   * For the bisector tool that is not the line between the two points at all —
+   * it is the crease that folds one onto the other, which is the whole point of
+   * the tool: you get the midpoint without ever measuring one.
+   */
+  const preview = useMemo(() => {
+    if (!start || !cursor) return null;
+    if (tool === "bisect") return perpendicularBisector(start, cursor);
+    return { x1: start[0], y1: start[1], x2: cursor[0], y2: cursor[1] };
+  }, [cursor, start, tool]);
 
   return (
     <svg
@@ -272,13 +392,34 @@ export function EditorCanvas({
           />
         ))}
 
+        {/* The two points being folded together, and the midpoint the crease
+            will pass through. Thin and grey: it is the measurement, not the
+            fold, and it does not survive the click. */}
+        {tool === "bisect" && start && cursor && (
+          <g stroke="var(--text-muted)" strokeWidth={px(1)} opacity={0.7}>
+            <line
+              x1={start[0]}
+              y1={1 - start[1]}
+              x2={cursor[0]}
+              y2={1 - cursor[1]}
+              strokeDasharray={`${px(3)} ${px(4)}`}
+            />
+            <circle
+              cx={(start[0] + cursor[0]) / 2}
+              cy={1 - (start[1] + cursor[1]) / 2}
+              r={px(3.5)}
+              fill="var(--text-muted)"
+            />
+          </g>
+        )}
+
         {/* The crease being drawn, dashed until it is committed. */}
-        {start && cursor && (
+        {preview && (
           <line
-            x1={start[0]}
-            y1={1 - start[1]}
-            x2={cursor[0]}
-            y2={1 - cursor[1]}
+            x1={preview.x1}
+            y1={1 - preview.y1}
+            x2={preview.x2}
+            y2={1 - preview.y2}
             stroke={KAMIBASE_DISPLAY_PALETTE[assignment]}
             strokeWidth={px(CREASE_PX)}
             strokeDasharray={`${px(8)} ${px(6)}`}
@@ -286,8 +427,15 @@ export function EditorCanvas({
           />
         )}
 
+        {/* Equal-angle marks, the way they are drawn on paper: one arc across
+            each half of the angle with a tick through it. They are what turns
+            "the line jumped" into "the line found the bisector". */}
+        {start && bisector && (
+          <BisectorMark at={start} hit={bisector} radius={px(ARC_PX)} width={px(1.4)} />
+        )}
+
         {/* Snap indicator: without it, snapping feels like drift. */}
-        {cursor && tool === "draw" && (
+        {cursor && (tool === "draw" || tool === "bisect") && (
           <circle
             cx={cursor[0]}
             cy={1 - cursor[1]}
@@ -331,6 +479,70 @@ export function EditorCanvas({
   );
 }
 
+/**
+ * The two equal angles a snapped crease sits between.
+ *
+ * Drawn the way a draughtsman draws them: an arc across each half of the angle
+ * and a tick through each arc, which is the notation for "these two are the
+ * same". Everything is in paper units divided by the scale by the caller, so
+ * the mark is the same size on screen at any zoom, and `1 - y` because the
+ * sheet's y runs up while the SVG's runs down.
+ */
+function BisectorMark({
+  at,
+  hit,
+  radius,
+  width,
+}: {
+  readonly at: readonly [number, number];
+  readonly hit: BisectorHit;
+  readonly radius: number;
+  readonly width: number;
+}) {
+  const from = hit.between[0];
+  // `between` was normalised, so the winding has to be recovered: the angle is
+  // the one swept anticlockwise from the first crease to the second.
+  const span = (((hit.between[1] - from) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+  const half = span / 2;
+
+  const point = (angle: number, r: number): [number, number] => [
+    at[0] + Math.cos(angle) * r,
+    1 - (at[1] + Math.sin(angle) * r),
+  ];
+
+  const arc = (start: number, end: number): string => {
+    const steps = Math.max(6, Math.round((Math.abs(end - start) / Math.PI) * 24));
+    const points: string[] = [];
+    for (let i = 0; i <= steps; i += 1) {
+      const [x, y] = point(start + ((end - start) * i) / steps, radius);
+      points.push(`${x},${y}`);
+    }
+    return points.join(" ");
+  };
+
+  /** A short tick across the arc, marking the two halves as equal. */
+  const tick = (angle: number): { x1: number; y1: number; x2: number; y2: number } => {
+    const [x1, y1] = point(angle, radius - width * 2.5);
+    const [x2, y2] = point(angle, radius + width * 2.5);
+    return { x1, y1, x2, y2 };
+  };
+
+  return (
+    <g
+      stroke="var(--brand-strong)"
+      strokeWidth={width}
+      fill="none"
+      strokeLinecap="round"
+      pointerEvents="none"
+    >
+      <polyline points={arc(from, from + half)} />
+      <polyline points={arc(from + half, from + span)} />
+      <line {...tick(from + half / 2)} />
+      <line {...tick(from + half + half / 2)} />
+    </g>
+  );
+}
+
 /** Nearest 0°/45°/90° from `from`, for shift-constrained drawing. */
 function constrain(
   from: readonly [number, number],
@@ -346,6 +558,6 @@ function constrain(
 function cursorFor(tool: EditorTool, panZoom: PanZoom): string {
   if (panZoom.panning) return "grabbing";
   if (panZoom.panReady || tool === "pan") return "grab";
-  if (tool === "draw") return "crosshair";
+  if (tool === "draw" || tool === "bisect") return "crosshair";
   return "pointer";
 }

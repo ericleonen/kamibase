@@ -19,6 +19,7 @@ import {
   PenLine,
   Redo2,
   Save,
+  Split,
   Trash2,
   Undo2,
   Unlink,
@@ -34,6 +35,7 @@ import {
 } from "@kamibase/core";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Spinner } from "@/components/Loading";
+import { FoldViewer } from "@/components/FoldViewer";
 import { Simulator } from "@/components/Simulator";
 import { ZoomControls } from "@/components/viewport/ZoomControls";
 import { analyse, LIVE_ANALYSIS_EDGE_LIMIT } from "@/lib/editor/analysis";
@@ -85,7 +87,20 @@ const TOOLS: {
   hint: string;
   Icon: typeof PenLine;
 }[] = [
-  { key: "draw", label: "Draw", hotkey: "d", hint: "Drag to add a crease", Icon: PenLine },
+  {
+    key: "draw",
+    label: "Draw",
+    hotkey: "d",
+    hint: "Click to start a crease, click again to finish",
+    Icon: PenLine,
+  },
+  {
+    key: "bisect",
+    label: "Bisect",
+    hotkey: "s",
+    hint: "Click two points to crease their midpoint",
+    Icon: Split,
+  },
   { key: "erase", label: "Erase", hotkey: "e", hint: "Tap a crease to delete it", Icon: Eraser },
   {
     key: "assign",
@@ -623,6 +638,18 @@ function Editor({
           collapsed={leftCollapsed}
           onToggle={() => setLeftCollapsed((value) => !value)}
         >
+          {/* Zoom first, because it is the setting reached for most often and
+              the only one that changes nothing about the pattern. */}
+          <Field label="Zoom">
+            <ZoomControls
+              variant="panel"
+              zoom={panZoom.zoom}
+              onZoomIn={() => panZoom.zoomBy(ZOOM_STEP)}
+              onZoomOut={() => panZoom.zoomBy(1 / ZOOM_STEP)}
+              onFit={panZoom.fit}
+            />
+          </Field>
+
           <Field label="Grid size">
             <Presets
               options={GRID_PRESETS.map((preset) => ({
@@ -698,10 +725,7 @@ function Editor({
             </Field>
           )}
 
-          <Field
-            label="Paper angle"
-            note="Turns the sheet on screen. The pattern is unchanged."
-          >
+          <Field label="Paper angle">
             <Presets
               options={PAPER_ANGLE_PRESETS.map((angle) => ({
                 label: `${formatAngle(angle)}°`,
@@ -770,20 +794,6 @@ function Editor({
             onDraw={(segment) => apply((current) => addSegment(current, segment))}
             onErase={(index) => apply((current) => removeSegment(current, index))}
             onAssign={(index) => apply((current) => reassignSegment(current, index, assignment))}
-          />
-
-          {/*
-           * Above the dock, not beside it. Beside it only works while the
-           * canvas is wide, and the canvas is now the screen minus two rails:
-           * at 1280 with both open, the dock reaches back far enough to sit on
-           * top of these.
-           */}
-          <ZoomControls
-            className="absolute bottom-20 left-3 sm:left-4"
-            zoom={panZoom.zoom}
-            onZoomIn={() => panZoom.zoomBy(ZOOM_STEP)}
-            onZoomOut={() => panZoom.zoomBy(1 / ZOOM_STEP)}
-            onFit={panZoom.fit}
           />
 
           {/*
@@ -897,7 +907,7 @@ function Editor({
             />
           </Field>
 
-          <Field label="3D fold" note="Click to open it full size.">
+          <Field label="3D fold">
             {previewFold ? (
               <Simulator
                 fold={previewFold}
@@ -938,45 +948,19 @@ function Editor({
         </Rail>
 
         {simulation && (
-          <div
-            className="kami-scrim absolute inset-0 z-40 flex items-center justify-center p-3 sm:p-6"
-            style={{ background: "rgb(27 26 23 / 0.45)" }}
-          >
-            <section
-              className="kami-pop flex max-h-full w-full max-w-3xl flex-col gap-3 overflow-y-auto rounded-2xl p-4"
-              style={{ background: "var(--surface-raised)", boxShadow: "var(--shadow-card-hover)" }}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <h2
-                  className="text-xs font-bold uppercase tracking-wide"
-                  style={{ color: "var(--text-muted)" }}
-                >
-                  3D fold
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => setSimulation(null)}
-                  aria-label="Close the 3D fold"
-                  className="flex size-8 items-center justify-center rounded-full transition hover:opacity-70"
-                  style={{ border: "1px solid var(--border)" }}
-                >
-                  <X className="size-4" aria-hidden />
-                </button>
-              </div>
-              <Simulator
-                key={simulation.key}
-                fold={simulation.fold}
-                patternId={`editor-${simulation.key}`}
-                title={title}
-                flatFoldable={analysis.flatFoldable}
-                fallback={
-                  <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                    The simulator is not available here.
-                  </p>
-                }
-              />
-            </section>
-          </div>
+          <FoldViewer
+            key={simulation.key}
+            fold={simulation.fold}
+            patternId={`editor-${simulation.key}`}
+            title={title}
+            flatFoldable={analysis.flatFoldable}
+            onClose={() => setSimulation(null)}
+            fallback={
+              <p className="p-6 text-sm" style={{ color: "var(--text-muted)" }}>
+                The simulator is not available here.
+              </p>
+            }
+          />
         )}
       </div>
 
@@ -1314,15 +1298,18 @@ function ResizeHandle({
  * line above a pair of fields reading 8 and 8, and "45°" one line above a field
  * reading 45: a second, smaller, less precise copy of the control's own value,
  * which is a thing to keep in sync and nothing to read.
+ *
+ * There is no note under the controls either. A line of grey text saying what
+ * happens when you press the thing you are looking at is the interface admitting
+ * the control does not read as what it is; the fix is the control, and until
+ * then the tooltip. It also gets read every single session by somebody who
+ * learned it in the first one.
  */
 function Field({
   label,
-  note,
   children,
 }: {
   readonly label: string;
-  /** One line under the controls, for a setting that is not self-evident. */
-  readonly note?: string;
   readonly children: React.ReactNode;
 }) {
   return (
@@ -1334,11 +1321,6 @@ function Field({
         {label}
       </h2>
       {children}
-      {note && (
-        <p className="text-[11px] leading-snug" style={{ color: "var(--text-faint)" }}>
-          {note}
-        </p>
-      )}
     </section>
   );
 }
