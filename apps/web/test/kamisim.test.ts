@@ -279,13 +279,6 @@ describe("the control surface", () => {
     expect(globals.threeView.startSimulation).toHaveBeenCalled();
   });
 
-  it("switches colour mode", async () => {
-    const globals = fakeGlobals();
-    const handle = await attachedTo(globals);
-    handle.setColorMode("axialStrain");
-    expect(globals.colorMode).toBe("axialStrain");
-  });
-
   it("resets the solve", async () => {
     const globals = fakeGlobals();
     const handle = await attachedTo(globals);

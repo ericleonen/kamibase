@@ -10,10 +10,20 @@ import {
 } from "@kamibase/core";
 import { graphFromDoc, type EditorDoc } from "./model";
 
+/**
+ * Which rule a vertex fell foul of, so the panel can say so by name.
+ *
+ * `"unknown"` is not a failure of either rule but an absence of the assignments
+ * needed to decide, which is an ordinary state for a pattern half-drawn and
+ * deserves to be worded as one.
+ */
+export type VertexVerdict = "ok" | "maekawa" | "kawasaki" | "unknown";
+
 export interface VertexMark {
   /** Where to draw the dot, in unit coordinates. */
   readonly at: Vec2;
   readonly ok: boolean;
+  readonly verdict: VertexVerdict;
   /** Why it is marked, for the tooltip. */
   readonly reason: string;
 }
@@ -90,6 +100,7 @@ export function analyse(doc: EditorDoc): EditorAnalysis {
         return {
           at,
           ok: false,
+          verdict: "maekawa",
           reason:
             `Maekawa: ${vertex.mountains}M / ${vertex.valleys}V. A flat-foldable ` +
             "vertex needs the counts to differ by exactly 2",
@@ -99,6 +110,7 @@ export function analyse(doc: EditorDoc): EditorAnalysis {
         return {
           at,
           ok: false,
+          verdict: "kawasaki",
           reason: "Kawasaki: alternate angles around this vertex do not sum to 180°",
         };
       }
@@ -106,10 +118,11 @@ export function analyse(doc: EditorDoc): EditorAnalysis {
         return {
           at,
           ok: false,
+          verdict: "unknown",
           reason: vertex.note ?? "Undecidable, because some creases here are unassigned",
         };
       }
-      return { at, ok: true, reason: "Maekawa and Kawasaki both hold here" };
+      return { at, ok: true, verdict: "ok", reason: "Maekawa and Kawasaki both hold here" };
     });
 
   return {

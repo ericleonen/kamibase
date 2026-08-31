@@ -80,6 +80,20 @@
   --danger: #b42318;
 
   /*
+   * Green, for a check that passed.
+   *
+   * The only place the site says yes in colour, and it is the editor's checks
+   * panel saying a pattern folds flat. Dark enough to read as text on white
+   * (5.6:1); the tinted banner behind it is this colour mixed down to a wash,
+   * so there is one value to keep honest rather than a pair.
+   *
+   * There is no `--warn`. Amber is the brand, `--brand-strong` is already the
+   * readable value of it, and a second amber a few degrees away would read as a
+   * mistake rather than as a distinction.
+   */
+  --ok: #12734a;
+
+  /*
    * The sheet, and the grey ruled on it. Never themed: see the note above.
    */
   --paper: #ffffff;
@@ -137,6 +151,7 @@
   --text-muted: #a8a49c;
   --text-faint: #7d7972;
   --danger: #ff8079;
+  --ok: #5fd39b;
 
   --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.06), 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-card-hover: 0 0 0 1px rgb(255 255 255 / 0.1), 0 12px 28px -8px rgb(0 0 0 / 0.6);
@@ -495,8 +510,10 @@ body {
    * corner of it on the page at an arbitrary size, which defeats the entire
    * point of printing to a recommended size.
    */
-  .kami-pan-layer {
+  .kami-pan-layer,
+  .kami-fit-layer {
     position: static !important;
+    inset: auto !important;
     width: 100% !important;
     height: 100% !important;
     transform: none !important;

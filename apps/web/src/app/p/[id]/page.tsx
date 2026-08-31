@@ -94,14 +94,14 @@ export default async function PatternPage({
   ];
 
   return (
-    <article className="print-plain mx-auto w-full max-w-3xl pb-16 lg:max-w-6xl">
+    <article className="print-plain mx-auto w-full max-w-3xl pb-16 lg:max-w-5xl">
       {/*
        * Placement is explicit so the DOM can stay in reading order: the header
        * is written first because that is what a phone should meet first, and
        * `lg:col-start-2 lg:row-start-1` is what moves it beside the pattern on
        * a wide screen instead of above it.
        */}
-      <div className="print-plain grid gap-7 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-x-10 lg:gap-y-6">
+      <div className="print-plain grid gap-7 lg:grid-cols-[26rem_minmax(0,1fr)] lg:items-start lg:gap-x-10 lg:gap-y-6">
         <header className="print-hidden space-y-3 lg:col-start-2 lg:row-start-1">
         <h1 className="text-3xl font-semibold tracking-tight">{pattern.title}</h1>
         <p className="text-sm" style={{ color: "var(--text-muted)" }}>
@@ -117,18 +117,22 @@ export default async function PatternPage({
       </header>
 
         {/*
-         * Capped in height in the one-column layout, where a square viewer
-         * filling a 48rem measure would be 768px tall and swallow a laptop
-         * screen. In the two-column one the cap comes off: the viewer is its
-         * own column and being as tall as it is wide is the point. It sticks,
-         * so the facts on the right scroll against a pattern that stays put.
+         * Medium.
+         *
+         * The pattern's column is 26rem wide, not a free half of the page. A
+         * square viewer filling the larger share of a 72rem grid is 640px tall,
+         * which on a laptop is the whole screen: you scroll past a picture to
+         * reach anything written about it. At 26rem it is a plate on a page —
+         * large enough to read the creases, small enough that the page around
+         * it is visible at the same time — and there is a button on it for
+         * anyone who wants it at full size. What it gives up goes to the text,
+         * which gets a real measure instead of a rail.
          */}
-        <div className="print-plain lg:sticky lg:top-20 lg:col-start-1 lg:row-start-1 lg:row-span-4">
+        <div className="print-plain mx-auto w-full max-w-[26rem] lg:sticky lg:top-20 lg:col-start-1 lg:row-start-1 lg:row-span-4 lg:max-w-none">
           <CreasePatternViewer
             svg={svg}
             present={presentAssignments(pattern.graph)}
             title={pattern.title}
-            frameClassName="aspect-square max-h-[32rem] w-full lg:max-h-none"
             {...(pattern.recommendedSizeMm === undefined
               ? {}
               : { printSizeMm: pattern.recommendedSizeMm })}
@@ -159,11 +163,10 @@ export default async function PatternPage({
       </div>
 
         <Section title="Details" className="print-hidden lg:col-start-2 lg:row-start-3">
-        {/* Two columns of pairs when there is a page's width to put them in,
-            one when there is not. A single long list of ten facts is a scroll
-            and two columns of five is a glance, but two columns inside a 22rem
-            sidebar is neither: every value wraps onto its own second line. */}
-        <dl className="grid gap-x-8 gap-y-0 sm:grid-cols-2 lg:grid-cols-1">
+        {/* Two columns of pairs on a wide screen, one on a phone. A single
+            long list of ten facts is a scroll; two columns of five is a
+            glance. */}
+        <dl className="grid gap-x-8 gap-y-0 sm:grid-cols-2">
           {facts.map(([label, value]) => (
             <div
               key={label}
@@ -202,7 +205,7 @@ export default async function PatternPage({
       </Section>
 
         <Section title="Download" className="print-hidden lg:col-start-2 lg:row-start-4">
-        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2">
+        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {DOWNLOAD_FORMATS.map((format) => (
             <li key={format}>
               <a

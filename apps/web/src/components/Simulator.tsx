@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import {
-  Boxes,
-  Layers,
   Maximize2,
   Minimize2,
   Pause,
@@ -18,7 +16,6 @@ import {
   hasWebGl2,
   SIMULATOR_URL,
   type CameraView,
-  type ColorMode,
   type KamiSimHandle,
 } from "@/lib/kamisim";
 
@@ -119,7 +116,6 @@ export function Simulator({
   const [controllable, setControllable] = useState(false);
   const [foldAmount, setFoldAmount] = useState(DEFAULT_FOLD);
   const [running, setRunning] = useState(true);
-  const [colorMode, setColorMode] = useState<ColorMode>("color");
   const [fullscreen, setFullscreen] = useState(false);
 
   // Keep the payload in a ref so the effect can depend on the pattern's id
@@ -177,7 +173,6 @@ export function Simulator({
         // onto it, so the controls read true the moment they appear.
         setFoldAmount(DEFAULT_FOLD);
         setRunning(true);
-        setColorMode("color");
         handle.setPaperColors(PAPER_WHITE, PAPER_COLORED);
         setStatus("ready");
       })
@@ -225,11 +220,6 @@ export function Simulator({
       handleRef.current?.setRunning(next);
       return next;
     });
-  }, []);
-
-  const chooseColorMode = useCallback((mode: ColorMode) => {
-    setColorMode(mode);
-    handleRef.current?.setColorMode(mode);
   }, []);
 
   const reset = useCallback(() => {
@@ -326,11 +316,20 @@ export function Simulator({
             aria-label="Open the 3D fold"
             title="Open the 3D fold"
           >
+            {/*
+              Visible at rest, not on hover.
+
+              This used to reveal itself when the pointer arrived, back when the
+              top bar also had a "Fold in 3D" button and this was the shortcut.
+              It is the only door now, and a door that appears only once you
+              have touched the wall is not one.
+            */}
             <span
-              className="rounded-full px-2.5 py-1 text-[11px] font-bold opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100"
+              className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold opacity-85 transition group-hover:opacity-100"
               style={{ background: "var(--surface-raised)", boxShadow: "var(--shadow-card)" }}
             >
-              Open
+              <Maximize2 className="size-3" aria-hidden />
+              Full screen
             </span>
           </button>
         )}
@@ -443,31 +442,15 @@ export function Simulator({
               </div>
             </div>
 
+            {/*
+              The mesh colouring toggle used to be here: paper against axial
+              strain. Strain rendering needs the simulator's own colour ramp
+              and legend to mean anything, and without them it repainted the
+              model in colours that read as a rendering fault rather than as a
+              measurement. A control that produces a worse picture and no
+              information is not a feature to fix later; it is one to remove.
+            */}
             <div className="flex items-center gap-2">
-              {/* Material vs strain. Two states, so a segmented pair reads
-                  faster than a dropdown and keeps both labels visible. */}
-              <div
-                className="flex rounded-full p-0.5"
-                style={{ background: "var(--surface-sunken)" }}
-                role="group"
-                aria-label="Mesh colouring"
-              >
-                <ModeButton
-                  active={colorMode === "color"}
-                  onClick={() => chooseColorMode("color")}
-                  icon={<Layers className="size-3.5" aria-hidden />}
-                  label="Paper"
-                  title="Colour the mesh by which side of the paper faces you"
-                />
-                <ModeButton
-                  active={colorMode === "axialStrain"}
-                  onClick={() => chooseColorMode("axialStrain")}
-                  icon={<Boxes className="size-3.5" aria-hidden />}
-                  label="Strain"
-                  title="Colour the mesh by how far the paper is stretched"
-                />
-              </div>
-
               <button
                 type="button"
                 onClick={reset}
@@ -503,34 +486,3 @@ export function Simulator({
   );
 }
 
-function ModeButton({
-  active,
-  onClick,
-  icon,
-  label,
-  title,
-}: {
-  readonly active: boolean;
-  readonly onClick: () => void;
-  readonly icon: React.ReactNode;
-  readonly label: string;
-  readonly title: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      aria-pressed={active}
-      className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition"
-      style={
-        active
-          ? { background: "var(--surface)", color: "var(--text)", boxShadow: "var(--shadow-card)" }
-          : { color: "var(--text-muted)" }
-      }
-    >
-      {icon}
-      {label}
-    </button>
-  );
-}

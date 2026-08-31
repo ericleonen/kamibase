@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
-  Box,
   ChevronDown,
   Download,
   Eraser,
@@ -68,6 +67,7 @@ import {
 } from "@/lib/editor/paper";
 import { renderDownload, DOWNLOAD_FORMATS, FORMAT_LABELS } from "@/lib/downloads";
 import { ZOOM_STEP, usePanZoom } from "@/lib/viewport/use-pan-zoom";
+import { ChecksPanel } from "./ChecksPanel";
 import { EditorCanvas, type EditorTool } from "./EditorCanvas";
 import { EDITOR_MIN_WIDTH_QUERY, EditorTooSmall } from "./EditorTooSmall";
 import { SavePatternDialog } from "./SavePatternDialog";
@@ -236,13 +236,23 @@ export function CreasePatternEditor(props: CreasePatternEditorProps) {
  */
 function Editor({
   initialDoc,
-  title,
+  title: initialTitle,
   slug,
   backHref,
   backdrop,
   signedIn = false,
 }: CreasePatternEditorProps) {
   const router = useRouter();
+  /*
+   * The name, which is the pattern's and therefore the editor's to change.
+   *
+   * It reaches the exports, the FOLD metadata and the save dialog, so it was
+   * always a piece of the document; it just had no way in. It is not in the
+   * autosave because the autosave is write-only — a draft nothing reads back —
+   * and adding a second key to a store with no restore path would be storing
+   * for the sake of it.
+   */
+  const [title, setTitle] = useState(initialTitle);
   const [history, setHistory] = useState(() => initHistory(initialDoc ?? emptyPaper()));
   const [tool, setTool] = useState<EditorTool>("draw");
   const [assignment, setAssignment] = useState<EdgeAssignment>("M");
@@ -572,15 +582,50 @@ function Editor({
         {/* The rails collapse from their own edges, not from up here: a button
             in the top bar for a panel on the left of the screen is a control
             that lives nowhere near the thing it controls. */}
-        <div className="min-w-0 flex-1">
-          <h1 className="truncate text-sm font-bold leading-tight">{title}</h1>
-          <p className="truncate text-[11px] leading-tight" style={{ color: "var(--text-muted)" }}>
+        {/*
+         * The title, editable in place.
+         *
+         * An input that wears the heading's type rather than a heading that
+         * turns into an input on click: the pencil-icon-then-modal arrangement
+         * asks somebody to find an affordance before they can do the obvious
+         * thing, and a click-to-edit heading is invisible until clicked by
+         * accident. This is a field the whole time — flat until the pointer
+         * comes near it, then a shape you can see is a field.
+         *
+         * Enter and Escape both blur, because there is nothing to submit: the
+         * name is already in the document by the time the key is pressed.
+         */}
+        {/* Capped, because the field's hover box is the field's width and a
+            box running the length of the top bar reads as a search bar. */}
+        <div className="-ml-1.5 min-w-0 flex-1 md:max-w-md">
+          <input
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === "Escape") event.currentTarget.blur();
+            }}
+            onBlur={() => setTitle((current) => current.trim() || "Untitled pattern")}
+            aria-label="Pattern title"
+            placeholder="Untitled pattern"
+            spellCheck={false}
+            /* A hairline box on hover, not just a tint: the bar is
+               `--surface-raised` and `--surface-sunken` is three units off it
+               in light mode, which is a difference nobody sees and therefore
+               not an affordance. */
+            className="w-full truncate rounded-md bg-transparent px-1.5 py-0.5 text-sm font-bold leading-tight transition hover:bg-[var(--surface-sunken)] hover:shadow-[inset_0_0_0_1px_var(--border-strong)] focus:bg-[var(--surface-sunken)]"
+          />
+          <p
+            className="truncate px-1.5 text-[11px] leading-tight"
+            style={{ color: "var(--text-muted)" }}
+          >
             {creaseCount} creases
             {saved && ` · saved ${saved}`}
           </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-1">
+        {/* `ml-auto`, because the title beside it no longer grows without
+            limit and something has to take up the slack. */}
+        <div className="ml-auto flex shrink-0 items-center gap-1">
           <IconButton
             label="Undo (⌘Z)"
             Icon={Undo2}
@@ -598,21 +643,13 @@ function Editor({
           <ExportMenu onPick={download} />
 
           {/*
-           * Fold and Save, in that order, and only one of them filled in.
-           * Folding is what you do while drawing and saving is what you do
-           * when you have finished, so saving is the end of the row and the
-           * one that looks like the end.
+           * "Fold in 3D" used to sit here, next to Save. It did exactly what
+           * clicking the live 3D preview in the right rail does, and two
+           * controls for one action in a bar this small is a bar that reads as
+           * longer than it is. The preview is the better of the two: it is
+           * already showing the fold, so it is obviously the thing to press to
+           * see more of it.
            */}
-          <button
-            type="button"
-            onClick={openSimulation}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-bold transition hover:opacity-70"
-            style={{ border: "1px solid var(--border-strong)" }}
-          >
-            <Box className="size-4" aria-hidden />
-            <span className="hidden sm:inline">Fold in 3D</span>
-          </button>
-
           <button
             type="button"
             onClick={() => setSaving(true)}
@@ -869,41 +906,13 @@ function Editor({
           onResize={setRightWidth}
           /* No `onToggle`: this one does not close. See the note above. */
         >
-          <Field label={stale ? "Checks · updating" : "Checks"}>
-            <div className="rounded-xl p-3 text-xs" style={{ background: "var(--surface-sunken)" }}>
-              {analysis.skipped ? (
-                <p style={{ color: "var(--text-muted)" }}>
-                  Paused above {LIVE_ANALYSIS_EDGE_LIMIT} creases.
-                </p>
-              ) : (
-                <ul className="space-y-1">
-                  <li>
-                    {analysis.errorCount === 0
-                      ? "No structural defects"
-                      : count(analysis.errorCount, "structural defect")}
-                  </li>
-                  {analysis.warningCount > 0 && (
-                    <li>{count(analysis.warningCount, "warning")}</li>
-                  )}
-                  <li>{count(analysis.faceCount, "face")}</li>
-                  <li>{flatFoldabilityLine(analysis)}</li>
-                </ul>
-              )}
-              {analysis.defects.length > 0 && (
-                <ul className="mt-2.5 space-y-1.5" style={{ color: "var(--text-muted)" }}>
-                  {analysis.defects.slice(0, 4).map((defect, index) => (
-                    <li key={`${defect.code}-${index}`}>
-                      <strong style={{ color: "var(--text)" }}>{defect.rule}</strong>{" "}
-                      {defect.message}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            <Check
-              label="Mark the vertices that fail"
-              checked={showMarks}
-              onChange={setShowMarks}
+          <Field label="Checks">
+            <ChecksPanel
+              analysis={analysis}
+              stale={stale}
+              empty={creaseCount === 0}
+              showMarks={showMarks}
+              onShowMarksChange={setShowMarks}
             />
           </Field>
 
@@ -989,19 +998,6 @@ function Editor({
       )}
     </div>
   );
-}
-
-/** "1 face", "4 faces". A panel of counts reads as sloppy without it. */
-function count(quantity: number, noun: string): string {
-  return `${quantity} ${quantity === 1 ? noun : `${noun}s`}`;
-}
-
-function flatFoldabilityLine(analysis: ReturnType<typeof analyse>): string {
-  if (analysis.flatFoldable) return "Locally flat-foldable";
-  const failing = analysis.vertexMarks.filter((mark) => !mark.ok).length;
-  return failing === 1
-    ? "1 vertex fails Maekawa or Kawasaki"
-    : `${failing} vertices fail Maekawa or Kawasaki`;
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -1609,23 +1605,3 @@ function NumberField({
   );
 }
 
-function Check({
-  label,
-  checked,
-  onChange,
-}: {
-  readonly label: string;
-  readonly checked: boolean;
-  readonly onChange: (checked: boolean) => void;
-}) {
-  return (
-    <label className="flex items-center gap-2 text-xs">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(event) => onChange(event.target.checked)}
-      />
-      {label}
-    </label>
-  );
-}

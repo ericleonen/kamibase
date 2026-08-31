@@ -70,9 +70,6 @@ export class KamiSimError extends Error {
   }
 }
 
-/** How the mesh is coloured: by paper side, or by how hard the paper is strained. */
-export type ColorMode = "color" | "axialStrain";
-
 /** The camera presets the simulator exposes. */
 export type CameraView = "iso" | "x" | "y" | "z";
 
@@ -118,8 +115,6 @@ export interface KamiSimHandle {
   setFoldAmount(amount: number): void;
   /** Run or pause the solver. */
   setRunning(running: boolean): void;
-  /** Colour the mesh by material or by axial strain. */
-  setColorMode(mode: ColorMode): void;
   /**
    * The two sides of the paper, as `#rrggbb`.
    *
@@ -324,12 +319,6 @@ function createHandle(iframe: HTMLIFrameElement, targetOrigin: string): KamiSimH
         // itself; assigning it directly would desync the animation loop.
         if (running) globals.threeView?.startSimulation?.();
         else globals.threeView?.pauseSimulation?.();
-      });
-    },
-
-    setColorMode(mode: ColorMode): void {
-      withGlobals((globals) => {
-        globals.colorMode = mode;
       });
     },
 

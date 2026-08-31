@@ -4,7 +4,6 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Expand, Shrink } from "lucide-react";
 import { KAMIBASE_DISPLAY_PALETTE, type EdgeAssignment } from "@kamibase/core";
 import { ZoomControls } from "@/components/viewport/ZoomControls";
-import { useModifierLabel } from "@/lib/viewport/platform";
 import { ZOOM_STEP, usePanZoom } from "@/lib/viewport/use-pan-zoom";
 
 const LAYERS: { key: EdgeAssignment; label: string }[] = [
@@ -39,15 +38,15 @@ export interface CreasePatternViewerProps {
    * A square filling its column is the right default for a browsing surface
    * and the wrong one inside a reading column, where 48rem square is the whole
    * screen on a laptop. The pattern is fitted into whatever box it is given and
-   * letterboxes rather than stretching, so capping the height costs nothing but
+   * letterboxes rather than stretching, so capping the size costs nothing but
    * some side margin.
    */
   readonly frameClassName?: string;
 }
 
 /**
- * The crease pattern viewer from DESIGN.md §8.3: pan, zoom, layer toggles for
- * M/V/B, and print-to-scale.
+ * The crease pattern viewer from DESIGN.md §8.3: layer toggles for M/V/B,
+ * print-to-scale, and pan and zoom once it has the screen.
  *
  * The SVG itself is rendered on the server by `@kamibase/core`, the same
  * renderer that makes thumbnails at ingest. This component only handles
@@ -55,17 +54,15 @@ export interface CreasePatternViewerProps {
  * assignment with `data-assignment`, so hiding a layer is one CSS rule rather
  * than a re-render.
  *
- * The interaction model is deliberately the one every map and design tool
- * shares, and it is chosen around the fact that this viewer lives *inside a
- * scrolling page*:
- *
- *   - a plain scroll belongs to the page, always. A canvas that eats the wheel
- *     turns a pattern into a scroll trap.
- *   - ctrl/⌘+scroll, and trackpad pinch, zoom about the pointer.
- *   - drag with a mouse pans; one finger scrolls the page and two fingers pan
- *     and pinch, which is what a phone user expects from an embedded map.
- *   - fullscreen hands the whole viewport over, and only then does a plain
- *     scroll pan the canvas, because there is no longer a page behind it.
+ * On the page it is a picture, not a canvas. It used to pan and zoom in place,
+ * which meant a viewer sitting in a scrolling page had to negotiate with the
+ * page for every gesture: a plain scroll belonged to the page but ctrl+scroll
+ * did not, a drag panned but a touch-drag scrolled, and the whole arrangement
+ * needed a floating zoom pill and a tooltip explaining the modifier. Nobody
+ * arrives at a pattern wanting to pan it eight pixels. They want to see it, and
+ * then some of them want to see it big. So: fitted in its box, inert, with one
+ * button — and everything the canvas could do is waiting on the other side of
+ * it, where there is no page left to argue with.
  */
 export function CreasePatternViewer({
   svg,
@@ -79,11 +76,7 @@ export function CreasePatternViewer({
   /** True in real fullscreen *or* the CSS fallback, which iOS Safari needs. */
   const [expanded, setExpanded] = useState(false);
   const [overlay, setOverlay] = useState(false);
-  /** "⌘+scroll to zoom", shown only to someone who just tried a plain scroll. */
-  const [hint, setHint] = useState(false);
-  const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const frame = useRef<HTMLDivElement | null>(null);
-  const modifier = useModifierLabel();
 
   const panZoom = usePanZoom({
     contentWidth: CONTENT,
@@ -91,9 +84,10 @@ export function CreasePatternViewer({
     padding: 8,
     minZoom: 0.4,
     maxZoom: 24,
-    // Only once the viewer owns the screen does a plain scroll belong to it.
+    // Every gesture is the viewer's, because by the time any of them are
+    // listened to there is no page behind it to take one.
     capturePlainWheel: expanded,
-    dragToPan: true,
+    dragToPan: expanded,
     touch: expanded ? "capture" : "page",
   });
 
@@ -138,6 +132,14 @@ export function CreasePatternViewer({
     return () => window.removeEventListener("keydown", onKey);
   }, [overlay]);
 
+  // Opening the viewer starts it fitted rather than wherever the last visit
+  // left it, and the measurement it fits to is the screen it just took.
+  useEffect(() => {
+    if (!expanded) return;
+    const id = requestAnimationFrame(() => fit());
+    return () => cancelAnimationFrame(id);
+  }, [expanded, fit]);
+
   const toggleExpanded = useCallback(() => {
     if (document.fullscreenElement) {
       void document.exitFullscreen();
@@ -166,17 +168,9 @@ export function CreasePatternViewer({
     setExpanded(true);
   }, [overlay]);
 
-  const flashHint = useCallback(() => {
-    setHint(true);
-    if (hintTimer.current) clearTimeout(hintTimer.current);
-    hintTimer.current = setTimeout(() => setHint(false), 1400);
-  }, []);
-  useEffect(() => () => {
-    if (hintTimer.current) clearTimeout(hintTimer.current);
-  }, []);
-
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
+      if (!expanded) return;
       const step = event.shiftKey ? KEY_PAN * 4 : KEY_PAN;
       const pan = (dx: number, dy: number): void => {
         event.preventDefault();
@@ -213,14 +207,25 @@ export function CreasePatternViewer({
           break;
       }
     },
-    [fit, panZoom],
+    [expanded, fit, panZoom],
   );
 
   const hiddenRules = [...hidden]
     .map((key) => `#${styleId} [data-assignment="${key}"]{display:none}`)
     .join("");
 
-  const cursor = panZoom.panning ? "grabbing" : "grab";
+  /* The picture. One node, drawn two ways: fitted to its box on the page, and
+     inside a pan layer that is 1000px square once the viewer owns the screen.
+     Both letterbox rather than stretch. */
+  const picture = (
+    <div
+      id={styleId}
+      role="img"
+      aria-label={`Crease pattern for ${title}`}
+      className="size-full [&>svg]:h-full [&>svg]:w-full"
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  );
 
   return (
     /*
@@ -238,9 +243,11 @@ export function CreasePatternViewer({
 
       <div
         ref={setFrame}
-        tabIndex={0}
-        aria-label={`Crease pattern for ${title}. Drag to pan, ctrl or command and scroll to zoom.`}
-        className={`print-sheet relative touch-pan-y overflow-hidden border outline-none ${
+        {...(expanded ? { tabIndex: 0 } : {})}
+        {...(expanded
+          ? { "aria-label": `Crease pattern for ${title}. Drag to pan, scroll to zoom.` }
+          : {})}
+        className={`print-sheet relative overflow-hidden border outline-none ${
           overlay ? "fixed inset-0 z-50 h-[100dvh] w-screen rounded-none" : ""
         } ${expanded && !overlay ? "h-screen w-screen rounded-none" : ""} ${
           expanded ? "" : `${frameClassName} rounded-[var(--radius-card)]`
@@ -250,78 +257,65 @@ export function CreasePatternViewer({
           // Paper, not a card: the crease colours only read on white. See
           // the note at the top of globals.css.
           background: "var(--paper)",
-          cursor,
-          touchAction: expanded ? "none" : "pan-y",
+          ...(expanded
+            ? { cursor: panZoom.panning ? "grabbing" : "grab", touchAction: "none" }
+            : {}),
           ...(printSizeMm ? { ["--print-size-mm" as string]: `${printSizeMm}mm` } : {}),
         }}
-        onPointerDown={panZoom.onPointerDown}
-        onPointerMove={panZoom.onPointerMove}
-        onPointerUp={panZoom.onPointerUp}
-        onPointerCancel={panZoom.onPointerUp}
-        onKeyDown={onKeyDown}
-        onDoubleClick={(event) => {
-          panZoom.zoomBy(event.altKey ? 1 / 2 : 2, {
-            x: event.clientX - (frame.current?.getBoundingClientRect().left ?? 0),
-            y: event.clientY - (frame.current?.getBoundingClientRect().top ?? 0),
-          });
-        }}
-        onWheel={(event) => {
-          // The hook has already decided; this only explains the decision.
-          if (!expanded && !event.ctrlKey && !event.metaKey) flashHint();
-        }}
+        {...(expanded
+          ? {
+              onPointerDown: panZoom.onPointerDown,
+              onPointerMove: panZoom.onPointerMove,
+              onPointerUp: panZoom.onPointerUp,
+              onPointerCancel: panZoom.onPointerUp,
+              onKeyDown,
+              onDoubleClick: (event: React.MouseEvent) => {
+                panZoom.zoomBy(event.altKey ? 1 / 2 : 2, {
+                  x: event.clientX - (frame.current?.getBoundingClientRect().left ?? 0),
+                  y: event.clientY - (frame.current?.getBoundingClientRect().top ?? 0),
+                });
+              },
+            }
+          : {})}
       >
-        <div
-          className="kami-pan-layer absolute left-0 top-0 origin-top-left"
-          style={{
-            width: CONTENT,
-            height: CONTENT,
-            transform: panZoom.cssTransform,
-            willChange: "transform",
-          }}
-        >
+        {expanded ? (
           <div
-            id={styleId}
-            role="img"
-            aria-label={`Crease pattern for ${title}`}
-            className="size-full [&>svg]:h-full [&>svg]:w-full"
-            dangerouslySetInnerHTML={{ __html: svg }}
-          />
-        </div>
-
-        <div className="print-hidden pointer-events-none absolute inset-x-0 top-3 flex justify-center px-3">
-          <div
-            className={`pointer-events-none rounded-full px-3 py-1.5 text-xs font-semibold transition-opacity duration-200 ${
-              hint ? "opacity-100" : "opacity-0"
-            }`}
-            style={{ background: "var(--ink)", color: "var(--surface)" }}
-            aria-hidden
+            className="kami-pan-layer absolute left-0 top-0 origin-top-left"
+            style={{
+              width: CONTENT,
+              height: CONTENT,
+              transform: panZoom.cssTransform,
+              willChange: "transform",
+            }}
           >
-            Hold {modifier} and scroll to zoom
+            {picture}
           </div>
-        </div>
+        ) : (
+          <div className="kami-fit-layer absolute inset-2">{picture}</div>
+        )}
 
-        <ZoomControls
-          className="print-hidden absolute bottom-3 right-3"
-          zoom={panZoom.zoom}
-          onZoomIn={() => panZoom.zoomBy(ZOOM_STEP)}
-          onZoomOut={() => panZoom.zoomBy(1 / ZOOM_STEP)}
-          onFit={fit}
-        >
-          <button
-            type="button"
-            onClick={toggleExpanded}
-            title={expanded ? "Exit fullscreen" : "Fullscreen"}
-            aria-label={expanded ? "Exit fullscreen" : "Fullscreen"}
-            className="flex size-8 items-center justify-center rounded-full transition hover:opacity-60"
-            style={{ color: "var(--text-muted)" }}
+        {expanded ? (
+          <ZoomControls
+            className="print-hidden absolute bottom-4 right-4"
+            zoom={panZoom.zoom}
+            onZoomIn={() => panZoom.zoomBy(ZOOM_STEP)}
+            onZoomOut={() => panZoom.zoomBy(1 / ZOOM_STEP)}
+            onFit={fit}
           >
-            {expanded ? (
+            <FrameButton label="Exit fullscreen" onClick={toggleExpanded}>
               <Shrink className="size-4" aria-hidden />
-            ) : (
+            </FrameButton>
+          </ZoomControls>
+        ) : (
+          <div
+            className="print-hidden absolute bottom-3 right-3 rounded-full p-1"
+            style={{ background: "var(--surface-raised)", boxShadow: "var(--shadow-card)" }}
+          >
+            <FrameButton label="View full screen" onClick={toggleExpanded}>
               <Expand className="size-4" aria-hidden />
-            )}
-          </button>
-        </ZoomControls>
+            </FrameButton>
+          </div>
+        )}
       </div>
 
       <figcaption className="print-hidden mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
@@ -364,3 +358,25 @@ export function CreasePatternViewer({
   );
 }
 
+function FrameButton({
+  label,
+  onClick,
+  children,
+}: {
+  readonly label: string;
+  readonly onClick: () => void;
+  readonly children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={label}
+      aria-label={label}
+      className="flex size-8 items-center justify-center rounded-full transition hover:opacity-60"
+      style={{ color: "var(--text-muted)" }}
+    >
+      {children}
+    </button>
+  );
+}
