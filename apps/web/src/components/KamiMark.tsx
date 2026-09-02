@@ -1,5 +1,6 @@
 import { KAMIBASE_DISPLAY_PALETTE } from "@kamibase/core";
 import {
+  LOGO_GLYPH_STROKE,
   LOGO_GRID,
   LOGO_LETTER,
   LOGO_STROKE,
@@ -11,16 +12,6 @@ import {
 const BOX = 100;
 const UNIT = BOX / LOGO_GRID;
 const STROKE = LOGO_STROKE * UNIT;
-
-/*
- * The glyph is drawn heavier than the mark.
- *
- * In the tile the letter is one thing on a sheet of paper and reads at a weight
- * a crease would have. Set inside a word, it has to match the type around it,
- * and the wordmark is 900: a black sans carries stems at roughly a fifth of its
- * cap height, which over the letter's seven grid units is about 1.5.
- */
-const LOGO_GLYPH_STROKE = 1.5;
 
 /**
  * The mark: a K on a sheet of gridded paper.

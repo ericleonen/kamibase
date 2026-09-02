@@ -53,8 +53,27 @@ export class SupabasePatternRepository implements PatternRepository {
     const row = data as unknown as SummaryRow & { document: unknown };
     // Graded from the stored document rather than from the row's own counts:
     // the document is the source of truth, and `patternFromDocument` is the
-    // same path a seeded file takes.
-    return patternFromDocument(row.slug, row.document as KamiDocument);
+    // same path a seeded file takes. The author is the one fact about a saved
+    // pattern that is not in the document, so it is carried across by hand.
+    return { ...patternFromDocument(row.slug, row.document as KamiDocument), authorId: row.author_id };
+  }
+
+  async listByAuthor(authorId: string): Promise<readonly PatternSummary[]> {
+    const supabase = createPublicClient();
+    if (!supabase) return [];
+
+    const { data, error } = await supabase
+      .from("patterns")
+      .select(SUMMARY_COLUMNS)
+      .eq("author_id", authorId)
+      .order("created_at", { ascending: false })
+      .limit(LIST_LIMIT);
+
+    if (error || !data) {
+      report("listByAuthor", error);
+      return [];
+    }
+    return (data as unknown as SummaryRow[]).map(rowToSummary);
   }
 }
 
@@ -71,6 +90,7 @@ const LIST_LIMIT = 500;
 
 const SUMMARY_COLUMNS = [
   "slug",
+  "author_id",
   "title",
   "designer",
   "description",
@@ -90,6 +110,7 @@ const SUMMARY_COLUMNS = [
 
 interface SummaryRow {
   slug: string;
+  author_id: string;
   title: string;
   designer: string;
   description: string;
@@ -117,6 +138,7 @@ interface SummaryRow {
 function rowToSummary(row: SummaryRow): PatternSummary {
   return {
     id: row.slug,
+    authorId: row.author_id,
     title: row.title,
     designer: row.designer === "" ? "Unknown" : row.designer,
     ...(row.description === "" ? {} : { description: row.description }),

@@ -202,9 +202,9 @@ export function DeleteAccountForm() {
   return (
     <form action={formAction} className="space-y-3">
       <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-        Your profile, your folds and your comments go with it, and none of it
-        can be brought back. Patterns you saved to the library stay, because
-        other people may have folded from them.
+        Your profile, your folds, your comments and the patterns you saved go
+        with it, and none of it can be brought back. Export anything you want
+        to keep first: every pattern's page has a .kami download.
       </p>
       <label className="block">
         <span className="mb-1 block text-xs font-medium" style={{ color: "var(--text-muted)" }}>

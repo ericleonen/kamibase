@@ -41,4 +41,11 @@ export class CompositePatternRepository implements PatternRepository {
     }
     return null;
   }
+
+  async listByAuthor(authorId: string): Promise<readonly PatternSummary[]> {
+    const lists = await Promise.all(this.#stores.map((store) => store.listByAuthor(authorId)));
+    // Newest first, which each store already answers with and which is the
+    // order somebody looking at their own work expects.
+    return lists.flat();
+  }
 }

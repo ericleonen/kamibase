@@ -295,17 +295,34 @@ export function CreasePatternViewer({
         )}
 
         {expanded ? (
-          <ZoomControls
+          /*
+           * The controls take their own pointer events out of the canvas's
+           * hands, and this is not a nicety.
+           *
+           * A press anywhere in the frame starts a pan, and starting a pan
+           * means `setPointerCapture` on the frame. Once the frame holds the
+           * capture the pointerup is retargeted to it, so the browser fires the
+           * `click` at the frame rather than at whatever was under the finger —
+           * and every button inside, the way out of fullscreen included, stops
+           * responding. Stopping the press here means no capture is taken, so
+           * the click lands where it was aimed.
+           */
+          <div
             className="print-hidden absolute bottom-4 right-4"
-            zoom={panZoom.zoom}
-            onZoomIn={() => panZoom.zoomBy(ZOOM_STEP)}
-            onZoomOut={() => panZoom.zoomBy(1 / ZOOM_STEP)}
-            onFit={fit}
+            onPointerDown={(event) => event.stopPropagation()}
+            onDoubleClick={(event) => event.stopPropagation()}
           >
-            <FrameButton label="Exit fullscreen" onClick={toggleExpanded}>
-              <Shrink className="size-4" aria-hidden />
-            </FrameButton>
-          </ZoomControls>
+            <ZoomControls
+              zoom={panZoom.zoom}
+              onZoomIn={() => panZoom.zoomBy(ZOOM_STEP)}
+              onZoomOut={() => panZoom.zoomBy(1 / ZOOM_STEP)}
+              onFit={fit}
+            >
+              <FrameButton label="Exit fullscreen" onClick={toggleExpanded}>
+                <Shrink className="size-4" aria-hidden />
+              </FrameButton>
+            </ZoomControls>
+          </div>
         ) : (
           <div
             className="print-hidden absolute bottom-3 right-3 rounded-full p-1"

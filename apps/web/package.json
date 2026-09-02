@@ -10,6 +10,7 @@
     "vercel-build": "bash scripts/vercel-build.sh",
     "start": "next start --port 3000",
     "seed": "tsx scripts/seed-patterns.ts",
+    "icon": "tsx scripts/write-icon.ts",
     "vendor:simulator": "bash scripts/vendor-simulator.sh",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"

@@ -3,11 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Link2, Pencil } from "lucide-react";
 import { Avatar } from "@/components/social/Avatar";
+import { DeletePatternButton } from "@/components/DeletePatternButton";
+import { PatternCard } from "@/components/PatternCard";
 import { FoldGrid } from "@/components/social/FoldCard";
 import { FollowButton } from "@/components/social/FollowButton";
 import { SocialNotice } from "@/components/social/SocialNotice";
 import { getAccountSettings } from "@/lib/social/account";
-import { patternTitles } from "@/lib/patterns";
+import { patternTitles, patterns } from "@/lib/patterns";
 import {
   compactCount,
   getProfileByHandle,
@@ -78,11 +80,12 @@ export default async function ProfilePage({
   if (!result.data) notFound();
 
   const profile = result.data;
-  const [user, stats, folds, titles] = await Promise.all([
+  const [user, stats, folds, titles, saved] = await Promise.all([
     getCurrentUser(),
     getProfileStats(profile.id),
     listFoldsByAuthor(profile.id),
     patternTitles(),
+    patterns.listByAuthor(profile.id),
   ]);
 
   const isSelf = user?.id === profile.id;
@@ -161,6 +164,35 @@ export default async function ProfilePage({
           />
         )}
       </header>
+
+      {/*
+       * Patterns before folds, on a profile that has any.
+       *
+       * A fold is a photograph of one evening; a crease pattern is a design
+       * other people can build from, and it is the thing this site is for. It
+       * is also, on your own profile, the only place your saved patterns are
+       * gathered — which is what makes deleting one something you can find
+       * rather than something you have to remember a URL for.
+       *
+       * Not hidden behind the private-account gate. Row-level security keeps
+       * folds private; patterns are public by policy (0002_patterns.sql),
+       * because a pattern nobody can see is not on a pattern hub.
+       */}
+      {saved.length > 0 && (
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold tracking-tight">Patterns</h2>
+          <div className="pattern-grid">
+            {saved.map((pattern) => (
+              <div key={pattern.id} className="space-y-2">
+                <PatternCard pattern={pattern} />
+                {isSelf && (
+                  <DeletePatternButton slug={pattern.id} title={pattern.title} />
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="space-y-4">
         <h2 className="text-lg font-semibold tracking-tight">Folds</h2>

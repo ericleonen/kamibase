@@ -1,9 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1.56 -1.56 35.12 35.12">
-  <rect x="0" y="0" width="32" height="32" rx="5.8" fill="#ffffff"/>
-  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path stroke="#e6e5e1" stroke-width="0.62" d="M4.0 0V32M0 4.0H32 M8.0 0V32M0 8.0H32 M12.0 0V32M0 12.0H32 M16.0 0V32M0 16.0H32 M20.0 0V32M0 20.0H32 M24.0 0V32M0 24.0H32 M28.0 0V32M0 28.0H32"/>
-    <path stroke="#d93b30" stroke-width="3.12" d="M8.0 30.0L8.0 2.0"/>
-    <path stroke="#2b62d9" stroke-width="3.12" d="M28.0 2.0L8.0 16.0L28.0 30.0"/>
-    <rect x="0" y="0" width="32" height="32" rx="5.8" stroke="#26241f" stroke-width="0.94"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="5.76" fill="#ffffff"/>
+  <g transform="translate(2.447 3.953) scale(0.241)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke="#e6e5e1" stroke-width="3" d="M15.63 12.50H96.88 M25.00 -3.13V103.13 M15.63 25.00H96.88 M37.50 -3.13V103.13 M15.63 37.50H96.88 M50.00 -3.13V103.13 M15.63 50.00H96.88 M62.50 -3.13V103.13 M15.63 62.50H96.88 M75.00 -3.13V103.13 M15.63 75.00H96.88 M87.50 -3.13V103.13 M15.63 87.50H96.88"/>
+    <path stroke="#d93b30" stroke-width="18.75" d="M25.00 93.75L25.00 6.25"/>
+    <path stroke="#2b62d9" stroke-width="18.75" d="M87.50 6.25L25.00 50.00L87.50 93.75"/>
   </g>
 </svg>

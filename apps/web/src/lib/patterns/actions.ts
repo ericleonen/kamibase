@@ -126,3 +126,65 @@ export async function savePatternAction(
   revalidatePath(`/p/${saved}`);
   redirect(`/p/${saved}`);
 }
+
+/**
+ * Unsaving one.
+ *
+ * The row goes and nothing else does. Two things reference a pattern by slug
+ * rather than by key — folds and comments — and the difference between them is
+ * whose work they are. A fold is somebody's photograph of paper they folded,
+ * with their caption on it, and deleting a pattern is not permission to delete
+ * that; it keeps its page and falls back to showing the slug where the title
+ * was. Comments were written *about* the pattern and become unreachable with
+ * it, which is the same as gone without needing a policy that lets one person
+ * delete another's writing.
+ *
+ * Ownership is checked twice on purpose. The `author_id` filter is what makes
+ * the intent legible here, and the "a user deletes their own patterns" policy
+ * in 0002_patterns.sql is what actually enforces it — a filter in application
+ * code is a comment as far as the database is concerned.
+ *
+ * The seeded library has no rows, so there is nothing here that can delete a
+ * `.kami` file committed to the repository, whoever asks.
+ */
+export async function deletePatternAction(
+  _previous: SaveState,
+  formData: FormData,
+): Promise<SaveState> {
+  const slug = field(formData, "slug");
+  if (slug === "") return { error: "No pattern was named." };
+
+  const profile = await ensureProfile();
+  if (!profile.ok) return { error: profile.message };
+
+  const supabase = await socialClient();
+  if (!supabase) return { error: socialFailureMessage("unconfigured") };
+
+  const { data, error } = await supabase
+    .from("patterns")
+    .delete()
+    .eq("slug", slug)
+    .eq("author_id", profile.data.id)
+    .select("slug");
+
+  if (error) {
+    return {
+      error: reportedMessage(
+        error,
+        classifySupabaseError(error),
+        "Could not delete that pattern.",
+      ),
+    };
+  }
+  // No error and no row means the pattern is not theirs, or is a seeded file,
+  // or was deleted a moment ago in another tab. All three are the same answer.
+  if (!data || data.length === 0) {
+    return { error: "That pattern is not yours to delete." };
+  }
+
+  revalidatePath("/explore");
+  revalidatePath("/");
+  revalidatePath(`/p/${slug}`);
+  revalidatePath(`/u/${profile.data.handle}`);
+  redirect(`/u/${profile.data.handle}`);
+}

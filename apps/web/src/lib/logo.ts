@@ -55,6 +55,17 @@ export const LOGO_LETTER = {
 export const LOGO_STROKE = 0.78;
 
 /**
+ * The heavier weight, for the letter set as a glyph.
+ *
+ * In the tile the K is one thing on a sheet of paper and reads at a weight a
+ * crease would have. Standing in for a letter — in the wordmark, or alone in a
+ * browser tab — it has to read as type: a black sans carries stems at roughly a
+ * fifth of its cap height, which over the letter's seven grid units is about
+ * 1.5. Twice the tile's weight, which is what "thicker" means here.
+ */
+export const LOGO_GLYPH_STROKE = 1.5;
+
+/**
  * The letter as two SVG paths, in a box `size` across with y down.
  *
  * Two rather than four, because the arm and the leg are one polyline through
@@ -124,3 +135,89 @@ export function logoGridLinesIn(size: number, rect: Rect): readonly string[] {
   }
   return lines;
 }
+
+/**
+ * The letter's ink box at a given stroke weight, in a `size` box, y down.
+ *
+ * "Ink" rather than "stem": the round caps on the stem's ends and the arm's
+ * tips stick out half a stroke past the geometry, and a box drawn to the
+ * geometry clips them. `KamiK` deliberately wants the *stem* box instead, so
+ * the stem's end lands on the text baseline — see the note there.
+ */
+export function logoInkBox(size: number, strokeUnits: number): Rect {
+  const unit = size / LOGO_GRID;
+  const half = (strokeUnits * unit) / 2;
+  const { stemX, stemBottom, stemTop, armX } = LOGO_LETTER;
+  return {
+    left: stemX * unit - half,
+    top: (LOGO_GRID - stemTop) * unit - half,
+    right: armX * unit + half,
+    bottom: (LOGO_GRID - stemBottom) * unit + half,
+  };
+}
+
+/**
+ * The favicon, as an SVG document.
+ *
+ * A tab icon is sixteen pixels of somebody's peripheral vision, so it is the
+ * glyph rather than the tile: cropped to the letter's own ink, at the glyph's
+ * heavier weight, scaled until it nearly fills the square. The tile version
+ * that used to be here spent a third of its width on the paper's margin and a
+ * quarter of its weight on a border, and what survived to sixteen pixels was a
+ * grey box with something in it.
+ *
+ * What stays from the tile is the sheet: a rounded white card, so the mark has
+ * a shape of its own against a dark tab strip as well as a light one, and the
+ * ruled grid, which costs nothing and is the reason the letter looks like it
+ * came from this site. Both are fixed colours rather than themed — a favicon
+ * has no page to take a theme from.
+ *
+ * Generated rather than drawn so the letter cannot drift from `LOGO_LETTER`;
+ * `test/logo.test.ts` holds the checked-in `icon.svg` to this output.
+ */
+export function logoFaviconSvg(): string {
+  const BOX = 32;
+  /** White around the letter, so it is a mark on a card and not a full bleed. */
+  const PADDING = 3.2;
+  const RADIUS = BOX * 0.18;
+
+  // Draw in a 100-unit space and scale the whole thing down, so the numbers
+  // below are the same ones `KamiMark` works in.
+  const DRAW = 100;
+  const ink = logoInkBox(DRAW, LOGO_GLYPH_STROKE);
+  const width = ink.right - ink.left;
+  const height = ink.bottom - ink.top;
+
+  const scale = (BOX - 2 * PADDING) / Math.max(width, height);
+  const dx = (BOX - width * scale) / 2 - ink.left * scale;
+  const dy = (BOX - height * scale) / 2 - ink.top * scale;
+
+  const stroke = (LOGO_GLYPH_STROKE * DRAW) / LOGO_GRID;
+  const paths = logoPaths(DRAW);
+  const fix = (value: number): string => Number(value.toFixed(3)).toString();
+  const grid = logoGridLinesIn(DRAW, ink).join(" ");
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${BOX} ${BOX}">
+  <rect width="${BOX}" height="${BOX}" rx="${fix(RADIUS)}" fill="${PAPER}"/>
+  <g transform="translate(${fix(dx)} ${fix(dy)}) scale(${fix(scale)})" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke="${PAPER_LINE}" stroke-width="${fix(stroke * 0.16)}" d="${grid}"/>
+    <path stroke="${MOUNTAIN}" stroke-width="${fix(stroke)}" d="${paths.stem}"/>
+    <path stroke="${VALLEY}" stroke-width="${fix(stroke)}" d="${paths.wedge}"/>
+  </g>
+</svg>
+`;
+}
+
+/*
+ * The favicon's palette, spelled out.
+ *
+ * `KAMIBASE_DISPLAY_PALETTE` lives in `@kamibase/core` and these are its
+ * mountain and valley; they are repeated as literals because this function is
+ * run by a build script as well as by the app, and dragging the core package
+ * into a script that writes one file is not a trade worth making. The test
+ * pins them to the palette so a change there is not silently ignored here.
+ */
+const MOUNTAIN = "#d93b30";
+const VALLEY = "#2b62d9";
+const PAPER = "#ffffff";
+const PAPER_LINE = "#e6e5e1";

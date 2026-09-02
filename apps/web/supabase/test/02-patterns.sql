@@ -144,6 +144,18 @@ delete from public.patterns where slug = 'someone-elses';
 select 'ok: deleting another user''s pattern removed ' || count(*)::text || ' rows'
 from public.patterns where slug = 'someone-elses' having count(*) = 1;
 
+-- And your own goes, which is the half of the policy the app's delete button
+-- depends on. Asserted here rather than only in the negative, because a policy
+-- that refuses everybody passes every test above.
+insert into public.patterns
+  (slug, author_id, title, license, document, content_hash, level)
+values
+  ('mine-to-delete', '11111111-1111-1111-1111-111111111111', 'Mine',
+   'CC0-1.0', :'doc'::jsonb, :'hash', 'L1');
+delete from public.patterns where slug = 'mine-to-delete';
+select 'ok: deleting your own pattern removed it'
+from public.patterns where slug = 'mine-to-delete' having count(*) = 0;
+
 -- A logged-out visitor reads every pattern and writes none.
 set role anon;
 set test.uid = '';
