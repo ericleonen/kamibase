@@ -135,3 +135,93 @@ export function patternRow(input: {
     valley_count: summary.valleyCount,
   };
 }
+
+/**
+ * The metadata columns, from a filled-in form.
+ *
+ * The subset of {@link PatternRow} an edit may touch: what a person typed, and
+ * nothing derived from geometry. `slug` is not here either, and that is the
+ * point — a title can change, a URL cannot, because folds reference a pattern
+ * by slug and somebody has already sent that link to somebody else.
+ */
+export type PatternMetadataRow = Pick<
+  PatternRow,
+  "title" | "designer" | "description" | "license" | "difficulty" | "tags"
+>;
+
+export function patternMetadataRow(draft: PatternDraft): PatternMetadataRow {
+  return {
+    title: draft.title,
+    designer: draft.designer,
+    description: draft.description,
+    license: draft.license,
+    difficulty: draft.difficulty ?? null,
+    tags: [...draft.tags],
+  };
+}
+
+/**
+ * The same edit, applied to the `.kami` document.
+ *
+ * Both, and not one or the other, because both are read. The columns are what
+ * a listing sorts and filters on; the document is what `/p/:slug` renders from
+ * and what the `.kami` download hands over, and `patternFromDocument` reads its
+ * title out of `file_title` rather than out of the row. Writing only the
+ * columns renames a pattern everywhere except on its own page.
+ *
+ * The geometry is untouched, so `kami:contentHash` still describes it. That is
+ * the whole reason a metadata edit is a different operation from a save: two
+ * copies of the same creases under different names are still the same creases,
+ * and the hash is what says so.
+ */
+export function withMetadata(document: KamiDocument, draft: PatternDraft): KamiDocument {
+  const next: Record<string, unknown> = { ...document };
+  const taxonomy = asRecord(next["kami:taxonomy"]);
+  const provenance = asRecord(next["kami:provenance"]);
+
+  next["file_title"] = draft.title;
+  if (draft.description === "") delete next["file_description"];
+  else next["file_description"] = draft.description;
+
+  // `file_author` is FOLD's own field and stays in step with ours, so a file
+  // opened in another tool shows the same name.
+  if (draft.designer === "") {
+    delete next["file_author"];
+    next["kami:provenance"] = omit(provenance, "designer");
+  } else {
+    next["file_author"] = draft.designer;
+    next["kami:provenance"] = { ...provenance, designer: draft.designer };
+  }
+  if (Object.keys(next["kami:provenance"] as object).length === 0) {
+    delete next["kami:provenance"];
+  }
+
+  next["kami:license"] = licenseTerms(draft.license);
+
+  const difficulty = asRecord(next["kami:difficulty"]);
+  const withRating =
+    draft.difficulty === undefined
+      ? omit(difficulty, "rating")
+      : { ...difficulty, rating: draft.difficulty };
+  if (Object.keys(withRating).length === 0) delete next["kami:difficulty"];
+  else next["kami:difficulty"] = withRating;
+
+  const withTags =
+    draft.tags.length === 0
+      ? omit(taxonomy, "tags")
+      : { ...taxonomy, tags: [...draft.tags] };
+  if (Object.keys(withTags).length === 0) delete next["kami:taxonomy"];
+  else next["kami:taxonomy"] = withTags;
+
+  return next as KamiDocument;
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return {};
+  return { ...(value as Record<string, unknown>) };
+}
+
+function omit(record: Record<string, unknown>, key: string): Record<string, unknown> {
+  const { [key]: _removed, ...rest } = record;
+  return rest;
+}

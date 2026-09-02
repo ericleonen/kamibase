@@ -7,7 +7,8 @@ import { classifySupabaseError, reportedMessage, socialFailureMessage } from "@/
 import { ensureProfile } from "@/lib/social/profiles";
 import { socialClient } from "@/lib/social/supabase";
 import { seededPatterns } from "./index";
-import { ingestPattern, patternRow } from "./save";
+import { getOwnedPattern } from "./owner";
+import { ingestPattern, patternMetadataRow, patternRow, withMetadata } from "./save";
 import { takenSlugs } from "./supabase";
 import { slugCandidates, validatePatternDraft } from "./validate";
 
@@ -24,6 +25,14 @@ import { slugCandidates, validatePatternDraft } from "./validate";
 
 export interface SaveState {
   readonly error?: string;
+  /**
+   * Set by the actions that return rather than redirect.
+   *
+   * The initial state and a successful one are otherwise the same empty
+   * object, and a form cannot say "Saved." if it cannot tell the difference
+   * between having saved and not having been used yet.
+   */
+  readonly saved?: true;
 }
 
 function field(formData: FormData, name: string): string {
@@ -187,4 +196,118 @@ export async function deletePatternAction(
   revalidatePath(`/p/${slug}`);
   revalidatePath(`/u/${profile.data.handle}`);
   redirect(`/u/${profile.data.handle}`);
+}
+
+/**
+ * Editing everything about a pattern except its creases.
+ *
+ * The name, who designed it, what it is, what anybody may do with it, how hard
+ * it is and what it is filed under. Not the geometry, which is the editor's,
+ * and not the slug, which is a promise: `folds.pattern_id` references it, and
+ * so does every link anybody has sent. A pattern that renamed its own URL would
+ * break both, so the title changes and the address does not.
+ *
+ * Both copies are written. The columns are what a listing sorts and filters on;
+ * the document is what the page renders from and what the `.kami` download
+ * hands over. `withMetadata` explains why writing only one is worse than
+ * writing neither.
+ */
+export async function updatePatternAction(
+  _previous: SaveState,
+  formData: FormData,
+): Promise<SaveState> {
+  const slug = field(formData, "slug");
+  if (slug === "") return { error: "No pattern was named." };
+
+  const draft = validatePatternDraft({
+    title: field(formData, "title"),
+    designer: field(formData, "designer"),
+    description: field(formData, "description"),
+    license: field(formData, "license"),
+    tags: field(formData, "tags"),
+    difficulty: field(formData, "difficulty"),
+  });
+  if (!draft.ok) return { error: draft.error };
+
+  // Read it as its owner first. This is what turns "somebody else's slug" and
+  // "a seeded file" into the same refusal as "no such pattern", before any
+  // write is attempted.
+  const existing = await getOwnedPattern(slug);
+  if (!existing) return { error: "That pattern is not yours to edit." };
+
+  const supabase = await socialClient();
+  if (!supabase) return { error: socialFailureMessage("unconfigured") };
+
+  const { error } = await supabase
+    .from("patterns")
+    .update({
+      ...patternMetadataRow(draft.value),
+      document: withMetadata(existing.document, draft.value),
+    })
+    .eq("slug", slug);
+
+  if (error) {
+    return {
+      error: reportedMessage(error, classifySupabaseError(error), "Could not save those changes."),
+    };
+  }
+
+  revalidatePath("/explore");
+  revalidatePath("/");
+  revalidatePath(`/p/${slug}`);
+  revalidatePath(`/p/${slug}/settings`);
+  return { saved: true };
+}
+
+/**
+ * Taking a pattern off the site, or putting it back.
+ *
+ * One column, and the select policy in 0004 does the rest: private means the
+ * author and nobody else, everywhere at once, including the listings that read
+ * with the anonymous key and never learn that the row exists.
+ *
+ * What it does not do is unsay anything. Folds and comments made while it was
+ * public stay where they are — they are other people's, and a pattern going
+ * quiet is not a reason to delete somebody else's photograph of it. Their links
+ * back to the pattern lead to a 404 until it is public again, which is the
+ * honest rendering of "the author has taken this down for now".
+ */
+export async function setPatternPrivacyAction(
+  _previous: SaveState,
+  formData: FormData,
+): Promise<SaveState> {
+  const slug = field(formData, "slug");
+  if (slug === "") return { error: "No pattern was named." };
+  const isPrivate = field(formData, "private") === "true";
+
+  const profile = await ensureProfile();
+  if (!profile.ok) return { error: profile.message };
+
+  const supabase = await socialClient();
+  if (!supabase) return { error: socialFailureMessage("unconfigured") };
+
+  const { data, error } = await supabase
+    .from("patterns")
+    .update({ is_private: isPrivate })
+    .eq("slug", slug)
+    .eq("author_id", profile.data.id)
+    .select("slug");
+
+  if (error) {
+    return {
+      error: reportedMessage(
+        error,
+        classifySupabaseError(error),
+        "Could not change who can see that pattern.",
+      ),
+    };
+  }
+  if (!data || data.length === 0) return { error: "That pattern is not yours to change." };
+
+  revalidatePath("/explore");
+  revalidatePath("/");
+  revalidatePath(`/p/${slug}`);
+  revalidatePath(`/p/${slug}/settings`);
+  revalidatePath(`/u/${profile.data.handle}`);
+  return { saved: true };
 }

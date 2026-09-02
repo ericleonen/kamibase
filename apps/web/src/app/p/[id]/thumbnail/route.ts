@@ -1,4 +1,4 @@
-import { patterns } from "@/lib/patterns";
+import { getVisiblePattern } from "@/lib/patterns/owner";
 import { renderThumbnail } from "@/lib/render";
 
 /** Card and preview thumbnail, straight from the core SVG renderer. */
@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ): Promise<Response> {
   const { id } = await params;
-  const pattern = await patterns.get(id);
+  const pattern = await getVisiblePattern(id);
   if (!pattern) {
     return new Response("No such pattern", { status: 404 });
   }

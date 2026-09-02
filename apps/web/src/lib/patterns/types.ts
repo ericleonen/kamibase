@@ -42,6 +42,15 @@ export interface PatternSummary {
    * exactly right for a file committed to the repository.
    */
   readonly authorId?: string;
+  /**
+   * Off the site, visible only to its author.
+   *
+   * Absent for the seeded library, which has no rows and therefore no flag.
+   * A summary that reaches a listing at all is one the reader is allowed to
+   * see: the select policy in 0004 has already decided, and this is only here
+   * so the author's own pages can say which of theirs are drafts.
+   */
+  readonly isPrivate?: boolean;
 }
 
 /** A pattern with its geometry and validation report loaded. */
@@ -63,12 +72,4 @@ export interface PatternRepository {
   list(): Promise<readonly PatternSummary[]>;
   /** Look up by route id or by `kami:id`. `null` when there is no such pattern. */
   get(id: string): Promise<Pattern | null>;
-  /**
-   * Everything one person saved, newest first.
-   *
-   * A store that cannot have an author — the seeded files — answers with an
-   * empty list rather than pretending nobody saved anything, which is the same
-   * answer and the honest shape of it.
-   */
-  listByAuthor(authorId: string): Promise<readonly PatternSummary[]>;
 }

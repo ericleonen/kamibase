@@ -1,5 +1,5 @@
 import { isDownloadFormat, renderDownload } from "@/lib/downloads";
-import { patterns } from "@/lib/patterns";
+import { getVisiblePattern } from "@/lib/patterns/owner";
 
 export async function GET(
   _request: Request,
@@ -14,7 +14,7 @@ export async function GET(
     });
   }
 
-  const pattern = await patterns.get(id);
+  const pattern = await getVisiblePattern(id);
   if (!pattern) {
     return new Response("No such pattern", {
       status: 404,

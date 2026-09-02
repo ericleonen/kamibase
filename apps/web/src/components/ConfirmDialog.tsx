@@ -18,6 +18,7 @@ export function ConfirmDialog({
   body,
   confirmLabel,
   cancelLabel = "Stay",
+  destructive = false,
   onConfirm,
   onCancel,
 }: {
@@ -25,6 +26,15 @@ export function ConfirmDialog({
   readonly body: string;
   readonly confirmLabel: string;
   readonly cancelLabel?: string;
+  /**
+   * The confirming button is red rather than brand.
+   *
+   * For a dialog whose yes is unrecoverable. Leaving the editor is not that —
+   * the draft is still in the browser — but deleting a pattern is, and a brand
+   * button is the same button the site uses for "Save": it reads as the safe
+   * one at exactly the moment it is not.
+   */
+  readonly destructive?: boolean;
   readonly onConfirm: () => void;
   readonly onCancel: () => void;
 }) {
@@ -84,7 +94,11 @@ export function ConfirmDialog({
             type="button"
             onClick={onConfirm}
             className="rounded-full px-4 py-2 text-sm font-bold transition hover:opacity-85"
-            style={{ background: "var(--brand)", color: "var(--ink)" }}
+            style={
+              destructive
+                ? { background: "var(--danger)", color: "#ffffff" }
+                : { background: "var(--brand)", color: "var(--ink)" }
+            }
           >
             {confirmLabel}
           </button>

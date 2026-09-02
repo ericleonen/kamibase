@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Link2, Pencil } from "lucide-react";
+import { EyeOff, Link2, Pencil, Settings2 } from "lucide-react";
 import { Avatar } from "@/components/social/Avatar";
-import { DeletePatternButton } from "@/components/DeletePatternButton";
 import { PatternCard } from "@/components/PatternCard";
 import { FoldGrid } from "@/components/social/FoldCard";
 import { FollowButton } from "@/components/social/FollowButton";
 import { SocialNotice } from "@/components/social/SocialNotice";
 import { getAccountSettings } from "@/lib/social/account";
-import { patternTitles, patterns } from "@/lib/patterns";
+import { patternTitles } from "@/lib/patterns";
+import { listPatternsByAuthor } from "@/lib/patterns/owner";
 import {
   compactCount,
   getProfileByHandle,
@@ -85,7 +85,7 @@ export default async function ProfilePage({
     getProfileStats(profile.id),
     listFoldsByAuthor(profile.id),
     patternTitles(),
-    patterns.listByAuthor(profile.id),
+    listPatternsByAuthor(profile.id),
   ]);
 
   const isSelf = user?.id === profile.id;
@@ -183,10 +183,34 @@ export default async function ProfilePage({
           <h2 className="text-lg font-semibold tracking-tight">Patterns</h2>
           <div className="pattern-grid">
             {saved.map((pattern) => (
-              <div key={pattern.id} className="space-y-2">
+              <div key={pattern.id} className="space-y-1.5">
                 <PatternCard pattern={pattern} />
+                {/*
+                 * A private one is in this grid because it is yours; nobody
+                 * else's copy of this page has it. The badge is the reminder
+                 * that the link beside it goes somewhere nobody else can
+                 * follow.
+                 */}
                 {isSelf && (
-                  <DeletePatternButton slug={pattern.id} title={pattern.title} />
+                  <div className="flex items-center gap-3 px-1 text-xs">
+                    {pattern.isPrivate && (
+                      <span
+                        className="flex items-center gap-1 font-semibold"
+                        style={{ color: "var(--brand-strong)" }}
+                      >
+                        <EyeOff className="size-3" aria-hidden />
+                        Private
+                      </span>
+                    )}
+                    <Link
+                      href={`/p/${pattern.id}/settings`}
+                      className="ml-auto flex items-center gap-1 transition hover:opacity-70"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      <Settings2 className="size-3" aria-hidden />
+                      Settings
+                    </Link>
+                  </div>
                 )}
               </div>
             ))}

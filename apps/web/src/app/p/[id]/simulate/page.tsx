@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { toFold } from "@kamibase/core";
 import { CreasePatternViewer } from "@/components/CreasePatternViewer";
 import { FoldViewer } from "@/components/FoldViewer";
-import { patterns } from "@/lib/patterns";
+import { getVisiblePattern } from "@/lib/patterns/owner";
 import { presentAssignments, renderViewerSvg } from "@/lib/render";
 
 export async function generateMetadata({
@@ -12,7 +12,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const pattern = await patterns.get(id);
+  const pattern = await getVisiblePattern(id);
   return { title: pattern ? `Fold ${pattern.title}` : "Pattern not found" };
 }
 
@@ -30,7 +30,7 @@ export default async function SimulatePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const pattern = await patterns.get(id);
+  const pattern = await getVisiblePattern(id);
   if (!pattern) notFound();
 
   // The simulator speaks FOLD, so the kami: block comes off on the way in.

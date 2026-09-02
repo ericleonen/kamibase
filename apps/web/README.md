@@ -157,6 +157,20 @@ other people see. `/settings/appearance` is this browser and works signed out.
 `/settings/account` is the machinery: the sign-in address, a password reset,
 private mode, which emails you want, and deleting the account.
 
+A saved pattern has settings of its own at `/p/:slug/settings`, reachable from
+the pattern's page and from your profile, and only by the person who saved it.
+It is where the title, designer, notes, licence, difficulty and tags are edited
+— all of them written to the row's columns *and* into the `.kami` document,
+since the listings read the first and the pattern's own page reads the second —
+and where a pattern is made private or deleted. The slug is the one thing it
+will not change: `folds.pattern_id` references it and people have sent the link.
+
+`supabase/migrations/0004_pattern_privacy.sql` adds `patterns.is_private` and
+replaces "patterns are public" with `not is_private or author_id = auth.uid()`.
+The app lists patterns with the anonymous key, for which `auth.uid()` is null,
+so Explore, search and the home page drop private rows without knowing they
+exist; the author's own pages read through the session and get them back.
+
 `supabase/migrations/0003_settings.sql` adds four columns to `profiles` and
 moves the read policies on `folds` and `comments` behind a `can_see_profile()`
 check, so a private account's work is withheld by row-level security rather than

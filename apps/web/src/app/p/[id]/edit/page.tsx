@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CreasePatternEditor } from "@/components/editor/CreasePatternEditor";
 import { docFromGraph } from "@/lib/editor/model";
-import { patterns } from "@/lib/patterns";
+import { getVisiblePattern } from "@/lib/patterns/owner";
 import { getCurrentUser } from "@/lib/supabase/server";
 
 export async function generateMetadata({
@@ -11,7 +11,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const pattern = await patterns.get(id);
+  const pattern = await getVisiblePattern(id);
   return { title: pattern ? `Edit ${pattern.title}` : "Pattern not found" };
 }
 
@@ -30,7 +30,7 @@ export default async function EditPatternPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [pattern, user] = await Promise.all([patterns.get(id), getCurrentUser()]);
+  const [pattern, user] = await Promise.all([getVisiblePattern(id), getCurrentUser()]);
   if (!pattern) notFound();
 
   return (

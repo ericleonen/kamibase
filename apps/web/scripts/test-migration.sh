@@ -33,6 +33,8 @@ run() {
 MIGRATIONS=(
   "$HERE/supabase/migrations/0001_social.sql"
   "$HERE/supabase/migrations/0002_patterns.sql"
+  "$HERE/supabase/migrations/0003_settings.sql"
+  "$HERE/supabase/migrations/0004_pattern_privacy.sql"
 )
 
 apply_all() {

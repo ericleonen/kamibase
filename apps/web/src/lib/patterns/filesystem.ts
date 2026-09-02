@@ -44,11 +44,6 @@ export class FileSystemPatternRepository implements PatternRepository {
     return null;
   }
 
-  /** Nobody's, always. A file in the repository has no account behind it. */
-  async listByAuthor(): Promise<readonly PatternSummary[]> {
-    return [];
-  }
-
   async #load(): Promise<Map<string, Pattern>> {
     if (this.#cache) return this.#cache;
     this.#loading ??= this.#read();

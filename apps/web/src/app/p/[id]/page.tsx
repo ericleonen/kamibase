@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Box, Camera, Download, PencilRuler } from "lucide-react";
+import { Box, Camera, Download, EyeOff, PencilRuler, Settings2 } from "lucide-react";
 import { CreasePatternViewer } from "@/components/CreasePatternViewer";
 import { Section, SectionHeading } from "@/components/Section";
 import { ValidationBadge } from "@/components/ValidationBadge";
@@ -10,6 +10,8 @@ import { FoldGrid } from "@/components/social/FoldCard";
 import { SocialNotice } from "@/components/social/SocialNotice";
 import { DOWNLOAD_FORMATS, FORMAT_HINTS, FORMAT_LABELS } from "@/lib/downloads";
 import { patterns } from "@/lib/patterns";
+import { getVisiblePattern } from "@/lib/patterns/owner";
+import { getCurrentUser } from "@/lib/supabase/server";
 import { presentAssignments, renderViewerSvg } from "@/lib/render";
 import { listFoldsForPattern } from "@/lib/social";
 
@@ -24,7 +26,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const pattern = await patterns.get(id);
+  const pattern = await getVisiblePattern(id);
   if (!pattern) return { title: "Pattern not found" };
   return {
     title: pattern.title,
@@ -58,8 +60,11 @@ export default async function PatternPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const pattern = await patterns.get(id);
+  const [pattern, user] = await Promise.all([getVisiblePattern(id), getCurrentUser()]);
   if (!pattern) notFound();
+  // `getVisiblePattern` has already refused everybody else, so reaching this
+  // line with a private pattern means the reader is its author.
+  const isOwner = pattern.authorId !== undefined && pattern.authorId === user?.id;
 
   const svg = renderViewerSvg(pattern.graph, pattern.title);
   const facts: [string, string][] = [
@@ -113,7 +118,31 @@ export default async function PatternPage({
             {pattern.description}
           </p>
         )}
-        <ValidationBadge level={pattern.level} flatFoldable={pattern.flatFoldable} />
+        <div className="flex flex-wrap items-center gap-3">
+          <ValidationBadge level={pattern.level} flatFoldable={pattern.flatFoldable} />
+          {pattern.isPrivate && (
+            <span
+              className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold"
+              style={{
+                background: "color-mix(in srgb, var(--brand-strong) 12%, transparent)",
+                color: "var(--brand-strong)",
+              }}
+            >
+              <EyeOff className="size-3" aria-hidden />
+              Private — only you can see this
+            </span>
+          )}
+          {isOwner && (
+            <Link
+              href={`/p/${pattern.id}/settings`}
+              className="flex items-center gap-1.5 text-xs transition hover:opacity-70"
+              style={{ color: "var(--text-muted)" }}
+            >
+              <Settings2 className="size-3" aria-hidden />
+              Settings
+            </Link>
+          )}
+        </div>
       </header>
 
         {/*

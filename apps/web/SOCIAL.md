@@ -21,7 +21,10 @@ put the Supabase keys in yet. Then:
    which is what lets the editor save a crease pattern to the site.
 4. Then `supabase/migrations/0003_settings.sql`, which adds private accounts and
    notification preferences and moves the read policies behind them.
-5. That is it, unless you want the notification emails or account deletion, both
+5. Then `supabase/migrations/0004_pattern_privacy.sql`, which lets a saved
+   pattern be a draft: one flag on the row, and a select policy that shows it
+   to its author and to nobody else.
+6. That is it, unless you want the notification emails or account deletion, both
    of which need `SUPABASE_SERVICE_ROLE_KEY` (and `RESEND_API_KEY` for the
    mail). Neither is required: without them the site simply does not offer
    them. See the web README's **Settings and notifications**.

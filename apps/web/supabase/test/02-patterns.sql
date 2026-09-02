@@ -183,4 +183,48 @@ delete from public.profiles where id = '22222222-2222-2222-2222-222222222222';
 select 'ok: deleting an author took ' || count(*)::text || ' of their patterns with them'
 from public.patterns where slug = 'someone-elses' having count(*) = 0;
 
+-- ---------------------------------------------------------------------------
+-- 5. A private pattern is its author's alone (0004_pattern_privacy.sql)
+--
+-- The flag is worth testing in every direction because the whole feature is
+-- one boolean in one policy, and a policy that reads the flag backwards passes
+-- any test that only ever checks the owner.
+-- ---------------------------------------------------------------------------
+
+set role authenticated;
+set test.uid = '11111111-1111-1111-1111-111111111111';
+
+insert into public.patterns
+  (slug, author_id, title, license, document, content_hash, level, is_private)
+values
+  ('a-draft', '11111111-1111-1111-1111-111111111111', 'A draft',
+   'CC0-1.0', :'doc'::jsonb, :'hash', 'L1', true);
+
+select 'ok: the author reads their own private pattern'
+from public.patterns where slug = 'a-draft' having count(*) = 1;
+
+-- Somebody else, signed in.
+set test.uid = '33333333-3333-3333-3333-333333333333';
+select 'ok: another user cannot read it'
+from public.patterns where slug = 'a-draft' having count(*) = 0;
+
+-- And the anonymous key, which is what /explore and the home page list with.
+set role anon;
+set test.uid = '';
+select 'ok: anon cannot read it'
+from public.patterns where slug = 'a-draft' having count(*) = 0;
+select 'ok: anon still reads the public ones'
+from public.patterns where slug = 'waterbomb-variant' having count(*) = 1;
+
+-- Publishing it puts it back on the site.
+set role authenticated;
+set test.uid = '11111111-1111-1111-1111-111111111111';
+update public.patterns set is_private = false where slug = 'a-draft';
+set role anon;
+set test.uid = '';
+select 'ok: making it public brings it back'
+from public.patterns where slug = 'a-draft' having count(*) = 1;
+
+reset role;
+
 select 'ALL PATTERN CHECKS PASSED';

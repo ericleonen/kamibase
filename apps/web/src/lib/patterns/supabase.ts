@@ -24,7 +24,7 @@ export class SupabasePatternRepository implements PatternRepository {
 
     const { data, error } = await supabase
       .from("patterns")
-      .select(SUMMARY_COLUMNS)
+      .select(PATTERN_SUMMARY_COLUMNS)
       .order("created_at", { ascending: false })
       .limit(LIST_LIMIT);
 
@@ -41,7 +41,7 @@ export class SupabasePatternRepository implements PatternRepository {
 
     const { data, error } = await supabase
       .from("patterns")
-      .select(`${SUMMARY_COLUMNS}, document`)
+      .select(`${PATTERN_SUMMARY_COLUMNS}, document`)
       .eq("slug", id)
       .maybeSingle();
 
@@ -55,25 +55,11 @@ export class SupabasePatternRepository implements PatternRepository {
     // the document is the source of truth, and `patternFromDocument` is the
     // same path a seeded file takes. The author is the one fact about a saved
     // pattern that is not in the document, so it is carried across by hand.
-    return { ...patternFromDocument(row.slug, row.document as KamiDocument), authorId: row.author_id };
-  }
-
-  async listByAuthor(authorId: string): Promise<readonly PatternSummary[]> {
-    const supabase = createPublicClient();
-    if (!supabase) return [];
-
-    const { data, error } = await supabase
-      .from("patterns")
-      .select(SUMMARY_COLUMNS)
-      .eq("author_id", authorId)
-      .order("created_at", { ascending: false })
-      .limit(LIST_LIMIT);
-
-    if (error || !data) {
-      report("listByAuthor", error);
-      return [];
-    }
-    return (data as unknown as SummaryRow[]).map(rowToSummary);
+    return {
+      ...patternFromDocument(row.slug, row.document as KamiDocument),
+      authorId: row.author_id,
+      isPrivate: row.is_private,
+    };
   }
 }
 
@@ -88,9 +74,16 @@ export class SupabasePatternRepository implements PatternRepository {
  */
 const LIST_LIMIT = 500;
 
-const SUMMARY_COLUMNS = [
+/**
+ * The columns a card needs, shared with the session-bound reads in `./owner`.
+ *
+ * One list, because two lists is how a column gets added to the listing and
+ * forgotten in the author's own view of the same rows.
+ */
+export const PATTERN_SUMMARY_COLUMNS = [
   "slug",
   "author_id",
+  "is_private",
   "title",
   "designer",
   "description",
@@ -108,9 +101,10 @@ const SUMMARY_COLUMNS = [
   "valley_count",
 ].join(", ");
 
-interface SummaryRow {
+export interface SummaryRow {
   slug: string;
   author_id: string;
+  is_private: boolean;
   title: string;
   designer: string;
   description: string;
@@ -135,10 +129,11 @@ interface SummaryRow {
  * and grading a hundred documents. They were derived from the document at save
  * time by the same `summarise` the seeded library uses.
  */
-function rowToSummary(row: SummaryRow): PatternSummary {
+export function rowToSummary(row: SummaryRow): PatternSummary {
   return {
     id: row.slug,
     authorId: row.author_id,
+    isPrivate: row.is_private,
     title: row.title,
     designer: row.designer === "" ? "Unknown" : row.designer,
     ...(row.description === "" ? {} : { description: row.description }),
